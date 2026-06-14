@@ -136,10 +136,10 @@ app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
 
     // Fetch past 7 days study data
     const analyticsQuery = `
-      SELECT date(start_time) as day_date, SUM(duration_seconds) as total_seconds 
+      SELECT TO_CHAR(start_time, 'YYYY-MM-DD') as day_date, SUM(duration_seconds) as total_seconds 
       FROM study_sessions 
-      WHERE user_id = ? AND start_time >= date('now', '-6 days')
-      GROUP BY day_date
+      WHERE user_id = ? AND start_time >= CURRENT_DATE - INTERVAL '6 days'
+      GROUP BY TO_CHAR(start_time, 'YYYY-MM-DD')
     `;
     const analyticsRaw = await dbAll(analyticsQuery, [req.user.id]);
     

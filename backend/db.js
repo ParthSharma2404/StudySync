@@ -1,143 +1,132 @@
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
-const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, '../database.db');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/studysync',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
-// Ensure directory exists
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+});
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message);
-  } else {
-    console.log('Connected to the SQLite database.');
+// Run migrations
+const initDb = async () => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Users Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        current_streak INT DEFAULT 0,
+        longest_streak INT DEFAULT 0,
+        last_active_date TEXT,
+        total_study_seconds INT DEFAULT 0,
+        xp INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Rooms Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS rooms (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        creator_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+        passcode TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Tasks Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id TEXT PRIMARY KEY,
+        room_id TEXT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+        owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title TEXT NOT NULL,
+        is_completed INT DEFAULT 0,
+        completed_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+        time_spent_seconds INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Study Sessions Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS study_sessions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        room_id TEXT REFERENCES rooms(id) ON DELETE SET NULL,
+        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_time TIMESTAMP,
+        duration_seconds INT DEFAULT 0
+      )
+    `);
+
+    // Friendships Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS friendships (
+        id TEXT PRIMARY KEY,
+        sender_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(sender_id, receiver_id)
+      )
+    `);
+
+    // User Badges Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS user_badges (
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        badge_id TEXT NOT NULL,
+        awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, badge_id)
+      )
+    `);
+    
+    await client.query('COMMIT');
+    console.log('Connected to PostgreSQL and migrations applied.');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error applying DB migrations', err);
+  } finally {
+    client.release();
   }
-});
-
-// Run migrations inside a transaction/serialize block
-db.serialize(() => {
-  // Users Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      current_streak INTEGER DEFAULT 0,
-      longest_streak INTEGER DEFAULT 0,
-      last_active_date TEXT,
-      total_study_seconds INTEGER DEFAULT 0,
-      xp INTEGER DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Rooms Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS rooms (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT,
-      creator_id TEXT,
-      passcode TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(creator_id) REFERENCES users(id) ON DELETE SET NULL
-    )
-  `);
-
-  // Tasks Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS tasks (
-      id TEXT PRIMARY KEY,
-      room_id TEXT NOT NULL,
-      owner_id TEXT NOT NULL,
-      title TEXT NOT NULL,
-      is_completed BOOLEAN DEFAULT FALSE,
-      completed_by TEXT,
-      time_spent_seconds INTEGER DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-      FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY(completed_by) REFERENCES users(id) ON DELETE SET NULL
-    )
-  `);
-
-  // Study Sessions Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS study_sessions (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      room_id TEXT,
-      start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      end_time TIMESTAMP,
-      duration_seconds INTEGER DEFAULT 0,
-      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE SET NULL
-    )
-  `);
-
-  // Friendships Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS friendships (
-      id TEXT PRIMARY KEY,
-      sender_id TEXT NOT NULL,
-      receiver_id TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE,
-      UNIQUE(sender_id, receiver_id)
-    )
-  `);
-
-  // Migrations for XP System
-  db.run("ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0", (err) => {});
-  db.run("ALTER TABLE tasks ADD COLUMN owner_id TEXT", (err) => {});
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_badges (
-      user_id TEXT NOT NULL,
-      badge_id TEXT NOT NULL,
-      awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (user_id, badge_id),
-      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `);
-});
-
-// Helper wrapper functions for Promisified DB queries
-const dbGet = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
 };
 
-const dbAll = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+initDb();
+
+// Query Translator: Converts SQLite `?` to PostgreSQL `$1, $2, ...`
+const translateQuery = (sql) => {
+  let paramIndex = 1;
+  return sql.replace(/\?/g, () => `$${paramIndex++}`);
 };
 
-const dbRun = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve(this); // returns 'lastID' and 'changes'
-    });
-  });
+const dbGet = async (sql, params = []) => {
+  const res = await pool.query(translateQuery(sql), params);
+  return res.rows[0];
+};
+
+const dbAll = async (sql, params = []) => {
+  const res = await pool.query(translateQuery(sql), params);
+  return res.rows;
+};
+
+const dbRun = async (sql, params = []) => {
+  const res = await pool.query(translateQuery(sql), params);
+  return { lastID: null, changes: res.rowCount };
 };
 
 module.exports = {
-  db,
+  db: pool,
   dbGet,
   dbAll,
   dbRun
