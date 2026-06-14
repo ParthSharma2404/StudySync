@@ -28,6 +28,7 @@ const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
   secure: true,
+  family: 4, // Force IPv4 to avoid network unreachable (ENETUNREACH) errors in IPv6-constrained environments
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
