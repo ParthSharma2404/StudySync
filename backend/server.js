@@ -345,7 +345,7 @@ app.get('/api/friends', authenticateToken, async (req, res) => {
 
 // Serve frontend in production (Render)
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
-app.get('*', (req, res) => {
+app.use((req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).json({ error: 'API route not found' });
   res.sendFile(path.resolve(__dirname, '../frontend/dist', 'index.html'));
 });
