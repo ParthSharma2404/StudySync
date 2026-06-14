@@ -25,12 +25,23 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_1
 
 // Email Transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   }
 });
+
+// Verify email connection at startup
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  transporter.verify()
+    .then(() => console.log('✅ EMAIL SERVICE READY - Connected to Gmail SMTP'))
+    .catch((err) => console.error('❌ EMAIL SERVICE FAILED:', err.message));
+} else {
+  console.log('⚠️ EMAIL SERVICE DISABLED - EMAIL_USER or EMAIL_PASS not set');
+}
 
 // Login Rate Limiter (5 attempts per 15 mins)
 const loginLimiter = rateLimit({
@@ -138,12 +149,18 @@ app.post('/api/auth/resend-verification', async (req, res) => {
     };
 
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      transporter.sendMail(mailOptions)
-        .then(() => console.log('Resend: Verification email sent to:', email))
-        .catch((emailErr) => console.error('Resend email failed:', emailErr));
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log('Resend: Verification email sent to:', email);
+        res.json({ message: 'Verification email sent! Please check your inbox (and spam folder).' });
+      } catch (emailErr) {
+        console.error('Resend email failed:', emailErr);
+        res.status(500).json({ error: `Email delivery failed: ${emailErr.message}` });
+      }
+    } else {
+      console.log('MOCK: Verify URL:', verifyUrl);
+      res.status(500).json({ error: 'Email service is not configured on this server.' });
     }
-
-    res.json({ message: 'Verification email resent! Please check your inbox.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error.' });

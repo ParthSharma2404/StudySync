@@ -6,7 +6,8 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resendStatus, setResendStatus] = useState(''); // '', 'sending', 'sent', 'error'
+  const [resendStatus, setResendStatus] = useState('');
+  const [resendMessage, setResendMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -38,6 +39,7 @@ function Login() {
 
   const handleResendVerification = async () => {
     setResendStatus('sending');
+    setResendMessage('');
     try {
       const res = await fetch('/api/auth/resend-verification', {
         method: 'POST',
@@ -47,8 +49,10 @@ function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setResendStatus('sent');
+      setResendMessage(data.message);
     } catch (err) {
       setResendStatus('error');
+      setResendMessage(err.message || 'Failed to send email.');
     }
   };
 
@@ -68,7 +72,26 @@ function Login() {
             {showResendButton && (
               <div style={{ marginTop: '10px' }}>
                 {resendStatus === 'sent' ? (
-                  <span style={{ color: '#10b981', fontWeight: 600 }}>✓ Verification email resent! Check your inbox.</span>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>✓ {resendMessage}</span>
+                ) : resendStatus === 'error' ? (
+                  <div>
+                    <span style={{ color: '#f59e0b', fontWeight: 600, display: 'block', marginBottom: '6px' }}>⚠ {resendMessage}</span>
+                    <button
+                      onClick={handleResendVerification}
+                      style={{
+                        background: 'rgba(99, 102, 241, 0.15)',
+                        color: '#818cf8',
+                        border: '1px solid rgba(99, 102, 241, 0.3)',
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Try Again
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={handleResendVerification}
