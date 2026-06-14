@@ -13,7 +13,7 @@ const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 const { db, dbGet, dbAll, dbRun } = require('./db');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 app.use(cors({ origin: true, credentials: true })); // Allow cookies
