@@ -45,7 +45,7 @@ Follow these steps to run StudySync on your local machine:
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/ParthSharma2404/StudySync.git
-cd "task manager"
+cd StudySync
 ```
 
 ### 2. Install Dependencies
