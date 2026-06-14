@@ -1,3 +1,4 @@
+import { fetchApi } from '../utils/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Camera, Monitor, LogOut, LogIn, CheckCircle2, Play, Users, Link as LinkIcon, Trash2, XCircle, Share2, ClipboardList, Target, Clock, AlertCircle, Headphones } from 'lucide-react';
@@ -86,7 +87,7 @@ function StudyRoom() {
   const idleTicksRef = useRef(0); 
   const audioRef = useRef(null);
 
-  const token = localStorage.getItem('token');
+  
 
   // Load current user profile from localStorage
   useEffect(() => {
@@ -118,8 +119,8 @@ function StudyRoom() {
 
     // Fetch room configurations from API
     if (!isSolo) {
-      fetch(`/api/rooms/${roomId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      fetchApi(`/api/rooms/${roomId}`, {
+        
       })
         .then((res) => res.json())
         .then((data) => {
@@ -520,9 +521,8 @@ function StudyRoom() {
     if (!confirmEnd) return;
 
     try {
-      const response = await fetch(`/api/rooms/${roomId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetchApi(`/api/rooms/${roomId}`, {
+        method: 'DELETE'
       });
       const data = await response.json();
 

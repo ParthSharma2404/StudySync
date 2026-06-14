@@ -32,6 +32,22 @@ const initDb = async () => {
       )
     `);
 
+    // Add new auth columns if they don't exist
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified INT DEFAULT 0`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INT DEFAULT 0`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP`);
+
+    // Refresh Tokens Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        token TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Rooms Table
     await client.query(`
       CREATE TABLE IF NOT EXISTS rooms (

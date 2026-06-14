@@ -28,10 +28,10 @@ function Register() {
         throw new Error(data.error || 'Registration failed.');
       }
 
-      setSuccess('Account created successfully! Redirecting to login...');
+      setSuccess(data.message || 'Account created successfully!');
       setTimeout(() => {
         navigate('/login');
-      }, 2000);
+      }, 5000);
     } catch (err) {
       setError(err.message);
     } finally {

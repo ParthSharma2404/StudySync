@@ -7,29 +7,51 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const dotenv = require('dotenv');
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
+const nodemailer = require('nodemailer');
+const { v4: uuidv4 } = require('uuid');
 const { db, dbGet, dbAll, dbRun } = require('./db');
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: true, credentials: true })); // Allow cookies
 app.use(express.json());
+app.use(cookieParser());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'studysync_secret_key_123456';
+const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_123456';
+
+// Email Transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// Login Rate Limiter (5 attempts per 15 mins)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many login attempts from this IP, please try again after 15 minutes.' }
+});
 
 // --- MIDDLEWARES ---
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = req.cookies.accessToken;
   if (!token) return res.status(401).json({ error: 'Access token required.' });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid or expired token.' });
+    if (err) return res.status(403).json({ error: 'Invalid or expired access token.' });
     req.user = user;
     next();
   });
 };
 
+// --- AUTH ROUTES ---
 // --- AUTH ROUTES ---
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -38,15 +60,37 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
+    // Bcrypt 12 rounds
+    const password_hash = await bcrypt.hash(password, 12);
     const userId = crypto.randomUUID();
+    const verificationToken = crypto.randomUUID();
 
     await dbRun(
-      'INSERT INTO users (id, username, email, password_hash, last_active_date, xp) VALUES (?, ?, ?, ?, ?, ?)',
-      [userId, username, email, password_hash, new Date().toISOString().split('T')[0], 50]
+      'INSERT INTO users (id, username, email, password_hash, last_active_date, xp, is_verified, verification_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [userId, username, email, password_hash, new Date().toISOString().split('T')[0], 50, 0, verificationToken]
     );
 
-    res.status(201).json({ message: 'User registered successfully!' });
+    // Send Verification Email
+    const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify/${verificationToken}`;
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Verify your StudySync Account',
+      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
+    };
+
+    try {
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        await transporter.sendMail(mailOptions);
+        console.log('Verification email sent to:', email);
+      } else {
+        console.log('MOCK EMAIL VERIFIER - Click here to verify:', verifyUrl);
+      }
+    } catch (emailErr) {
+      console.error('Email sending failed:', emailErr);
+    }
+
+    res.status(201).json({ message: 'User registered successfully! Please check your email to verify your account.' });
   } catch (err) {
     if (err.message.includes('UNIQUE')) {
       return res.status(400).json({ error: 'Username or Email already exists.' });
@@ -56,7 +100,21 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.get('/api/auth/verify/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await dbGet('SELECT id FROM users WHERE verification_token = ?', [token]);
+    if (!user) return res.status(400).send('Invalid or expired verification link.');
+
+    await dbRun('UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?', [user.id]);
+    res.send('<h1>Email Verified Successfully!</h1><p>You can now log in to StudySync.</p><a href="/">Go to Login</a>');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -68,10 +126,33 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'No account found with this email. Please register.' });
     }
 
+    // Account Lockout Check
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
+      return res.status(403).json({ error: 'Account is locked due to too many failed attempts. Try again later.' });
+    }
+
+    // Email Verification Check
+    if (user.is_verified === 0) {
+      return res.status(403).json({ error: 'Please verify your email before logging in.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
+      const newAttempts = (user.failed_login_attempts || 0) + 1;
+      let lockedUntil = null;
+      if (newAttempts >= 5) {
+        lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // Lock for 15 mins
+      }
+      await dbRun('UPDATE users SET failed_login_attempts = ?, locked_until = ? WHERE id = ?', [newAttempts, lockedUntil, user.id]);
+      
+      if (lockedUntil) {
+        return res.status(403).json({ error: 'Account locked due to 5 failed attempts. Please try again in 15 minutes.' });
+      }
       return res.status(400).json({ error: 'Incorrect password. Please try again.' });
     }
+
+    // Reset failed attempts on successful login
+    await dbRun('UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?', [user.id]);
 
     // Update Streak check on login
     const todayStr = new Date().toISOString().split('T')[0];
@@ -101,15 +182,23 @@ app.post('/api/auth/login', async (req, res) => {
       longestStreak = newStreak;
     }
 
-    // Save updated active stats
     await dbRun(
       'UPDATE users SET current_streak = ?, longest_streak = ?, last_active_date = ?, xp = ? WHERE id = ?',
       [newStreak, longestStreak, todayStr, newXp, user.id]
     );
 
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    // Generate Tokens
+    const accessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '15m' });
+    const refreshToken = uuidv4();
+    const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    await dbRun('INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)', [refreshToken, user.id, refreshExpires.toISOString()]);
+
+    // Set HttpOnly Cookies
+    res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 15 * 60 * 1000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
     res.json({
-      token,
       user: {
         id: user.id,
         username: user.username,
@@ -123,6 +212,59 @@ app.post('/api/auth/login', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Server error during login.' });
   }
+});
+
+app.post('/api/auth/refresh', async (req, res) => {
+  const { refreshToken } = req.cookies;
+  if (!refreshToken) return res.status(401).json({ error: 'Refresh token required.' });
+
+  try {
+    const tokenRecord = await dbGet('SELECT * FROM refresh_tokens WHERE token = ? AND expires_at > CURRENT_TIMESTAMP', [refreshToken]);
+    if (!tokenRecord) {
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+      return res.status(403).json({ error: 'Invalid or expired refresh token.' });
+    }
+
+    const user = await dbGet('SELECT * FROM users WHERE id = ?', [tokenRecord.user_id]);
+    if (!user) return res.status(403).json({ error: 'User no longer exists.' });
+
+    // Rotate refresh token
+    const newRefreshToken = uuidv4();
+    const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await dbRun('DELETE FROM refresh_tokens WHERE token = ?', [refreshToken]);
+    await dbRun('INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)', [newRefreshToken, user.id, refreshExpires.toISOString()]);
+
+    const newAccessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '15m' });
+
+    res.cookie('accessToken', newAccessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 15 * 60 * 1000 });
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    res.json({ message: 'Token refreshed successfully.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT id, username, email, current_streak, total_study_seconds, xp FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const { refreshToken } = req.cookies;
+  if (refreshToken) {
+    dbRun('DELETE FROM refresh_tokens WHERE token = ?', [refreshToken]).catch(console.error);
+  }
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+  res.json({ message: 'Logged out successfully.' });
 });
 
 // --- DASHBOARD API ---

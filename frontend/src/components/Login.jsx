@@ -17,6 +17,7 @@ function Login() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password })
       });
       const data = await response.json();
@@ -25,9 +26,7 @@ function Login() {
         throw new Error(data.error || 'Login failed.');
       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err) {
       setError(err.message);
     } finally {

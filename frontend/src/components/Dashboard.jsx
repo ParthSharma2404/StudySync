@@ -1,3 +1,4 @@
+import { fetchApi } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Flame, Clock, Award, Users, BookOpen, GraduationCap, X, LogOut, Target, BarChart2, TrendingUp, Info, CheckCircle2, UserPlus, Check, X as XIcon } from 'lucide-react';
@@ -30,7 +31,7 @@ function Dashboard() {
   const [onlineFriends, setOnlineFriends] = useState([]);
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('token');
+  
 
   useEffect(() => {
     if (!token) {
@@ -41,24 +42,24 @@ function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         // Fetch User profile & badges
-        const dashResponse = await fetch('/api/user/dashboard', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const dashResponse = await fetchApi('/api/user/dashboard', {
+          
         });
         if (!dashResponse.ok) throw new Error('Failed to load profile.');
         const dashData = await dashResponse.json();
         setData(dashData);
 
         // Fetch Study Rooms
-        const roomsResponse = await fetch('/api/rooms', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const roomsResponse = await fetchApi('/api/rooms', {
+          
         });
         if (!roomsResponse.ok) throw new Error('Failed to load rooms.');
         const roomsData = await roomsResponse.json();
         setRooms(roomsData);
 
         // Fetch Friends
-        const friendsResponse = await fetch('/api/friends', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const friendsResponse = await fetchApi('/api/friends', {
+          
         });
         if (friendsResponse.ok) {
           const friendsData = await friendsResponse.json();
@@ -74,10 +75,10 @@ function Dashboard() {
     };
 
     fetchDashboardData();
-  }, [token, navigate]);
+  }, []);
 
   useEffect(() => {
-    if (!token || !data?.user) return;
+    if (!data?.user) return;
     const socket = io();
     socket.emit('identify', { userId: data.user.id, username: data.user.username });
     
@@ -86,7 +87,7 @@ function Dashboard() {
     });
 
     socket.on('friend-request-received', async () => {
-      const res = await fetch('/api/friends', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetchApi('/api/friends', {  });
       if (res.ok) {
         const d = await res.json();
         setIncomingRequests(d.incomingRequests);
@@ -94,7 +95,7 @@ function Dashboard() {
     });
     
     socket.on('friend-request-accepted', async () => {
-      const res = await fetch('/api/friends', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetchApi('/api/friends', {  });
       if (res.ok) {
         const d = await res.json();
         setFriends(d.friends);
@@ -102,7 +103,7 @@ function Dashboard() {
     });
 
     return () => socket.disconnect();
-  }, [token, data?.user]);
+  }, [data?.user]);
 
   const handleSendFriendRequest = async (e) => {
     e.preventDefault();
@@ -110,9 +111,9 @@ function Dashboard() {
     setFriendSuccess('');
     if (!friendUsername) return;
     try {
-      const res = await fetch('/api/friends/request', {
+      const res = await fetchApi('/api/friends/request', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUsername: friendUsername })
       });
       const d = await res.json();
@@ -126,12 +127,12 @@ function Dashboard() {
 
   const handleAcceptRequest = async (requestId) => {
     try {
-      await fetch('/api/friends/accept', {
+      await fetchApi('/api/friends/accept', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId })
       });
-      const res = await fetch('/api/friends', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetchApi('/api/friends', {  });
       const d = await res.json();
       setFriends(d.friends);
       setIncomingRequests(d.incomingRequests);
@@ -140,9 +141,9 @@ function Dashboard() {
 
   const handleRejectRequest = async (requestId) => {
     try {
-      await fetch('/api/friends/reject', {
+      await fetchApi('/api/friends/reject', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId })
       });
       setIncomingRequests(prev => prev.filter(r => r.request_id !== requestId));
@@ -156,11 +157,10 @@ function Dashboard() {
     if (!newRoomName) return;
 
     try {
-      const response = await fetch('/api/rooms', {
+      const response = await fetchApi('/api/rooms', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name: newRoomName, description: newRoomDesc })
       });
@@ -547,9 +547,8 @@ function Dashboard() {
                           <button onClick={async () => {
                             if (window.confirm('Are you sure you want to close and delete this room?')) {
                               try {
-                                const response = await fetch(`/api/rooms/${room.id}`, {
-                                  method: 'DELETE',
-                                  headers: { 'Authorization': `Bearer ${token}` }
+                                const response = await fetchApi(`/api/rooms/${room.id}`, {
+                                  method: 'DELETE'
                                 });
                                 if (response.ok) {
                                   setRooms(rooms.filter(r => r.id !== room.id));

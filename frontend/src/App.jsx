@@ -7,24 +7,40 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import StudyRoom from './components/StudyRoom';
+import { fetchApi } from './utils/api';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [globalInvite, setGlobalInvite] = useState(null); // stores { roomId, roomName, hostName }
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [globalInvite, setGlobalInvite] = useState(null);
   const socketRef = useRef(null);
 
-  const token = localStorage.getItem('token');
-  const cachedUserStr = localStorage.getItem('user');
-
   useEffect(() => {
-    if (cachedUserStr) {
-      setUser(JSON.parse(cachedUserStr));
-    }
-  }, [token, cachedUserStr]);
+    const checkAuth = async () => {
+      try {
+        const res = await fetchApi('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    checkAuth();
+
+    const handleAuthFailed = () => setUser(null);
+    window.addEventListener('auth-failed', handleAuthFailed);
+    return () => window.removeEventListener('auth-failed', handleAuthFailed);
+  }, []);
 
   // Global Socket connection for invitations
   useEffect(() => {
-    if (!token || !user) {
+    if (!user) {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -33,7 +49,9 @@ function App() {
     }
 
     // Connect global socket
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io('http://localhost:5000', {
+      withCredentials: true
+    });
 
     // Identify user to register online presence
     socketRef.current.emit('identify', {
@@ -52,7 +70,7 @@ function App() {
         socketRef.current = null;
       }
     };
-  }, [token, user]);
+  }, [user]);
 
   const handleAcceptInvite = (roomId) => {
     setGlobalInvite(null);
@@ -107,10 +125,10 @@ function App() {
 
           <div className="nav-links">
             <Link to="/" className="nav-link">Features</Link>
-            {localStorage.getItem('token') ? (
+            {user ? (
               <>
                 <Link to="/dashboard" className="nav-link">Dashboard</Link>
-                <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login'; }} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-danger)' }}>
+                <button onClick={handleLogout} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-danger)' }}>
                   <LogOut size={16} /> <span className="hide-on-mobile">Sign Out</span>
                 </button>
               </>
