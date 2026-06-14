@@ -9,7 +9,6 @@ const dotenv = require('dotenv');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
-const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 const { db, dbGet, dbAll, dbRun } = require('./db');
 
@@ -23,25 +22,42 @@ app.use(cookieParser());
 const JWT_SECRET = process.env.JWT_SECRET || 'studysync_secret_key_123456';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_123456';
 
-// Email Transporter
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  family: 4, // Force IPv4 to avoid network unreachable (ENETUNREACH) errors in IPv6-constrained environments
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+// Helper to send email via Resend API
+const sendVerificationEmail = async (email, verifyUrl) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log('MOCK EMAIL VERIFIER - Click here to verify:', verifyUrl);
+    return { mock: true, url: verifyUrl };
   }
-});
 
-// Verify email connection at startup
-if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  transporter.verify()
-    .then(() => console.log('✅ EMAIL SERVICE READY - Connected to Gmail SMTP'))
-    .catch((err) => console.error('❌ EMAIL SERVICE FAILED:', err.message));
+  const fromEmail = process.env.EMAIL_FROM || 'StudySync <onboarding@resend.dev>';
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: email,
+      subject: 'Verify your StudySync Account',
+      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
+    })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to send email via Resend.');
+  }
+  return data;
+};
+
+// Verify Resend configuration at startup
+if (process.env.RESEND_API_KEY) {
+  console.log('✅ EMAIL SERVICE READY - Resend API Key configured');
 } else {
-  console.log('⚠️ EMAIL SERVICE DISABLED - EMAIL_USER or EMAIL_PASS not set');
+  console.log('⚠️ EMAIL SERVICE IN MOCK MODE - RESEND_API_KEY not set');
 }
 
 // Login Rate Limiter (5 attempts per 15 mins)
@@ -84,25 +100,15 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Send Verification Email
     const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify/${verificationToken}`;
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Verify your StudySync Account',
-      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
-    };
-
-    try {
-      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        // Fire-and-forget: don't block the response waiting for email delivery
-        transporter.sendMail(mailOptions)
-          .then(() => console.log('Verification email sent to:', email))
-          .catch((emailErr) => console.error('Email sending failed:', emailErr));
-      } else {
-        console.log('MOCK EMAIL VERIFIER - Click here to verify:', verifyUrl);
-      }
-    } catch (emailErr) {
-      console.error('Email sending failed:', emailErr);
-    }
+    sendVerificationEmail(email, verifyUrl)
+      .then((result) => {
+        if (result && result.mock) {
+          console.log('MOCK EMAIL VERIFIER - Click here to verify:', verifyUrl);
+        } else {
+          console.log('Verification email sent to:', email);
+        }
+      })
+      .catch((emailErr) => console.error('Email sending failed:', emailErr.message));
 
     res.status(201).json({ message: 'User registered successfully! Please check your email to verify your account.' });
   } catch (err) {
@@ -142,25 +148,16 @@ app.post('/api/auth/resend-verification', async (req, res) => {
     await dbRun('UPDATE users SET verification_token = ? WHERE id = ?', [newToken, user.id]);
 
     const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify/${newToken}`;
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Verify your StudySync Account',
-      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
-    };
-
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log('Resend: Verification email sent to:', email);
+    try {
+      const result = await sendVerificationEmail(email, verifyUrl);
+      if (result && result.mock) {
+        res.json({ message: 'Verification link generated in mock mode (printed to server console).' });
+      } else {
         res.json({ message: 'Verification email sent! Please check your inbox (and spam folder).' });
-      } catch (emailErr) {
-        console.error('Resend email failed:', emailErr);
-        res.status(500).json({ error: `Email delivery failed: ${emailErr.message}` });
       }
-    } else {
-      console.log('MOCK: Verify URL:', verifyUrl);
-      res.status(500).json({ error: 'Email service is not configured on this server.' });
+    } catch (emailErr) {
+      console.error('Resend email failed:', emailErr);
+      res.status(500).json({ error: `Email delivery failed: ${emailErr.message}` });
     }
   } catch (err) {
     console.error(err);
