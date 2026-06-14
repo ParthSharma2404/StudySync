@@ -117,7 +117,7 @@ function App() {
             ) : (
               <>
                 <Link to="/login" style={{ fontSize: '0.9rem', fontWeight: '500' }}>Sign In</Link>
-                <Link to="/register" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem', textShadow: 'none' }}>
+                <Link to="/register" style={{ padding: '8px 16px', fontSize: '0.9rem', fontWeight: '600', background: '#2b2b2b', color: '#fff', borderRadius: '8px', textDecoration: 'none' }}>
                   Get Started
                 </Link>
               </>
