@@ -65,12 +65,12 @@ app.post('/api/auth/login', async (req, res) => {
 
     const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
     if (!user) {
-      return res.status(400).json({ error: 'Invalid credentials.' });
+      return res.status(400).json({ error: 'No account found with this email. Please register.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials.' });
+      return res.status(400).json({ error: 'Incorrect password. Please try again.' });
     }
 
     // Update Streak check on login
