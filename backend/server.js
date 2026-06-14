@@ -81,8 +81,10 @@ app.post('/api/auth/register', async (req, res) => {
 
     try {
       if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        await transporter.sendMail(mailOptions);
-        console.log('Verification email sent to:', email);
+        // Fire-and-forget: don't block the response waiting for email delivery
+        transporter.sendMail(mailOptions)
+          .then(() => console.log('Verification email sent to:', email))
+          .catch((emailErr) => console.error('Email sending failed:', emailErr));
       } else {
         console.log('MOCK EMAIL VERIFIER - Click here to verify:', verifyUrl);
       }
