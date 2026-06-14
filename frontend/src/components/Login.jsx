@@ -6,11 +6,13 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendStatus, setResendStatus] = useState(''); // '', 'sending', 'sent', 'error'
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setResendStatus('');
     setLoading(true);
 
     try {
@@ -34,6 +36,24 @@ function Login() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendStatus('sending');
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setResendStatus('sent');
+    } catch (err) {
+      setResendStatus('error');
+    }
+  };
+
+  const showResendButton = error && error.toLowerCase().includes('verify your email');
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 120px)' }}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '40px' }}>
@@ -45,6 +65,30 @@ function Login() {
         {error && (
           <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem' }}>
             {error}
+            {showResendButton && (
+              <div style={{ marginTop: '10px' }}>
+                {resendStatus === 'sent' ? (
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>✓ Verification email resent! Check your inbox.</span>
+                ) : (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resendStatus === 'sending'}
+                    style={{
+                      background: 'rgba(99, 102, 241, 0.15)',
+                      color: '#818cf8',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    {resendStatus === 'sending' ? 'Sending...' : 'Resend Verification Email'}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 

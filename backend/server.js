@@ -116,6 +116,40 @@ app.get('/api/auth/verify/:token', async (req, res) => {
   }
 });
 
+app.post('/api/auth/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+    if (!user) return res.status(400).json({ error: 'No account found with this email.' });
+    if (user.is_verified === 1) return res.status(400).json({ error: 'This account is already verified.' });
+
+    // Generate a fresh verification token
+    const newToken = crypto.randomUUID();
+    await dbRun('UPDATE users SET verification_token = ? WHERE id = ?', [newToken, user.id]);
+
+    const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify/${newToken}`;
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Verify your StudySync Account',
+      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
+    };
+
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      transporter.sendMail(mailOptions)
+        .then(() => console.log('Resend: Verification email sent to:', email))
+        .catch((emailErr) => console.error('Resend email failed:', emailErr));
+    }
+
+    res.json({ message: 'Verification email resent! Please check your inbox.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
