@@ -1,10 +1,10 @@
-import { fetchApi } from '../utils/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Camera, Monitor, LogOut, LogIn, CheckCircle2, Play, Users, Link as LinkIcon, Trash2, XCircle, Share2, ClipboardList, Target, Clock, AlertCircle, Headphones } from 'lucide-react';
-import io from 'socket.io-client';
+import { Play, Pause, Square, Plus, Trash2, Camera, Mic, MicOff, VideoOff, ScreenShare, Volume2, ShieldAlert, Award, MessageSquare, Clock, Users, X, Monitor, LogOut, LogIn, CheckCircle2, Link as LinkIcon, Share2, ClipboardList, Target, AlertCircle, Headphones } from 'lucide-react';
 import Peer from 'peerjs';
 import confetti from 'canvas-confetti';
+import { fetchApi } from '../utils/api';
+import { useSocket } from '../context/SocketContext';
 
 const AUDIO_TRACKS = {
   none: { name: 'No Ambient Audio', url: null },
@@ -86,31 +86,17 @@ function StudyRoom({ currentUser }) {
   const idleTicksRef = useRef(0); 
   const audioRef = useRef(null);
 
-  
+  const globalSocket = useSocket();
 
   // --- WEBSOCKET & PEERJS ROOM SYNC ---
   useEffect(() => {
-    if (!user) return;
+    if (!user || !globalSocket) return;
 
-    // Connect to WebSocket server
-    socketRef.current = io();
-
-    // Identify to backend
-    socketRef.current.emit('identify', {
-      userId: user.id,
-      username: user.username
-    });
-
-    // Listen for online users
-    socketRef.current.on('online-users-updated', (users) => {
-      setOnlineUsersList(users);
-    });
+    socketRef.current = globalSocket;
 
     // Fetch room configurations from API
     if (!isSolo) {
-      fetchApi(`/api/rooms/${roomId}`, {
-        
-      })
+      fetchApi(`/api/rooms/${roomId}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.error) {
@@ -127,8 +113,8 @@ function StudyRoom({ currentUser }) {
       setTasks(localTasks);
     }
 
-    // Set up WebSocket listeners
-    socketRef.current.on('room-state-updated', ({ moderatorId, timerStarted: isTimerStarted, roomStartTime, participants, ambientAudio: serverAudio }) => {
+    const handleOnlineUsersUpdated = (users) => setOnlineUsersList(users);
+    const handleRoomStateUpdated = ({ moderatorId, timerStarted: isTimerStarted, roomStartTime, participants, ambientAudio: serverAudio }) => {
       setModeratorId(moderatorId);
       setParticipants(participants);
       if (serverAudio) setAmbientAudio(serverAudio);
@@ -144,51 +130,53 @@ function StudyRoom({ currentUser }) {
            startStopwatch(roomStartTime);
         }
       }
-    });
-
-    socketRef.current.on('room-timer-started', ({ roomStartTime }) => {
+    };
+    const handleRoomTimerStarted = ({ roomStartTime }) => {
       setTimerStarted(true);
       startStopwatch(roomStartTime);
-    });
-
-
-
-    socketRef.current.on('tasks-updated', (updatedTasks) => {
-      setTasks(updatedTasks);
-    });
-
-    socketRef.current.on('ambient-audio-updated', ({ trackId }) => {
-      setAmbientAudio(trackId);
-    });
-
-    socketRef.current.on('notification', ({ message }) => {
-      showToast(message);
-    });
-
-    socketRef.current.on('task-announcement', ({ username, taskTitle, timeSpentString }) => {
-      const alertMsg = `🎉 ${username} completed "${taskTitle}" in ${timeSpentString}!`;
+    };
+    const handleTasksUpdated = (updatedTasks) => setTasks(updatedTasks);
+    const handleAmbientAudioUpdated = ({ trackId }) => setAmbientAudio(trackId);
+    const handleNotification = ({ message }) => alert(`Notification: ${message}`);
+    const handleTaskAnnouncement = ({ username, taskTitle, timeSpentString }) => {
+      const alertMsg = `${username} completed "${taskTitle}" after ${timeSpentString}!`;
       setAnnouncements((prev) => [...prev, alertMsg]);
       setTimeout(() => {
         setAnnouncements((prev) => prev.filter((msg) => msg !== alertMsg));
       }, 7000);
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.8 } });
-    });
-
-    socketRef.current.on('room-closed', () => {
+    };
+    const handleRoomClosed = () => {
       alert('The host has ended this study session. Returning to dashboard.');
       navigate('/dashboard');
-    });
+    };
+    const handleBadgeEarned = (badge) => alert(`🏆 Achievement Unlocked: ${badge.name}! \n${badge.description}`);
 
-    socketRef.current.on('badge-earned', (badge) => {
-      alert(`🏆 Achievement Unlocked: ${badge.name}! \n${badge.description}`);
-    });
+    globalSocket.on('online-users-updated', handleOnlineUsersUpdated);
+    globalSocket.on('room-state-updated', handleRoomStateUpdated);
+    globalSocket.on('room-timer-started', handleRoomTimerStarted);
+    globalSocket.on('tasks-updated', handleTasksUpdated);
+    globalSocket.on('ambient-audio-updated', handleAmbientAudioUpdated);
+    globalSocket.on('notification', handleNotification);
+    globalSocket.on('task-announcement', handleTaskAnnouncement);
+    globalSocket.on('room-closed', handleRoomClosed);
+    globalSocket.on('badge-earned', handleBadgeEarned);
 
     return () => {
-      if (socketRef.current) socketRef.current.disconnect();
+      globalSocket.off('online-users-updated', handleOnlineUsersUpdated);
+      globalSocket.off('room-state-updated', handleRoomStateUpdated);
+      globalSocket.off('room-timer-started', handleRoomTimerStarted);
+      globalSocket.off('tasks-updated', handleTasksUpdated);
+      globalSocket.off('ambient-audio-updated', handleAmbientAudioUpdated);
+      globalSocket.off('notification', handleNotification);
+      globalSocket.off('task-announcement', handleTaskAnnouncement);
+      globalSocket.off('room-closed', handleRoomClosed);
+      globalSocket.off('badge-earned', handleBadgeEarned);
+      
       if (peerRef.current) peerRef.current.destroy();
       stopStreams();
     };
-  }, [user, roomId, isSolo, navigate]);
+  }, [user, roomId, isSolo, navigate, globalSocket]);
 
   // --- AUDIO SYNC EFFECT ---
   useEffect(() => {

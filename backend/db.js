@@ -108,6 +108,19 @@ const initDb = async () => {
         PRIMARY KEY (user_id, badge_id)
       )
     `);
+
+    // Notifications Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        type TEXT NOT NULL,
+        related_id TEXT,
+        is_read INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     
     await client.query('COMMIT');
     console.log('Connected to PostgreSQL and migrations applied.');

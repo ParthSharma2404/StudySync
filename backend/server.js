@@ -614,7 +614,40 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// --- FRIENDS ROUTES ---
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    const notifications = await dbAll(
+      'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
+      [req.user.id]
+    );
+    res.json({ notifications });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error fetching notifications.' });
+  }
+});
+
+app.post('/api/notifications/mark-read', authenticateToken, async (req, res) => {
+  try {
+    await dbRun('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', [req.user.id]);
+    res.json({ message: 'Notifications marked as read' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error marking notifications read.' });
+  }
+});
+
+app.post('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    await dbRun('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    res.json({ message: 'Notification marked as read' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error marking notification read.' });
+  }
+});
+
+// --- FRIEND ROUTES ---
 app.post('/api/friends/request', authenticateToken, async (req, res) => {
   try {
     const { targetUsername } = req.body;
@@ -640,10 +673,17 @@ app.post('/api/friends/request', authenticateToken, async (req, res) => {
       [reqId, req.user.id, targetUser.id]
     );
 
+    const notifId = crypto.randomUUID();
+    await dbRun(
+      "INSERT INTO notifications (id, user_id, message, type, related_id) VALUES (?, ?, ?, 'friend_request', ?)",
+      [notifId, targetUser.id, `New friend request from ${req.user.username}!`, reqId]
+    );
+
     const targetSocket = onlineUsers[targetUser.id];
     if (targetSocket) {
       io.to(targetSocket.socketId).emit('notification', { message: `New friend request from ${req.user.username}!` });
       io.to(targetSocket.socketId).emit('friend-request-received');
+      io.to(targetSocket.socketId).emit('new-notification');
     }
 
     res.status(200).json({ message: 'Friend request sent!' });
@@ -663,10 +703,19 @@ app.post('/api/friends/accept', authenticateToken, async (req, res) => {
 
     await dbRun("UPDATE friendships SET status = 'accepted' WHERE id = ?", [requestId]);
 
+    const notifId = crypto.randomUUID();
+    await dbRun(
+      "INSERT INTO notifications (id, user_id, message, type) VALUES (?, ?, ?, 'friend_accept')",
+      [notifId, request.sender_id, `${req.user.username} accepted your friend request!`]
+    );
+
+    await dbRun("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND type = 'friend_request' AND related_id = ?", [req.user.id, requestId]);
+
     const senderSocket = onlineUsers[request.sender_id];
     if (senderSocket) {
       io.to(senderSocket.socketId).emit('notification', { message: `${req.user.username} accepted your friend request!` });
       io.to(senderSocket.socketId).emit('friend-request-accepted');
+      io.to(senderSocket.socketId).emit('new-notification');
     }
 
     res.status(200).json({ message: 'Friend request accepted!' });
@@ -689,6 +738,30 @@ app.post('/api/friends/reject', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error rejecting friend request.' });
+  }
+});
+
+app.post('/api/friends/remove', authenticateToken, async (req, res) => {
+  try {
+    const { friendId } = req.body;
+    const friendship = await dbGet(
+      "SELECT * FROM friendships WHERE status = 'accepted' AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))",
+      [req.user.id, friendId, friendId, req.user.id]
+    );
+    
+    if (!friendship) return res.status(404).json({ error: 'Friendship not found.' });
+
+    await dbRun('DELETE FROM friendships WHERE id = ?', [friendship.id]);
+    
+    const otherSocket = onlineUsers[friendId];
+    if (otherSocket) {
+      io.to(otherSocket.socketId).emit('friend-removed');
+    }
+    
+    res.status(200).json({ message: 'Friend removed.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error removing friend.' });
   }
 });
 

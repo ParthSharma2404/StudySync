@@ -1,8 +1,8 @@
-import { fetchApi } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Flame, Clock, Award, Users, BookOpen, GraduationCap, X, LogOut, Target, BarChart2, TrendingUp, Info, CheckCircle2, UserPlus, Check, X as XIcon, Gift, Sparkles } from 'lucide-react';
-import io from 'socket.io-client';
+import { Sparkles, Trophy, Flame, Clock, Target, Play, LogOut, Search, Plus, UserPlus, Users, ArrowRight, X as XIcon, Check, Gift, Copy, Bell, Trash2, BookOpen, GraduationCap } from 'lucide-react';
+import { fetchApi } from '../utils/api';
+import { useSocket } from '../context/SocketContext';
 
 const mockStudyData = [
   { day: 'Mon', hours: 2.5 },
@@ -82,10 +82,10 @@ function Dashboard({ currentUser }) {
     fetchDashboardData();
   }, []);
 
+  const socket = useSocket();
+
   useEffect(() => {
-    if (!data?.user) return;
-    const socket = io();
-    socket.emit('identify', { userId: data.user.id, username: data.user.username });
+    if (!socket) return;
     
     socket.on('online-users-updated', (users) => {
       setOnlineFriends(users.map(u => u.userId));
@@ -107,8 +107,21 @@ function Dashboard({ currentUser }) {
       }
     });
 
-    return () => socket.disconnect();
-  }, [data?.user]);
+    socket.on('friend-removed', async () => {
+      const res = await fetchApi('/api/friends', {  });
+      if (res.ok) {
+        const d = await res.json();
+        setFriends(d.friends);
+      }
+    });
+
+    return () => {
+      socket.off('online-users-updated');
+      socket.off('friend-request-received');
+      socket.off('friend-request-accepted');
+      socket.off('friend-removed');
+    };
+  }, [socket]);
 
   const handleSendFriendRequest = async (e) => {
     e.preventDefault();
@@ -365,21 +378,33 @@ function Dashboard({ currentUser }) {
                 friends.map(friend => {
                   const isOnline = onlineFriends.includes(friend.id);
                   return (
-                    <div key={friend.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', transition: 'all 0.2s ease' }}>
+                    <div key={friend.id} className="friend-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'var(--color-bg-slate)', borderRadius: '12px', border: '1px solid var(--color-border)', transition: 'all 0.2s ease', position: 'relative' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ position: 'relative' }}>
                           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                             <Users size={20} color="#818cf8" />
                           </div>
-                          <div style={{ position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 6px', borderRadius: '50px', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', whiteSpace: 'nowrap' }}>
+                          <div style={{ position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 6px', borderRadius: '50px', border: '2px solid var(--color-surface)', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', whiteSpace: 'nowrap' }}>
                             Lv {Math.floor((friend.xp || 0) / 100) + 1}
                           </div>
-                          <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: isOnline ? '#10b981' : '#9ca3af', border: '2px solid #fff' }}></div>
+                          <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '12px', height: '12px', borderRadius: '50%', background: isOnline ? '#10b981' : '#64748b', border: '2px solid var(--color-surface)' }}></div>
                         </div>
                         <div style={{ marginLeft: '6px' }}>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-title)' }}>{friend.username}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{isOnline ? 'Online' : 'Offline'}</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text-title)' }}>{friend.username}</div>
+                          <div style={{ fontSize: '0.8rem', color: isOnline ? '#10b981' : 'var(--color-text-muted)', fontWeight: isOnline ? 600 : 400 }}>{isOnline ? 'Online' : 'Offline'}</div>
                         </div>
+                      </div>
+                      
+                      <div className="friend-actions">
+                        <button 
+                          onClick={() => handleRemoveFriend(friend.id)}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '6px', borderRadius: '8px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Remove Friend"
+                          onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   );
