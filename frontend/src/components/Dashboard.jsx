@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Trophy, Flame, Clock, Target, Play, LogOut, Search, Plus, UserPlus, Users, ArrowRight, X as XIcon, Check, Gift, Copy, Bell, Trash2, BookOpen, GraduationCap } from 'lucide-react';
+import { Sparkles, Trophy, Flame, Clock, Target, Play, LogOut, Search, Plus, UserPlus, Users, ArrowRight, X as XIcon, X, Check, Gift, Copy, Bell, Trash2, BookOpen, GraduationCap, TrendingUp, BarChart2, Info, Award, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 
