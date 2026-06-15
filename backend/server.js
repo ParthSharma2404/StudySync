@@ -661,7 +661,7 @@ app.post('/api/friends/accept', authenticateToken, async (req, res) => {
     
     if (request.receiver_id !== req.user.id) return res.status(403).json({ error: 'Unauthorized.' });
 
-    await dbRun('UPDATE friendships SET status = "accepted" WHERE id = ?', [requestId]);
+    await dbRun("UPDATE friendships SET status = 'accepted' WHERE id = ?", [requestId]);
 
     const senderSocket = onlineUsers[request.sender_id];
     if (senderSocket) {

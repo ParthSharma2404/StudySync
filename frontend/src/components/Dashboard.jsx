@@ -49,8 +49,8 @@ function Dashboard({ currentUser }) {
         if (!dashResponse.ok) throw new Error('Failed to load profile.');
         const dashData = await dashResponse.json();
         setData(dashData);
-        // If has_seen_welcome is falsy (0, null, undefined) or string "0", show the popup.
-        if (dashData.user && (!dashData.user.has_seen_welcome || dashData.user.has_seen_welcome === "0")) {
+        // Show welcome popup only for new users who haven't seen it yet
+        if (dashData.user && !dashData.user.has_seen_welcome) {
           setShowWelcomePopup(true);
         }
 
