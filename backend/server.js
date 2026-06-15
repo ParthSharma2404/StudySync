@@ -1039,16 +1039,18 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('tasks-updated', tasks);
   });
 
-  socket.on('task-complete', async ({ taskId }) => {
+  socket.on('task-toggle', async ({ taskId }) => {
     const { roomId, userId } = socket;
     if (!roomId || !userId || !roomsState[roomId]) return;
 
     const task = await dbGet('SELECT * FROM tasks WHERE id = ?', [taskId]);
     if (!task) return;
 
+    const newStatus = task.is_completed ? 0 : 1;
+
     await dbRun(
-      'UPDATE tasks SET is_completed = 1, completed_by = ? WHERE id = ?',
-      [userId, taskId]
+      'UPDATE tasks SET is_completed = ?, completed_by = ? WHERE id = ?',
+      [newStatus, newStatus ? userId : null, taskId]
     );
 
     const participant = roomsState[roomId].participants[socket.id];
@@ -1057,16 +1059,18 @@ io.on('connection', (socket) => {
     const tasks = await dbAll('SELECT t.id, t.title, t.is_completed, t.time_spent_seconds, t.owner_id, u_owner.username as owner_name, u.username as completed_by_name FROM tasks t LEFT JOIN users u ON t.completed_by = u.id LEFT JOIN users u_owner ON t.owner_id = u_owner.id WHERE t.room_id = ?', [roomId]);
     io.to(roomId).emit('tasks-updated', tasks);
 
-    const timeSpent = task.time_spent_seconds;
-    const minutes = Math.floor(timeSpent / 60);
-    const seconds = timeSpent % 60;
-    const timeString = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+    if (newStatus === 1) {
+      const timeSpent = task.time_spent_seconds;
+      const minutes = Math.floor(timeSpent / 60);
+      const seconds = timeSpent % 60;
+      const timeString = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 
-    io.to(roomId).emit('task-announcement', {
-      username,
-      taskTitle: task.title,
-      timeSpentString: timeString
-    });
+      io.to(roomId).emit('task-announcement', {
+        username,
+        taskTitle: task.title,
+        timeSpentString: timeString
+      });
+    }
 
     const activeParticipantsCount = Object.keys(roomsState[roomId].participants).length;
     if (activeParticipantsCount >= 2) {

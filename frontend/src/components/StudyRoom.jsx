@@ -85,6 +85,7 @@ function StudyRoom({ currentUser }) {
   const lastFrameDataRef = useRef(null); 
   const idleTicksRef = useRef(0); 
   const audioRef = useRef(null);
+  const workspaceEnteredRef = useRef(false);
 
   const globalSocket = useSocket();
 
@@ -162,6 +163,28 @@ function StudyRoom({ currentUser }) {
     globalSocket.on('room-closed', handleRoomClosed);
     globalSocket.on('badge-earned', handleBadgeEarned);
 
+    // Auto-rejoin room if socket briefly drops and reconnects
+    const handleConnect = () => {
+      if (workspaceEnteredRef.current) {
+        if (!isSolo && peerRef.current) {
+          globalSocket.emit('join-room', {
+            roomId,
+            userId: user.id,
+            username: user.username,
+            peerId: peerRef.current.id
+          });
+        } else if (isSolo) {
+          globalSocket.emit('join-room', {
+            roomId: 'solo-focus',
+            userId: user.id,
+            username: user.username,
+            peerId: 'solo'
+          });
+        }
+      }
+    };
+    globalSocket.on('connect', handleConnect);
+
     return () => {
       globalSocket.off('online-users-updated', handleOnlineUsersUpdated);
       globalSocket.off('room-state-updated', handleRoomStateUpdated);
@@ -172,6 +195,7 @@ function StudyRoom({ currentUser }) {
       globalSocket.off('task-announcement', handleTaskAnnouncement);
       globalSocket.off('room-closed', handleRoomClosed);
       globalSocket.off('badge-earned', handleBadgeEarned);
+      globalSocket.off('connect', handleConnect);
       
       if (peerRef.current) peerRef.current.destroy();
       stopStreams();
@@ -314,6 +338,7 @@ function StudyRoom({ currentUser }) {
     setWebcamEnabled(true);
     setScreenEnabled(true);
     setWorkspaceEntered(true);
+    workspaceEnteredRef.current = true;
 
     if (!isSolo) {
       const customPeerId = user.id + '-' + Math.random().toString(36).substr(2, 5);
@@ -456,16 +481,21 @@ function StudyRoom({ currentUser }) {
     e.preventDefault();
     if (!newTaskTitle) return;
 
+    const randomId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    const newTask = {
+      id: randomId,
+      title: newTaskTitle,
+      is_completed: false,
+      time_spent_seconds: 0,
+      owner_id: user?.id,
+      owner_name: user?.username
+    };
+    
+    // Optimistic UI Update
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+
     if (isSolo) {
-      const randomId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-      const newTask = {
-        id: randomId,
-        title: newTaskTitle,
-        is_completed: false,
-        time_spent_seconds: 0
-      };
-      const updatedTasks = [...tasks, newTask];
-      setTasks(updatedTasks);
       localStorage.setItem('solo_tasks', JSON.stringify(updatedTasks));
     } else {
       socketRef.current.emit('task-create', { title: newTaskTitle });
@@ -474,21 +504,21 @@ function StudyRoom({ currentUser }) {
   };
 
   const handleToggleTask = (taskId) => {
+    // Optimistic UI update
+    const updatedTasks = tasks.map((t) => {
+      if (t.id === taskId) {
+        const completed = !t.is_completed;
+        if (completed) confetti({ particleCount: 80, spread: 60 });
+        return { ...t, is_completed: completed };
+      }
+      return t;
+    });
+    setTasks(updatedTasks);
+
     if (isSolo) {
-      const updatedTasks = tasks.map((t) => {
-        if (t.id === taskId) {
-          const wasCompleted = t.is_completed;
-          t.is_completed = !wasCompleted;
-          if (t.is_completed) {
-            confetti({ particleCount: 80, spread: 60 });
-          }
-        }
-        return t;
-      });
-      setTasks(updatedTasks);
       localStorage.setItem('solo_tasks', JSON.stringify(updatedTasks));
     } else {
-      socketRef.current.emit('task-complete', { taskId });
+      socketRef.current.emit('task-toggle', { taskId });
     }
   };
 
@@ -772,8 +802,8 @@ function StudyRoom({ currentUser }) {
                         ) : (
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
                             <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
-                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox">
-                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
+                                {task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                               </div>
                               <div style={{ flex: 1 }}>
                                 <span className="task-title">{task.title}</span>
@@ -816,8 +846,8 @@ function StudyRoom({ currentUser }) {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8 }}>
                             {peerTasks.map((task) => (
                               <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)' }}>
-                                <div className="task-checkbox" style={{ cursor: 'default', opacity: task.is_completed ? 1 : 0.3 }}>
-                                  <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
+                                  {task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                                 </div>
                                 <div style={{ flex: 1 }}>
                                   <span className="task-title" style={{ fontSize: '0.85rem' }}>{task.title}</span>
