@@ -15,7 +15,7 @@ const mockStudyData = [
 ];
 const maxHours = Math.max(...mockStudyData.map(d => d.hours));
 
-function Dashboard() {
+function Dashboard({ currentUser }) {
   const [data, setData] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [newRoomName, setNewRoomName] = useState('');
@@ -34,7 +34,7 @@ function Dashboard() {
   
 
   useEffect(() => {
-    if (!token) {
+    if (!currentUser) {
       navigate('/login');
       return;
     }
@@ -178,11 +178,7 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
+
 
   if (loading) {
     return (

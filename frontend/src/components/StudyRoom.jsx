@@ -14,7 +14,7 @@ const AUDIO_TRACKS = {
   stream: { name: 'Flowing Stream', url: 'https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg' }
 };
 
-function StudyRoom() {
+function StudyRoom({ currentUser }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const isSolo = roomId === 'solo-focus';
@@ -35,8 +35,7 @@ function StudyRoom() {
   const [ambientAudio, setAmbientAudio] = useState('none');
   const [audioVolume, setAudioVolume] = useState(0.5);
   
-  // User state
-  const [user, setUser] = useState(null);
+  const user = currentUser;
   const [participants, setParticipants] = useState([]);
   const [moderatorId, setModeratorId] = useState(null);
   
@@ -89,19 +88,9 @@ function StudyRoom() {
 
   
 
-  // Load current user profile from localStorage
-  useEffect(() => {
-    const cachedUser = localStorage.getItem('user');
-    if (cachedUser) {
-      setUser(JSON.parse(cachedUser));
-    } else {
-      navigate('/login');
-    }
-  }, [navigate]);
-
   // --- WEBSOCKET & PEERJS ROOM SYNC ---
   useEffect(() => {
-    if (!user || !token) return;
+    if (!user) return;
 
     // Connect to WebSocket server
     socketRef.current = io();
@@ -199,7 +188,7 @@ function StudyRoom() {
       if (peerRef.current) peerRef.current.destroy();
       stopStreams();
     };
-  }, [user, roomId, token, isSolo, navigate]);
+  }, [user, roomId, isSolo, navigate]);
 
   // --- AUDIO SYNC EFFECT ---
   useEffect(() => {

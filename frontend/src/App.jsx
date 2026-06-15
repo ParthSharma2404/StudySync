@@ -83,10 +83,27 @@ function App() {
 
   // Protected route wrapper
   const ProtectedRoute = ({ children }) => {
-    if (!localStorage.getItem('token')) {
+    if (loadingUser) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0b0c10' }}>
+          <div style={{ color: '#8b5cf6', fontSize: '1.2rem', fontWeight: 600 }}>Loading StudySync...</div>
+        </div>
+      );
+    }
+    if (!user) {
       return <Navigate to="/login" replace />;
     }
     return children;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetchApi('/api/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    setUser(null);
+    window.location.href = '/login';
   };
 
   return (
@@ -147,14 +164,14 @@ function App() {
       {/* Main Pages Router */}
       <main style={{ minHeight: 'calc(100vh - 70px)' }}>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Landing currentUser={user} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route 
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Dashboard currentUser={user} />
               </ProtectedRoute>
             } 
           />
@@ -162,7 +179,7 @@ function App() {
             path="/room/:roomId" 
             element={
               <ProtectedRoute>
-                <StudyRoom />
+                <StudyRoom currentUser={user} />
               </ProtectedRoute>
             } 
           />

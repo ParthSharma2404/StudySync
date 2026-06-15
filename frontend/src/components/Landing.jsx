@@ -29,8 +29,7 @@ const ScrollRevealSection = ({ children, style, className }) => {
   );
 };
 
-function Landing() {
-  const token = localStorage.getItem('token');
+function Landing({ currentUser }) {
   
   // Live User Ticker State
   const [activeUsers, setActiveUsers] = useState(1243);
@@ -90,7 +89,7 @@ function Landing() {
             Transform solitary study into a highly focused, collaborative experience. Track active hours, stream your progress, and crush your objectives in persistent virtual rooms.
           </p>
           <div className="animate-fade-up delay-4" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {token ? (
+            {currentUser ? (
               <Link to="/dashboard" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '12px', boxShadow: '0 8px 25px rgba(99, 102, 241, 0.4)' }}>
                 Go to Dashboard
                 <ArrowRight size={20} />
