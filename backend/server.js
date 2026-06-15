@@ -7,12 +7,14 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const dotenv = require('dotenv');
 const path = require('path');
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { v4: uuidv4 } = require('uuid');
 const { db, dbGet, dbAll, dbRun } = require('./db');
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 
 const app = express();
 app.use(cors({ origin: true, credentials: true })); // Allow cookies
@@ -491,7 +493,7 @@ app.post('/api/auth/logout', (req, res) => {
 // --- DASHBOARD API ---
 app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
   try {
-    const user = await dbGet('SELECT username, email, current_streak, longest_streak, total_study_seconds, xp, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await dbGet('SELECT username, email, current_streak, longest_streak, total_study_seconds, xp, has_seen_welcome, created_at FROM users WHERE id = ?', [req.user.id]);
     const roomsJoined = await dbAll(
       'SELECT DISTINCT r.id, r.name, r.description, r.created_at FROM study_sessions s JOIN rooms r ON s.room_id = r.id WHERE s.user_id = ?',
       [req.user.id]
@@ -528,6 +530,17 @@ app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error fetching dashboard data.' });
+  }
+});
+
+// --- WELCOME SEEN ---
+app.post('/api/user/welcome-seen', authenticateToken, async (req, res) => {
+  try {
+    await dbRun('UPDATE users SET has_seen_welcome = 1 WHERE id = ?', [req.user.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error updating welcome status.' });
   }
 });
 

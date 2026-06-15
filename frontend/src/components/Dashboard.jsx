@@ -1,7 +1,7 @@
 import { fetchApi } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Flame, Clock, Award, Users, BookOpen, GraduationCap, X, LogOut, Target, BarChart2, TrendingUp, Info, CheckCircle2, UserPlus, Check, X as XIcon } from 'lucide-react';
+import { Flame, Clock, Award, Users, BookOpen, GraduationCap, X, LogOut, Target, BarChart2, TrendingUp, Info, CheckCircle2, UserPlus, Check, X as XIcon, Gift, Sparkles } from 'lucide-react';
 import io from 'socket.io-client';
 
 const mockStudyData = [
@@ -29,6 +29,7 @@ function Dashboard({ currentUser }) {
   const [friendError, setFriendError] = useState('');
   const [friendSuccess, setFriendSuccess] = useState('');
   const [onlineFriends, setOnlineFriends] = useState([]);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const navigate = useNavigate();
 
   
@@ -48,6 +49,10 @@ function Dashboard({ currentUser }) {
         if (!dashResponse.ok) throw new Error('Failed to load profile.');
         const dashData = await dashResponse.json();
         setData(dashData);
+        // If has_seen_welcome is falsy (0, null, undefined) or string "0", show the popup.
+        if (dashData.user && (!dashData.user.has_seen_welcome || dashData.user.has_seen_welcome === "0")) {
+          setShowWelcomePopup(true);
+        }
 
         // Fetch Study Rooms
         const roomsResponse = await fetchApi('/api/rooms', {
@@ -178,6 +183,15 @@ function Dashboard({ currentUser }) {
     }
   };
 
+  const dismissWelcome = async () => {
+    setShowWelcomePopup(false);
+    try {
+      await fetchApi('/api/user/welcome-seen', { method: 'POST' });
+    } catch (err) {
+      console.error('Error dismissing welcome:', err);
+    }
+  };
+
 
 
   if (loading) {
@@ -205,8 +219,9 @@ function Dashboard({ currentUser }) {
   const currentRank = getRankInfo(currentLevel);
 
   return (
-    <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
-      {/* Top Welcome Bar */}
+    <>
+      <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+        {/* Top Welcome Bar */}
       <div className="welcome-header hide-on-mobile" style={{ marginBottom: '40px' }}>
         <h1 style={{ fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-title)', lineHeight: '1.2' }}>
           Welcome back,<br className="mobile-break" /> {user?.username || 'Learner'}.
@@ -673,7 +688,119 @@ function Dashboard({ currentUser }) {
           </div>
         </div>
       )}
-    </div>
+
+      </div>
+
+      {/* Welcome Congratulations Popup */}
+      {showWelcomePopup && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 99999, padding: '24px'
+        }}
+        onClick={(e) => e.target === e.currentTarget && dismissWelcome()}
+        >
+          <div style={{
+            background: '#ffffff',
+            border: '3px solid #2b2b2b',
+            borderRadius: '24px',
+            padding: '48px 40px',
+            maxWidth: '460px',
+            width: '100%',
+            textAlign: 'center',
+            position: 'relative',
+            boxShadow: '8px 8px 0 rgba(99,102,241,0.3)'
+          }}>
+            {/* Confetti-like decorative dots */}
+            <div style={{ position: 'absolute', top: '-12px', left: '20%', width: '10px', height: '10px', borderRadius: '50%', background: '#fbbf24', animation: 'confettiFall 1.5s ease-out infinite' }}></div>
+            <div style={{ position: 'absolute', top: '-8px', right: '25%', width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1', animation: 'confettiFall 1.8s ease-out infinite 0.3s' }}></div>
+            <div style={{ position: 'absolute', top: '-15px', left: '45%', width: '12px', height: '12px', borderRadius: '2px', background: '#10b981', transform: 'rotate(45deg)', animation: 'confettiFall 2s ease-out infinite 0.6s' }}></div>
+            <div style={{ position: 'absolute', top: '-10px', right: '15%', width: '9px', height: '9px', borderRadius: '50%', background: '#f43f5e', animation: 'confettiFall 1.6s ease-out infinite 0.2s' }}></div>
+
+            {/* Gift Icon */}
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #fef08a 0%, #fbbf24 100%)',
+              border: '3px solid #2b2b2b',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px auto',
+              boxShadow: '4px 4px 0 rgba(0,0,0,0.1)',
+              animation: 'bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s both'
+            }}>
+              <Gift size={36} color="#2b2b2b" />
+            </div>
+
+            {/* Title */}
+            <h2 style={{
+              fontSize: '1.8rem', fontWeight: 800, color: '#2b2b2b',
+              marginBottom: '8px', letterSpacing: '-0.02em'
+            }}>
+              Welcome to StudySync! 🎉
+            </h2>
+
+            {/* Subtitle */}
+            <p style={{
+              color: '#64748b', fontSize: '1rem', lineHeight: '1.6',
+              marginBottom: '24px'
+            }}>
+              We're thrilled to have you here. To kick-start your journey, here's a welcome gift:
+            </p>
+
+            {/* XP Reward Badge */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '10px',
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(168,85,247,0.1) 100%)',
+              border: '2px solid #6366f1',
+              borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px',
+              padding: '14px 28px',
+              marginBottom: '24px',
+              boxShadow: '4px 4px 0 rgba(99,102,241,0.15)'
+            }}>
+              <Sparkles size={22} color="#6366f1" />
+              <span style={{
+                fontSize: '1.3rem', fontWeight: 800, color: '#6366f1',
+                letterSpacing: '-0.01em'
+              }}>
+                +50 XP Bonus!
+              </span>
+            </div>
+
+            {/* Explanation */}
+            <p style={{
+              color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5',
+              marginBottom: '32px'
+            }}>
+              You've already earned your first 50 XP — that's half a level! Keep studying to unlock ranks and maintain daily streaks.
+            </p>
+
+            {/* CTA Button */}
+            <button
+              onClick={dismissWelcome}
+              className="pro-btn pro-btn-primary"
+              style={{
+                width: '100%', padding: '16px', borderRadius: '16px',
+                fontSize: '1.05rem', fontWeight: 700,
+                background: '#2b2b2b', color: '#fff', border: '2px solid #2b2b2b',
+                cursor: 'pointer',
+                boxShadow: '4px 4px 0 rgba(0,0,0,0.2)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '6px 6px 0 rgba(0,0,0,0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '4px 4px 0 rgba(0,0,0,0.2)';
+              }}
+            >
+              Let's Get Started! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
