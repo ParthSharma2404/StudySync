@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Mail, BookOpen, LogOut, Bell } from 'lucide-react';
+import { Mail, BookOpen, LogOut, Bell, Sun, Moon } from 'lucide-react';
 import { SocketProvider, useSocket } from './context/SocketContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import NotificationsDropdown from './components/NotificationsDropdown';
 import Landing from './components/Landing';
 import Login from './components/Login';
@@ -29,6 +30,21 @@ function App() {
       return () => socket.off('room-invite-received', handleInvite);
     }, [socket]);
     return null;
+  };
+
+  // Theme toggle button component
+  const ThemeToggle = () => {
+    const { theme, setTheme } = useTheme();
+    const isDark = theme === 'theme-dark';
+    return (
+      <button
+        onClick={() => setTheme(isDark ? 'theme-light' : 'theme-dark')}
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', padding: '4px' }}
+      >
+        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
+    );
   };
 
   useEffect(() => {
@@ -90,6 +106,7 @@ function App() {
 
   return (
     <SocketProvider user={user}>
+      <ThemeProvider>
       <Router>
         <GlobalSocketListener />
         {/* Global Invite Pop-up Modal */}
@@ -125,6 +142,7 @@ function App() {
             </Link>
 
             <div className="nav-links">
+              <ThemeToggle />
               <Link to="/" className="nav-link">Features</Link>
               {user ? (
                 <>
@@ -172,6 +190,7 @@ function App() {
           </Routes>
         </main>
       </Router>
+      </ThemeProvider>
     </SocketProvider>
   );
 }

@@ -294,12 +294,21 @@ function StudyRoom({ currentUser }) {
   const authorizeWebcam = async () => {
     setSetupError('');
     try {
+      // Adaptive video quality based on network conditions
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const effectiveType = conn?.effectiveType || '4g';
+      const isSlowNetwork = ['slow-2g', '2g', '3g'].includes(effectiveType);
+      
+      const videoConstraints = isSlowNetwork
+        ? { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } }
+        : { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24 } };
+
       let stream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
       } catch (audioErr) {
         console.warn('Failed to get video+audio, falling back to video only:', audioErr);
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
       }
       localCameraStreamRef.current = stream;
       setWebcamEnabled(true);
@@ -617,7 +626,7 @@ function StudyRoom({ currentUser }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
               {/* Webcam auth box */}
-              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--color-bg-slate)', borderRadius: '12px', border: '1px solid var(--color-border-glass)' }}>
                 <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.1rem', marginBottom: '6px' }}>1. Webcam Feed (Presence verification)</h4>
                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>We scan this locally to verify you are sitting at your desk.</p>
                 
@@ -636,7 +645,7 @@ function StudyRoom({ currentUser }) {
               </div>
 
               {/* Screenshare auth box */}
-              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--color-bg-slate)', borderRadius: '12px', border: '1px solid var(--color-border-glass)' }}>
                 <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.1rem', marginBottom: '6px' }}>2. Tab Share (Anti-Cheat lock)</h4>
                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>Select the tab/screen where you will be reading your lecture or coding.</p>
                 <p style={{ color: '#f59e0b', fontSize: '0.75rem', marginBottom: '16px', fontStyle: 'italic', padding: '6px 12px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '6px' }}>Note: The browser may switch to the tab you share. Please return to this page to continue.</p>
@@ -675,7 +684,7 @@ function StudyRoom({ currentUser }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div>
                 <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
-                <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>
                   {isSolo ? 'Private Workspace' : `Room ID: ${roomId} • Moderator: ${participants.find(p => p.userId === moderatorId)?.username || 'System'}`}
                 </p>
               </div>
@@ -719,7 +728,7 @@ function StudyRoom({ currentUser }) {
                       <Play size={18} /> Start Study Session
                     </button>
                   ) : (
-                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
                   )}
                 </div>
               )}
@@ -746,7 +755,7 @@ function StudyRoom({ currentUser }) {
                 </select>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Volume</span>
                   <input 
                     type="range" 
                     min="0" 
@@ -759,7 +768,7 @@ function StudyRoom({ currentUser }) {
                 </div>
               </div>
               {!isSolo && moderatorId !== user?.id && (
-                <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '12px', fontStyle: 'italic' }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '12px', fontStyle: 'italic' }}>
                   * The room's ambient audio is controlled by the host. You can adjust your personal volume.
                 </p>
               )}
@@ -790,19 +799,19 @@ function StudyRoom({ currentUser }) {
 
               <div className="task-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {tasks.length === 0 ? (
-                  <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
                 ) : (
                   <>
                     {/* My Objectives */}
                     <div>
-                      <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
+                      <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid var(--color-border-glass)', paddingBottom: '4px' }}>My Objectives</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
-                          <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
+                          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
                         ) : (
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
                             <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
-                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
+                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid var(--color-border-glass)' }}>
                                 {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                               </div>
                               <div style={{ flex: 1 }}>
@@ -814,7 +823,7 @@ function StudyRoom({ currentUser }) {
                                   onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
                                   className="btn"
                                   style={{
-                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'rgba(255,255,255,0.03)',
+                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'var(--color-bg-hover)',
                                     border: '1px solid var(--color-border-glass)',
                                     padding: '4px 10px',
                                     fontSize: '0.75rem',
@@ -842,11 +851,11 @@ function StudyRoom({ currentUser }) {
                       const peerName = peerTasks[0]?.owner_name || 'Classmate';
                       return (
                         <div key={peerId}>
-                          <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
+                          <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '8px', borderBottom: '1px solid var(--color-border-glass)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8 }}>
                             {peerTasks.map((task) => (
-                              <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)' }}>
-                                <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
+                              <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'var(--color-bg-slate)' }}>
+                                <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid var(--color-border-glass)', opacity: task.is_completed ? 1 : 0.3 }}>
                                   {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                                 </div>
                                 <div style={{ flex: 1 }}>
@@ -883,7 +892,7 @@ function StudyRoom({ currentUser }) {
                     className="form-input" 
                     value={window.location.href} 
                     readOnly 
-                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
+                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'var(--color-bg-slate)', flex: 1 }}
                   />
                   <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                     {copiedLink ? 'Copied!' : 'Copy'}
@@ -891,7 +900,7 @@ function StudyRoom({ currentUser }) {
                 </div>
 
                 {/* Invite by Username */}
-                <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', borderTop: '1px solid var(--color-border-glass)', paddingTop: '10px' }}>
                   Invite by Username:
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -924,7 +933,7 @@ function StudyRoom({ currentUser }) {
               </div>
             )}
 
-            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px', marginTop: '10px' }}>
+            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid var(--color-border-glass)', paddingBottom: '8px', marginTop: '10px' }}>
               Active Peers ({participants.length || 1})
             </h3>
 
@@ -966,7 +975,7 @@ function StudyRoom({ currentUser }) {
                       {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
                     </span>
                   </div>
-                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'var(--color-bg-hover)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={12} /> {formatTime(p.studySeconds)}
                   </div>
                 </div>
