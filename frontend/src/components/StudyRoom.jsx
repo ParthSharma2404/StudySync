@@ -5,6 +5,7 @@ import Peer from 'peerjs';
 import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
+import './StudyRoom.css';
 
 const AUDIO_TRACKS = {
   none: { name: 'No Ambient Audio', url: null },
@@ -596,7 +597,7 @@ function StudyRoom({ currentUser }) {
   const showLobby = !workspaceEntered;
 
   return (
-    <div className="container" style={{ position: 'relative' }}>
+    <div className="premium-study-room container" style={{ position: 'relative' }}>
       {/* Hidden Audio Element */}
       <audio ref={audioRef} loop />
 

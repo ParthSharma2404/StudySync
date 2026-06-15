@@ -1,0 +1,147 @@
+/* StudyRoom.css - Premium Scoped Theme */
+
+.premium-study-room {
+  /* Premium Dark Mode */
+  --color-bg-deep: #020617;
+  --color-bg-slate: #0f172a;
+  --color-bg-hover: #1e293b;
+  
+  --color-border-glass: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.2);
+
+  --color-primary: #ffffff;
+  --color-primary-hover: #e2e8f0;
+  --color-primary-fg: #0f172a;
+  
+  --color-text-title: #f8fafc;
+  --color-text-main: #cbd5e1;
+  --color-text-muted: #94a3b8;
+
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Force background and text color for the room */
+  background-color: var(--color-bg-deep);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.premium-study-room * {
+  /* Override the default sketchy font in the premium room */
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.premium-study-room h1, 
+.premium-study-room h2, 
+.premium-study-room h3, 
+.premium-study-room h4, 
+.premium-study-room .timer-digits {
+  font-family: 'Outfit', -apple-system, sans-serif;
+}
+
+/* --- PROFESSIONAL DASHBOARD STYLES --- */
+.premium-study-room .pro-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.premium-study-room .pro-panel:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
+  border-color: var(--color-accent);
+}
+
+.premium-study-room .pro-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+}
+
+.premium-study-room .pro-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.premium-study-room .pro-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+}
+
+.premium-study-room .pro-btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border-glass);
+  color: var(--color-text-title);
+}
+
+.premium-study-room .pro-btn-secondary:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-hover);
+}
+
+.premium-study-room .pro-badge {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.premium-study-room .pro-badge:hover {
+  transform: scale(1.05);
+}
+
+.premium-study-room .pro-font {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Also override some basic button/form elements inside the room */
+.premium-study-room .btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border-glass);
+  color: var(--color-text-title);
+  border-radius: var(--radius-md);
+}
+
+.premium-study-room .btn-secondary:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-hover);
+}
+
+.premium-study-room .btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border-radius: var(--radius-md);
+}
+
+.premium-study-room .btn-danger:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.premium-study-room .form-input {
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border-glass);
+  color: var(--color-text-title);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.premium-study-room .form-input:focus {
+  border-color: var(--color-text-title);
+}
