@@ -41,8 +41,24 @@ const sendVerificationEmail = async (email, verifyUrl) => {
     body: JSON.stringify({
       from: fromEmail,
       to: email,
-      subject: 'Verify your StudySync Account',
-      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
+      subject: 'Verify your StudySync Account ✉️',
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #fdfbf7; border: 2px solid #2b2b2b; border-radius: 16px; overflow: hidden;">
+          <div style="background: #2b2b2b; padding: 24px 32px; text-align: center;">
+            <h1 style="color: #fdfbf7; font-size: 22px; margin: 0; letter-spacing: 1px;">📚 STUDYSYNC</h1>
+          </div>
+          <div style="padding: 40px 32px; text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16,185,129,0.12); border: 2px solid rgba(16,185,129,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; line-height: 64px;">✉️</div>
+            <h2 style="color: #2b2b2b; font-size: 20px; margin-bottom: 8px;">Verify Your Email</h2>
+            <p style="color: #5e5e5e; font-size: 14px; line-height: 1.6; margin-bottom: 28px;">Welcome to StudySync! Click the button below to verify your email address and start your study journey.</p>
+            <a href="${verifyUrl}" style="display: inline-block; background: #2b2b2b; color: #fdfbf7; padding: 14px 36px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; box-shadow: 3px 3px 0px rgba(0,0,0,0.15);">Verify My Email →</a>
+            <p style="color: #999; font-size: 12px; margin-top: 28px; line-height: 1.5;">If the button doesn't work, copy and paste this link in your browser:<br><a href="${verifyUrl}" style="color: #6366f1; word-break: break-all;">${verifyUrl}</a></p>
+          </div>
+          <div style="background: #f5f5ec; padding: 16px 32px; text-align: center; border-top: 1px solid #e5e5d5;">
+            <p style="color: #999; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} StudySync. Study smarter, together.</p>
+          </div>
+        </div>
+      `
     })
   });
 
@@ -121,16 +137,170 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.get('/api/auth/verify/:token', async (req, res) => {
+  const verifyPageHTML = (success, message) => `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${success ? 'Email Verified' : 'Verification Failed'} - StudySync</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Inter', -apple-system, sans-serif;
+          background: #fdfbf7;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+        }
+        /* Notebook lines background */
+        body::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: repeating-linear-gradient(
+            transparent, transparent 31px,
+            rgba(180, 210, 240, 0.3) 31px, rgba(180, 210, 240, 0.3) 32px
+          );
+          pointer-events: none;
+        }
+        /* Red margin line */
+        body::after {
+          content: '';
+          position: absolute;
+          top: 0; bottom: 0; left: 80px;
+          width: 2px;
+          background: rgba(239, 68, 68, 0.2);
+          pointer-events: none;
+        }
+        .card {
+          background: rgba(253, 251, 247, 0.95);
+          border: 2px solid #2b2b2b;
+          border-radius: 16px;
+          padding: 48px 40px;
+          max-width: 460px;
+          width: 90%;
+          text-align: center;
+          position: relative;
+          z-index: 1;
+          box-shadow: 4px 4px 0px #2b2b2b;
+          animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        @keyframes slideUp {
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .icon-circle {
+          width: 80px; height: 80px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 24px;
+          font-size: 36px;
+          animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        @keyframes popIn {
+          to { opacity: 1; transform: scale(1); }
+        }
+        .icon-success {
+          background: rgba(16, 185, 129, 0.12);
+          border: 2px solid rgba(16, 185, 129, 0.3);
+          color: #10b981;
+        }
+        .icon-error {
+          background: rgba(239, 68, 68, 0.1);
+          border: 2px solid rgba(239, 68, 68, 0.25);
+          color: #ef4444;
+        }
+        h1 {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.75rem;
+          font-weight: 700;
+          color: #2b2b2b;
+          margin-bottom: 8px;
+        }
+        p {
+          color: #5e5e5e;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          margin-bottom: 28px;
+        }
+        .btn {
+          display: inline-block;
+          background: #2b2b2b;
+          color: #fdfbf7;
+          padding: 12px 32px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 0.95rem;
+          border: 2px solid #2b2b2b;
+          transition: all 0.2s ease;
+          box-shadow: 3px 3px 0px rgba(0,0,0,0.15);
+        }
+        .btn:hover {
+          background: #000;
+          transform: translateY(-2px);
+          box-shadow: 4px 5px 0px rgba(0,0,0,0.2);
+        }
+        .brand {
+          margin-top: 32px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.8rem;
+          color: #aaa;
+          letter-spacing: 1px;
+        }
+        .confetti { position: absolute; font-size: 20px; animation: fall 3s ease-in forwards; opacity: 0; }
+        @keyframes fall {
+          0% { opacity: 1; transform: translateY(-40px) rotate(0deg); }
+          100% { opacity: 0; transform: translateY(120px) rotate(360deg); }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="icon-circle ${success ? 'icon-success' : 'icon-error'}">
+          ${success ? '✓' : '✕'}
+        </div>
+        <h1>${success ? 'Email Verified!' : 'Verification Failed'}</h1>
+        <p>${message}</p>
+        <a href="/" class="btn">${success ? 'Go to Login →' : 'Back to Home →'}</a>
+        <div class="brand">STUDYSYNC</div>
+      </div>
+      ${success ? `<script>
+        const emojis = ['🎉','✨','📚','🎓','⭐','💡','🔥'];
+        for (let i = 0; i < 12; i++) {
+          const el = document.createElement('div');
+          el.className = 'confetti';
+          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          el.style.left = Math.random() * 100 + '%';
+          el.style.top = Math.random() * 40 + '%';
+          el.style.animationDelay = (Math.random() * 1.5) + 's';
+          el.style.fontSize = (16 + Math.random() * 16) + 'px';
+          document.body.appendChild(el);
+        }
+      </script>` : ''}
+    </body>
+    </html>
+  `;
+
   try {
     const { token } = req.params;
     const user = await dbGet('SELECT id FROM users WHERE verification_token = ?', [token]);
-    if (!user) return res.status(400).send('Invalid or expired verification link.');
+    if (!user) return res.status(400).send(verifyPageHTML(false, 'This verification link is invalid or has already been used. Please try logging in or request a new verification email.'));
 
     await dbRun('UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?', [user.id]);
-    res.send('<h1>Email Verified Successfully!</h1><p>You can now log in to StudySync.</p><a href="/">Go to Login</a>');
+    res.send(verifyPageHTML(true, 'Your email has been verified successfully. You can now sign in to your StudySync account and start studying!'));
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send(verifyPageHTML(false, 'Something went wrong on our end. Please try again later.'));
   }
 });
 
