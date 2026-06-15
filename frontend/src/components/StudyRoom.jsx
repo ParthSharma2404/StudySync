@@ -270,7 +270,13 @@ function StudyRoom({ currentUser }) {
   const authorizeWebcam = async () => {
     setSetupError('');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      } catch (audioErr) {
+        console.warn('Failed to get video+audio, falling back to video only:', audioErr);
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
       localCameraStreamRef.current = stream;
       setWebcamEnabled(true);
       
@@ -281,7 +287,7 @@ function StudyRoom({ currentUser }) {
       }
     } catch (err) {
       console.error(err);
-      setSetupError('Camera access denied. Webcam permission is required for desk presence AI.');
+      setSetupError('Camera access denied. Webcam permission is required for desk presence AI. Ensure your browser has permission.');
     }
   };
 
