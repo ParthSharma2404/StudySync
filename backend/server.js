@@ -9,7 +9,6 @@ const dotenv = require('dotenv');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
-const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 const { db, dbGet, dbAll, dbRun } = require('./db');
 
@@ -23,43 +22,42 @@ app.use(cookieParser());
 const JWT_SECRET = process.env.JWT_SECRET || 'studysync_secret_key_123456';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_123456';
 
-// Email Transporter
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  family: 4, // Force IPv4 to avoid network unreachable (ENETUNREACH) errors in IPv6-constrained environments
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-// Helper to send email via Gmail SMTP
+// Helper to send email via Resend API
 const sendVerificationEmail = async (email, verifyUrl) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     console.log('MOCK EMAIL VERIFIER - Click here to verify:', verifyUrl);
     return { mock: true, url: verifyUrl };
   }
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Verify your StudySync Account',
-    html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
-  };
+  const fromEmail = process.env.EMAIL_FROM || 'StudySync <onboarding@resend.dev>';
 
-  await transporter.sendMail(mailOptions);
-  return { mock: false };
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: email,
+      subject: 'Verify your StudySync Account',
+      html: `<p>Welcome to StudySync!</p><p>Please verify your email by clicking the link below:</p><a href="${verifyUrl}">${verifyUrl}</a>`
+    })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to send email via Resend.');
+  }
+  return data;
 };
 
-// Verify email connection at startup
-if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  transporter.verify()
-    .then(() => console.log('✅ EMAIL SERVICE READY - Connected to Gmail SMTP'))
-    .catch((err) => console.error('❌ EMAIL SERVICE FAILED:', err.message));
+// Verify Resend configuration at startup
+if (process.env.RESEND_API_KEY) {
+  console.log('✅ EMAIL SERVICE READY - Resend API Key configured');
 } else {
-  console.log('⚠️ EMAIL SERVICE IN MOCK MODE - EMAIL_USER or EMAIL_PASS not set');
+  console.log('⚠️ EMAIL SERVICE IN MOCK MODE - RESEND_API_KEY not set');
 }
 
 // Login Rate Limiter (5 attempts per 15 mins)
