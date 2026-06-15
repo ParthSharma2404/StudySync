@@ -498,7 +498,7 @@ function StudyRoom({ currentUser }) {
     if (isSolo) {
       localStorage.setItem('solo_tasks', JSON.stringify(updatedTasks));
     } else {
-      socketRef.current.emit('task-create', { title: newTaskTitle });
+      socketRef.current.emit('task-create', { id: randomId, title: newTaskTitle });
     }
     setNewTaskTitle('');
   };
@@ -803,7 +803,7 @@ function StudyRoom({ currentUser }) {
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
                             <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
                               <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
-                                {task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
+                                {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                               </div>
                               <div style={{ flex: 1 }}>
                                 <span className="task-title">{task.title}</span>
@@ -847,7 +847,7 @@ function StudyRoom({ currentUser }) {
                             {peerTasks.map((task) => (
                               <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)' }}>
                                 <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
-                                  {task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
+                                  {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                                 </div>
                                 <div style={{ flex: 1 }}>
                                   <span className="task-title" style={{ fontSize: '0.85rem' }}>{task.title}</span>

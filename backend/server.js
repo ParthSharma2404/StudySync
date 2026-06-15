@@ -1025,11 +1025,14 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('task-create', async ({ title }) => {
+  socket.on('task-create', async (payload) => {
+    // payload could be { title } or { id, title }
+    const title = payload.title;
+    const id = payload.id;
     const { roomId, userId } = socket;
     if (!roomId) return;
 
-    const taskId = crypto.randomUUID();
+    const taskId = id || crypto.randomUUID();
     await dbRun(
       'INSERT INTO tasks (id, room_id, owner_id, title, is_completed) VALUES (?, ?, ?, ?, 0)',
       [taskId, roomId, userId, title]
