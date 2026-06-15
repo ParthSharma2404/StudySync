@@ -168,6 +168,22 @@ function Dashboard({ currentUser }) {
     } catch(err) { console.error(err); }
   };
 
+  const handleRemoveFriend = async (friendId) => {
+    if (!window.confirm('Are you sure you want to remove this friend?')) return;
+    try {
+      await fetchApi('/api/friends/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friendId })
+      });
+      const res = await fetchApi('/api/friends', {  });
+      if (res.ok) {
+        const d = await res.json();
+        setFriends(d.friends);
+      }
+    } catch(err) { console.error(err); }
+  };
+
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     setError('');
