@@ -617,7 +617,11 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
 app.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
     const notifications = await dbAll(
-      'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
+      `SELECT n.*, f.status as friendship_status 
+       FROM notifications n 
+       LEFT JOIN friendships f ON n.related_id = f.id 
+       WHERE n.user_id = ? 
+       ORDER BY n.created_at DESC LIMIT 50`,
       [req.user.id]
     );
     res.json({ notifications });
