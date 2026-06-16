@@ -654,8 +654,8 @@ function StudyRoom({ currentUser }) {
             {/* Physical Desk Custom Stopwatch (Pure CSS/SVG) */}
             <div className="stopwatch-wrapper">
               {!timerStarted ? (
-                <div className="stopwatch-title" style={{ color: '#0f766e', background: 'rgba(217, 119, 6, 0.2)' }}>
-                  <ClipboardList size={14} /> Planning Phase
+                <div className="stopwatch-title" style={{ color: '#b45309' }}>
+                  <ClipboardList size={14} /> Planning Phase (Decide tasks and start timer)
                 </div>
               ) : (
                 <div className="stopwatch-title" style={{ color: '#0f766e' }}>
@@ -663,21 +663,40 @@ function StudyRoom({ currentUser }) {
                 </div>
               )}
 
-              <svg className="stopwatch-svg-frame" viewBox="0 0 280 90">
-                {/* Background Gears SVG */}
-                <g opacity="0.08" stroke="#000" strokeWidth="1.5" fill="none">
-                  <circle cx="230" cy="20" r="15"/>
-                  <path d="M230 5 L230 35 M215 20 L245 20 M219 9 L241 31 M219 31 L241 9" />
-                  <circle cx="30" cy="70" r="18"/>
-                  <path d="M30 52 L30 88 M12 70 L48 70 M17 57 L43 83 M17 83 L43 57" />
+              <svg className="stopwatch-svg-frame" viewBox="0 0 360 120">
+                {/* Background Gears - top right */}
+                <g opacity="0.07" stroke="#555" strokeWidth="1.2" fill="none">
+                  {/* Gear 1 - top right */}
+                  <circle cx="310" cy="25" r="20"/>
+                  <circle cx="310" cy="25" r="12"/>
+                  <path d="M310 3 L310 47 M288 25 L332 25 M296 11 L324 39 M296 39 L324 11" />
+                  {/* Gear teeth */}
+                  <path d="M310 2 L308 7 L312 7Z M310 48 L308 43 L312 43Z M287 25 L292 23 L292 27Z M333 25 L328 23 L328 27Z" fill="#555"/>
+                  {/* Gear 2 - bottom left */}
+                  <circle cx="35" cy="90" r="24"/>
+                  <circle cx="35" cy="90" r="14"/>
+                  <path d="M35 64 L35 116 M9 90 L61 90 M19 74 L51 106 M19 106 L51 74" />
+                  {/* Gear teeth */}
+                  <path d="M35 62 L33 68 L37 68Z M35 118 L33 112 L37 112Z M7 90 L13 88 L13 92Z M63 90 L57 88 L57 92Z" fill="#555"/>
+                  {/* Small gear connector */}
+                  <circle cx="295" cy="50" r="10"/>
+                  <path d="M295 39 L295 61 M284 50 L306 50" />
                 </g>
-                {/* Watch Body */}
-                <rect x="5" y="10" width="270" height="75" rx="8" fill="#f8f8f8" stroke="#333" strokeWidth="2" />
-                {/* Inner Screen */}
-                <rect x="15" y="20" width="250" height="55" rx="4" fill="#fff" stroke="#333" strokeWidth="1.5" />
-                {/* Buttons */}
-                <rect x="40" y="4" width="25" height="6" rx="2" fill="#fff" stroke="#333" strokeWidth="1.5" />
-                <rect x="75" y="6" width="15" height="4" rx="1" fill="#fff" stroke="#333" strokeWidth="1.5" />
+
+                {/* Watch body - outer bezel with hand-drawn feel */}
+                <rect x="40" y="12" width="280" height="96" rx="10" fill="#f5f5f5" stroke="#333" strokeWidth="2.2" />
+                {/* Watch body shadow line */}
+                <path d="M52 108 L310 108" stroke="#ccc" strokeWidth="1" opacity="0.5"/>
+                <path d="M320 22 L320 100" stroke="#ccc" strokeWidth="1" opacity="0.3"/>
+
+                {/* Inner screen */}
+                <rect x="55" y="24" width="250" height="72" rx="5" fill="#fff" stroke="#333" strokeWidth="1.8" />
+                {/* Inner screen subtle shadow */}
+                <rect x="56" y="25" width="248" height="70" rx="4" fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth="3" />
+
+                {/* Top buttons */}
+                <rect x="100" y="5" width="35" height="7" rx="2.5" fill="#f0f0f0" stroke="#444" strokeWidth="1.4" />
+                <rect x="145" y="7" width="22" height="5" rx="1.5" fill="#f0f0f0" stroke="#444" strokeWidth="1.2" />
               </svg>
               
               <div className="stopwatch-time">
@@ -685,17 +704,17 @@ function StudyRoom({ currentUser }) {
               </div>
 
               {!timerStarted && (
-                <div style={{ position: 'absolute', bottom: '-45px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%', zIndex: 20 }}>
+                <div style={{ position: 'absolute', bottom: '-48px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%', zIndex: 20 }}>
                   {isSolo || moderatorId === user?.id ? (
                       <button 
                         onClick={handleStartTimer} 
                         className="btn btn-primary" 
-                        style={{ padding: '8px 20px', fontSize: '0.9rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                        style={{ padding: '10px 24px', fontSize: '0.9rem', boxShadow: '0 4px 8px rgba(0,0,0,0.12)' }}
                       >
-                      <Play size={16} /> Start Session
+                      <Play size={16} /> Start Study Session
                     </button>
                   ) : (
-                    <span style={{ color: '#64748b', fontSize: '0.8rem', background: '#fff', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ddd' }}>Waiting for host...</span>
+                    <span style={{ color: '#64748b', fontSize: '0.8rem', background: '#fff', padding: '6px 12px', borderRadius: '4px', border: '1px solid #ddd' }}>Waiting for host to start timer...</span>
                   )}
                 </div>
               )}
