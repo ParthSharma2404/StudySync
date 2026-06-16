@@ -328,8 +328,8 @@ button, input, textarea, select {
 /* Study Room Workspace */
 .study-room-layout {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 28px;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
   height: calc(100vh - 110px);
   margin: 20px 0;
 }
@@ -370,11 +370,10 @@ button, input, textarea, select {
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: #888;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: var(--color-bg-slate);
+  border: 1px solid var(--color-border-glass);
 }
 .video-wrapper video {
   width: 100%;
@@ -781,164 +780,3 @@ button, input, textarea, select {
   animation: activeTimerPulse 1.8s infinite ease-in-out;
 }
 
-/* --- PHYSICAL DESK UI OVERHAUL CLASSES --- */
-.sketched-divider {
-  width: 100%;
-  height: 10px;
-  margin: 5px 0 20px 0;
-  background-image: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' viewBox='0 0 1000 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 5 Q 50 1, 100 5 T 200 5 T 300 3 T 400 6 T 500 5 T 600 4 T 700 5 T 800 6 T 900 4 T 1000 5' stroke='%232b2b2b' stroke-width='1.5' fill='none' stroke-linecap='round' /%3E%3Cpath d='M0 7 Q 60 4, 120 7 T 240 6 T 360 8 T 480 7 T 600 5 T 720 7 T 840 6 T 960 7 T 1000 6' stroke='%232b2b2b' stroke-width='1' fill='none' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-/* --- Torn paper backing for the stopwatch --- */
-.stopwatch-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-  min-height: 180px;
-  margin: 10px auto 50px auto;
-  background: #fff;
-  border-radius: 3px;
-  box-shadow:
-    0 8px 25px rgba(0,0,0,0.10),
-    0 2px 6px rgba(0,0,0,0.06),
-    -2px 3px 0 rgba(0,0,0,0.02);
-  transform: rotate(-0.8deg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  padding: 20px 30px;
-}
-
-/* Folded/curled left edge of the torn paper */
-.stopwatch-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 22px;
-  height: 100%;
-  background: linear-gradient(to right, #ede9e3 0%, #f7f5f2 40%, #fff 100%);
-  border-right: 1px solid rgba(0,0,0,0.06);
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-
-/* Bottom-left paper curl shadow */
-.stopwatch-wrapper::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 4px;
-  width: 60%;
-  height: 8px;
-  background: transparent;
-  box-shadow: 0 6px 10px rgba(0,0,0,0.08);
-  border-radius: 50%;
-  z-index: -1;
-}
-
-.stopwatch-svg-frame {
-  position: absolute;
-  width: 360px;
-  height: 120px;
-  pointer-events: none;
-}
-
-.stopwatch-title {
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%) rotate(0.5deg);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: #0f766e;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.stopwatch-time {
-  position: relative;
-  z-index: 10;
-  font-size: 4.5rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #1a1a1a;
-  font-family: 'Kalam', cursive;
-}
-
-.cardboard-panel {
-  background-color: #f7f0df;
-  border: 1.5px solid #d9ccb0;
-  border-radius: 5px;
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.06),
-    0 1px 3px rgba(0,0,0,0.04);
-  padding: 1.5rem;
-  position: relative;
-  margin-top: 20px;
-}
-
-/* Back folder layer */
-.cardboard-panel::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: -6px;
-  right: 6px;
-  bottom: 8px;
-  background-color: #ece1c8;
-  border: 1px solid #d4c7a9;
-  border-radius: 5px;
-  z-index: -1;
-  transform: rotate(-0.4deg);
-  box-shadow: 1px 2px 6px rgba(0,0,0,0.05);
-}
-
-/* Small red decorative dot (top-right pin) */
-.cardboard-panel::after {
-  content: '';
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  width: 7px;
-  height: 7px;
-  background: #ef4444;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(239,68,68,0.4);
-  z-index: 5;
-}
-
-.marker-highlight-teal {
-  position: relative;
-  z-index: 1;
-  font-weight: 600;
-  background-color: rgba(134, 239, 172, 0.45);
-  padding: 6px 10px;
-  border-radius: 3px;
-  margin-left: -4px;
-}
-
-/* --- Sidebar paper tilt for the "Peers & Invites" panel --- */
-.workspace-right .glass-panel {
-  transform: rotate(0.6deg);
-  box-shadow:
-    0 6px 20px rgba(0,0,0,0.08),
-    0 2px 6px rgba(0,0,0,0.04);
-  border: 1.5px solid #d5d5d5;
-  background: #fefefe;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.workspace-right .glass-panel:hover {
-  transform: rotate(0deg);
-  box-shadow:
-    0 8px 28px rgba(0,0,0,0.12),
-    0 3px 8px rgba(0,0,0,0.06);
-}

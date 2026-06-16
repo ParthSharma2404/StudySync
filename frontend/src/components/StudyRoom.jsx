@@ -648,76 +648,39 @@ function StudyRoom({ currentUser }) {
               </div>
             </div>
 
-            {/* Torn Paper Header Divider */}
-            <div className="sketched-divider"></div>
-
-            {/* Physical Desk Custom Stopwatch (Pure CSS/SVG) */}
-            <div className="stopwatch-wrapper">
+            {/* Stopwatch panel */}
+            <div className="glass-panel timer-card">
               {!timerStarted ? (
-                <div className="stopwatch-title" style={{ color: '#b45309' }}>
-                  <ClipboardList size={14} /> Planning Phase (Decide tasks and start timer)
-                </div>
+                <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <ClipboardList size={16} /> Planning Phase (Decide tasks and start timer)
+                </p>
               ) : (
-                <div className="stopwatch-title" style={{ color: '#0f766e' }}>
-                  <Play size={14} /> Room Uptime
-                </div>
+                <p style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Play size={16} /> Room Uptime
+                </p>
               )}
-
-              <svg className="stopwatch-svg-frame" viewBox="0 0 360 120">
-                {/* Background Gears - top right */}
-                <g opacity="0.07" stroke="#555" strokeWidth="1.2" fill="none">
-                  {/* Gear 1 - top right */}
-                  <circle cx="310" cy="25" r="20"/>
-                  <circle cx="310" cy="25" r="12"/>
-                  <path d="M310 3 L310 47 M288 25 L332 25 M296 11 L324 39 M296 39 L324 11" />
-                  {/* Gear teeth */}
-                  <path d="M310 2 L308 7 L312 7Z M310 48 L308 43 L312 43Z M287 25 L292 23 L292 27Z M333 25 L328 23 L328 27Z" fill="#555"/>
-                  {/* Gear 2 - bottom left */}
-                  <circle cx="35" cy="90" r="24"/>
-                  <circle cx="35" cy="90" r="14"/>
-                  <path d="M35 64 L35 116 M9 90 L61 90 M19 74 L51 106 M19 106 L51 74" />
-                  {/* Gear teeth */}
-                  <path d="M35 62 L33 68 L37 68Z M35 118 L33 112 L37 112Z M7 90 L13 88 L13 92Z M63 90 L57 88 L57 92Z" fill="#555"/>
-                  {/* Small gear connector */}
-                  <circle cx="295" cy="50" r="10"/>
-                  <path d="M295 39 L295 61 M284 50 L306 50" />
-                </g>
-
-                {/* Watch body - outer bezel with hand-drawn feel */}
-                <rect x="40" y="12" width="280" height="96" rx="10" fill="#f5f5f5" stroke="#333" strokeWidth="2.2" />
-                {/* Watch body shadow line */}
-                <path d="M52 108 L310 108" stroke="#ccc" strokeWidth="1" opacity="0.5"/>
-                <path d="M320 22 L320 100" stroke="#ccc" strokeWidth="1" opacity="0.3"/>
-
-                {/* Inner screen */}
-                <rect x="55" y="24" width="250" height="72" rx="5" fill="#fff" stroke="#333" strokeWidth="1.8" />
-                {/* Inner screen subtle shadow */}
-                <rect x="56" y="25" width="248" height="70" rx="4" fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth="3" />
-
-                {/* Top buttons */}
-                <rect x="100" y="5" width="35" height="7" rx="2.5" fill="#f0f0f0" stroke="#444" strokeWidth="1.4" />
-                <rect x="145" y="7" width="22" height="5" rx="1.5" fill="#f0f0f0" stroke="#444" strokeWidth="1.2" />
-              </svg>
               
-              <div className="stopwatch-time">
+              <div className="timer-digits">
                 {formatTime(roomUptimeSeconds)}
               </div>
 
               {!timerStarted && (
-                <div style={{ position: 'absolute', bottom: '-48px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%', zIndex: 20 }}>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
                   {isSolo || moderatorId === user?.id ? (
                       <button 
                         onClick={handleStartTimer} 
                         className="btn btn-primary" 
-                        style={{ padding: '10px 24px', fontSize: '0.9rem', boxShadow: '0 4px 8px rgba(0,0,0,0.12)' }}
+                        style={{ padding: '12px 28px', fontSize: '0.95rem' }}
                       >
-                      <Play size={16} /> Start Study Session
+                      <Play size={18} /> Start Study Session
                     </button>
                   ) : (
-                    <span style={{ color: '#64748b', fontSize: '0.8rem', background: '#fff', padding: '6px 12px', borderRadius: '4px', border: '1px solid #ddd' }}>Waiting for host to start timer...</span>
+                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
                   )}
                 </div>
               )}
+
+
             </div>
 
             {/* Ambient Audio panel */}
@@ -759,7 +722,7 @@ function StudyRoom({ currentUser }) {
             </div>
 
             {/* Quest Board Tasks list */}
-            <div className="cardboard-panel tasks-panel">
+            <div className="glass-panel tasks-panel">
               <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Target size={18} /> Objectives
                 <span style={{ marginLeft: 'auto', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '50px' }}>
@@ -794,7 +757,7 @@ function StudyRoom({ currentUser }) {
                           <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
                         ) : (
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
-                            <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'marker-highlight-teal' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #0d9488' : '' }}>
+                            <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
                               <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
                                 {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                               </div>
@@ -884,112 +847,106 @@ function StudyRoom({ currentUser }) {
 
           {/* Right Sidebar Panel */}
           <div className="workspace-right">
-            <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              
-              <h3 style={{ fontSize: '1.2rem', color: 'var(--color-text-title)', margin: 0, paddingBottom: '10px', borderBottom: '2px dashed rgba(0,0,0,0.1)' }}>
-                Peers & Invites
-              </h3>
-
-              {/* Invite link widget */}
-              {!isSolo && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  
-                  {/* URL Copy */}
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      value={window.location.href} 
-                      readOnly 
-                      style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.05)', flex: 1 }}
-                    />
-                    <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                      {copiedLink ? 'Copied!' : 'Copy'}
-                    </button>
-                  </div>
-
-                  {/* Invite by Username */}
-                  <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '6px' }}>
-                    Invite by Username:
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      type="text"
-                      className="form-input"
-                      id="inviteUsernameInput"
-                      placeholder="Enter friend's username"
-                      style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
-                    />
-                    <button
-                      onClick={() => {
-                        const username = document.getElementById('inviteUsernameInput').value.trim();
-                        if (!username) return;
-                        if (!socketRef.current) return;
-                        socketRef.current.emit('send-invite-username', {
-                          targetUsername: username,
-                          roomId,
-                          roomName,
-                          hostName: user.username
-                        });
-                        document.getElementById('inviteUsernameInput').value = '';
-                      }}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                    >
-                      Send
-                    </button>
-                  </div>
+            {/* Invite link widget */}
+            {!isSolo && (
+              <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
+                
+                {/* URL Copy */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    value={window.location.href} 
+                    readOnly 
+                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
+                  />
+                  <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                    {copiedLink ? 'Copied!' : 'Copy'}
+                  </button>
                 </div>
-              )}
 
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text-main)', marginTop: '8px' }}>
-                Active Peers ({participants.length || 1})
-              </h4>
+                {/* Invite by Username */}
+                <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+                  Invite by Username:
+                </p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    id="inviteUsernameInput"
+                    placeholder="Enter friend's username"
+                    style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
+                  />
+                  <button
+                    onClick={() => {
+                      const username = document.getElementById('inviteUsernameInput').value.trim();
+                      if (!username) return;
+                      if (!socketRef.current) return;
+                      socketRef.current.emit('send-invite-username', {
+                        targetUsername: username,
+                        roomId,
+                        roomName,
+                        hostName: user.username
+                      });
+                      document.getElementById('inviteUsernameInput').value = '';
+                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
 
-              <div className="video-sidebar" style={{ marginTop: 0 }}>
-                {/* Local Stream (Webcam feed) */}
-                <div className="video-wrapper">
-                  <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
-                  
+            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px', marginTop: '10px' }}>
+              Active Peers ({participants.length || 1})
+            </h3>
+
+            <div className="video-sidebar">
+              {/* Local Stream (Webcam feed) */}
+              <div className="video-wrapper">
+                <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
+                
+                <div className="video-overlay-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="participant-label">{user?.username} (You)</span>
+                    <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                      Lv {Math.floor((user?.xp || 0) / 100) + 1}
+                    </span>
+                    <button onClick={toggleMic} style={{ background: isMicMuted ? '#ef4444' : 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }} title={isMicMuted ? "Unmute Mic" : "Mute Mic"}>
+                      {isMicMuted ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 1l22 22M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>}
+                    </button>
+                  </div>
+                  <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {!timerStarted ? 'Planning' : 'Focusing'}
+                    {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
+                  </span>
+                </div>
+              </div>
+
+              {/* Remote Peer video streams */}
+              {!isSolo && participants.filter(p => p.userId !== user?.id).map((p) => (
+                <div key={p.peerId} className="video-wrapper">
+                  <video id={`video-${p.peerId}`} autoPlay playsInline />
                   <div className="video-overlay-info">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="participant-label">{user?.username} (You)</span>
+                      <span className="participant-label">{p.username}</span>
                       <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                        Lv {Math.floor((user?.xp || 0) / 100) + 1}
+                        Lv {Math.floor((p.xp || 0) / 100) + 1}
                       </span>
-                      <button onClick={toggleMic} style={{ background: isMicMuted ? '#ef4444' : 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }} title={isMicMuted ? "Unmute Mic" : "Mute Mic"}>
-                        {isMicMuted ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 1l22 22M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>}
-                      </button>
                     </div>
                     <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {!timerStarted ? 'Planning' : 'Focusing'}
-                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
+                      {!timerStarted ? 'Planning' : p.status || 'Focusing'}
+                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
                     </span>
                   </div>
-                </div>
-
-                {/* Remote Peer video streams */}
-                {!isSolo && participants.filter(p => p.userId !== user?.id).map((p) => (
-                  <div key={p.peerId} className="video-wrapper">
-                    <video id={`video-${p.peerId}`} autoPlay playsInline />
-                    <div className="video-overlay-info">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span className="participant-label">{p.username}</span>
-                        <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                          Lv {Math.floor((p.xp || 0) / 100) + 1}
-                        </span>
-                      </div>
-                      <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        {!timerStarted ? 'Planning' : p.status || 'Focusing'}
-                        {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
-                      </span>
-                    </div>
-                    <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={12} /> {formatTime(p.studySeconds)}
-                    </div>
+                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock size={12} /> {formatTime(p.studySeconds)}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
