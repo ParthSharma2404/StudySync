@@ -648,39 +648,40 @@ function StudyRoom({ currentUser }) {
               </div>
             </div>
 
-            {/* Stopwatch panel */}
-            <div className="glass-panel timer-card">
+            {/* Torn Paper Header Divider */}
+            <div className="sketched-divider"></div>
+
+            {/* Physical Desk Custom Stopwatch */}
+            <div className="stopwatch-container">
               {!timerStarted ? (
-                <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <ClipboardList size={16} /> Planning Phase (Decide tasks and start timer)
-                </p>
+                <div className="stopwatch-title" style={{ color: '#d97706' }}>
+                  <ClipboardList size={16} /> Planning Phase
+                </div>
               ) : (
-                <p style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <div className="stopwatch-title" style={{ color: '#0f766e' }}>
                   <Play size={16} /> Room Uptime
-                </p>
+                </div>
               )}
               
-              <div className="timer-digits">
+              <div className="stopwatch-time">
                 {formatTime(roomUptimeSeconds)}
               </div>
 
               {!timerStarted && (
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
+                <div style={{ position: 'absolute', bottom: '-40px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
                   {isSolo || moderatorId === user?.id ? (
                       <button 
                         onClick={handleStartTimer} 
                         className="btn btn-primary" 
-                        style={{ padding: '12px 28px', fontSize: '0.95rem' }}
+                        style={{ padding: '10px 24px', fontSize: '0.9rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
                       >
-                      <Play size={18} /> Start Study Session
+                      <Play size={16} /> Start Session
                     </button>
                   ) : (
-                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
+                    <span style={{ color: '#64748b', fontSize: '0.8rem', background: '#fff', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ddd' }}>Waiting for host...</span>
                   )}
                 </div>
               )}
-
-
             </div>
 
             {/* Ambient Audio panel */}
@@ -722,7 +723,7 @@ function StudyRoom({ currentUser }) {
             </div>
 
             {/* Quest Board Tasks list */}
-            <div className="glass-panel tasks-panel">
+            <div className="cardboard-panel tasks-panel">
               <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Target size={18} /> Objectives
                 <span style={{ marginLeft: 'auto', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '50px' }}>
@@ -757,7 +758,7 @@ function StudyRoom({ currentUser }) {
                           <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
                         ) : (
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
-                            <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
+                            <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'marker-highlight-teal' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #0d9488' : '' }}>
                               <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
                                 {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                               </div>
@@ -847,110 +848,120 @@ function StudyRoom({ currentUser }) {
 
           {/* Right Sidebar Panel */}
           <div className="workspace-right">
-            {/* Invite link widget */}
-            {!isSolo && (
-              <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
-                
-                {/* URL Copy */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={window.location.href} 
-                    readOnly 
-                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
-                  />
-                  <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                    {copiedLink ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
+            <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--color-text-title)', margin: 0, paddingBottom: '10px', borderBottom: '2px dashed rgba(0,0,0,0.1)' }}>
+                Peers & Invites
+              </h3>
 
-                {/* Invite by Username */}
-                <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
-                  Invite by Username:
-                </p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    className="form-input"
-                    id="inviteUsernameInput"
-                    placeholder="Enter friend's username"
-                    style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
-                  />
-                  <button
-                    onClick={() => {
-                      const username = document.getElementById('inviteUsernameInput').value.trim();
-                      if (!username) return;
-                      if (!socketRef.current) return;
-                      socketRef.current.emit('send-invite-username', {
-                        targetUsername: username,
-                        roomId,
-                        roomName,
-                        hostName: user.username
-                      });
-                      document.getElementById('inviteUsernameInput').value = '';
-                    }}
-                    className="btn btn-secondary"
-                    style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px', marginTop: '10px' }}>
-              Active Peers ({participants.length || 1})
-            </h3>
-
-            <div className="video-sidebar">
-              {/* Local Stream (Webcam feed) */}
-              <div className="video-wrapper">
-                <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
-                
-                <div className="video-overlay-info">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="participant-label">{user?.username} (You)</span>
-                    <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                      Lv {Math.floor((user?.xp || 0) / 100) + 1}
-                    </span>
-                    <button onClick={toggleMic} style={{ background: isMicMuted ? '#ef4444' : 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }} title={isMicMuted ? "Unmute Mic" : "Mute Mic"}>
-                      {isMicMuted ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 1l22 22M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>}
+              {/* Invite link widget */}
+              {!isSolo && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  
+                  {/* URL Copy */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      value={window.location.href} 
+                      readOnly 
+                      style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.05)', flex: 1 }}
+                    />
+                    <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                      {copiedLink ? 'Copied!' : 'Copy'}
                     </button>
                   </div>
-                  <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    {!timerStarted ? 'Planning' : 'Focusing'}
-                    {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
-                  </span>
-                </div>
-              </div>
 
-              {/* Remote Peer video streams */}
-              {!isSolo && participants.filter(p => p.userId !== user?.id).map((p) => (
-                <div key={p.peerId} className="video-wrapper">
-                  <video id={`video-${p.peerId}`} autoPlay playsInline />
+                  {/* Invite by Username */}
+                  <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '6px' }}>
+                    Invite by Username:
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      id="inviteUsernameInput"
+                      placeholder="Enter friend's username"
+                      style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
+                    />
+                    <button
+                      onClick={() => {
+                        const username = document.getElementById('inviteUsernameInput').value.trim();
+                        if (!username) return;
+                        if (!socketRef.current) return;
+                        socketRef.current.emit('send-invite-username', {
+                          targetUsername: username,
+                          roomId,
+                          roomName,
+                          hostName: user.username
+                        });
+                        document.getElementById('inviteUsernameInput').value = '';
+                      }}
+                      className="btn btn-secondary"
+                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text-main)', marginTop: '8px' }}>
+                Active Peers ({participants.length || 1})
+              </h4>
+
+              <div className="video-sidebar" style={{ marginTop: 0 }}>
+                {/* Local Stream (Webcam feed) */}
+                <div className="video-wrapper">
+                  <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
+                  
                   <div className="video-overlay-info">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="participant-label">{p.username}</span>
+                      <span className="participant-label">{user?.username} (You)</span>
                       <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                        Lv {Math.floor((p.xp || 0) / 100) + 1}
+                        Lv {Math.floor((user?.xp || 0) / 100) + 1}
                       </span>
+                      <button onClick={toggleMic} style={{ background: isMicMuted ? '#ef4444' : 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }} title={isMicMuted ? "Unmute Mic" : "Mute Mic"}>
+                        {isMicMuted ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 1l22 22M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>}
+                      </button>
                     </div>
                     <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {!timerStarted ? 'Planning' : p.status || 'Focusing'}
-                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
+                      {!timerStarted ? 'Planning' : 'Focusing'}
+                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
                     </span>
                   </div>
-                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={12} /> {formatTime(p.studySeconds)}
-                  </div>
                 </div>
-              ))}
+
+                {/* Remote Peer video streams */}
+                {!isSolo && participants.filter(p => p.userId !== user?.id).map((p) => (
+                  <div key={p.peerId} className="video-wrapper">
+                    <video id={`video-${p.peerId}`} autoPlay playsInline />
+                    <div className="video-overlay-info">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="participant-label">{p.username}</span>
+                        <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                          Lv {Math.floor((p.xp || 0) / 100) + 1}
+                        </span>
+                      </div>
+                      <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        {!timerStarted ? 'Planning' : p.status || 'Focusing'}
+                        {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
+                      </span>
+                    </div>
+                    <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock size={12} /> {formatTime(p.studySeconds)}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Desk Doodles */}
+      <img src="/assets/pen_doodle.png" alt="" className="doodle-pen" />
+      <img src="/assets/books_doodle.png" alt="" className="doodle-books" />
 
       {/* Hidden Canvas for Local Motion / Presence AI Detection */}
       <canvas ref={canvasRef} width="32" height="24" style={{ display: 'none' }}></canvas>

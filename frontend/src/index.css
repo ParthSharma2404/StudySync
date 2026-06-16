@@ -5,17 +5,17 @@
   --font-display: 'Outfit', -apple-system, sans-serif;
   --font-sans: 'Inter', -apple-system, sans-serif;
 
-  /* Sketchbook Notebook Light Mode - Warm Aesthetic */
-  --color-bg-deep: #fffaf8;       /* Warm cream */
-  --color-bg-slate: #fdf5f2;      /* Warmer slightly darker cream */
-  --color-bg-hover: #fcece7;      
+  /* Sketchbook Notebook Light Mode */
+  --color-bg-deep: #fdfbf7;       /* Cream paper */
+  --color-bg-slate: #f5f5ec;      /* Slightly darker cream */
+  --color-bg-hover: #ebebd9;      
   
-  --color-border-glass: #4a3f3f;  /* Warm dark brown/grey */
-  --color-border-hover: #2a2222;  /* Dark warm ink */
+  --color-border-glass: #2b2b2b;  /* Ink outline */
+  --color-border-hover: #000000;  /* Dark ink */
 
-  --color-primary: #4a3f3f;       /* Warm Dark Ink */
-  --color-primary-hover: #2a2222; 
-  --color-primary-fg: #fffaf8;    /* Paper color for text on primary button */
+  --color-primary: #2b2b2b;       /* Dark Ink */
+  --color-primary-hover: #000000; 
+  --color-primary-fg: #fdfbf7;    /* Paper color for text on primary button */
   
   --color-accent: #6366f1;        /* Indigo 500 */
   --color-accent-hover: #4f46e5;  
@@ -25,12 +25,12 @@
   --color-danger: #ef4444;
   --color-danger-bg: rgba(239, 68, 68, 0.1);
 
-  --color-text-title: #362f2f;    /* Warm Charcoal */
-  --color-text-main: #4d4343;     /* Warm Dark Gray */
-  --color-text-muted: #786c6c;    /* Warm Faded Ink */
+  --color-text-title: #2b2b2b;    /* Charcoal Ink */
+  --color-text-main: #3d3d3d;     /* Dark Gray Ink */
+  --color-text-muted: #5e5e5e;    /* Faded Ink */
 
-  --shadow-card: 0 8px 24px -4px rgba(74, 63, 63, 0.15), 0 4px 10px -2px rgba(74, 63, 63, 0.1);
-  --shadow-dropdown: 0 16px 32px -4px rgba(74, 63, 63, 0.2), 0 8px 16px -4px rgba(74, 63, 63, 0.15);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-dropdown: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -48,14 +48,12 @@
 
 body {
   font-family: 'Kalam', cursive;
-  background-color: #fcf4f3; /* Warm pastel base */
+  background-color: #fdfbf7;
   background-image: 
-    linear-gradient(#f0e1e1 1px, transparent 1px), /* Warmer horizontal lines */
-    linear-gradient(90deg, transparent 40px, #ffbaba 40px, #ffbaba 42px, transparent 42px), /* Slightly softer red margin */
-    radial-gradient(circle at 50% 0%, rgba(255, 240, 235, 0.6) 0%, rgba(252, 244, 243, 0.1) 100%);
-  background-size: 100% 30px, 100% 100%, 100% 100%;
-  background-attachment: fixed;
-  color: var(--color-text-main);
+    linear-gradient(#e8e8e8 1px, transparent 1px),
+    linear-gradient(90deg, transparent 40px, #ffc0c0 40px, #ffc0c0 42px, transparent 42px);
+  background-size: 100% 30px, 100% 100%;
+  color: #2b2b2b;
   line-height: 1.5;
   margin: 0;
   -webkit-font-smoothing: antialiased;
@@ -780,4 +778,129 @@ button, input, textarea, select {
 }
 .timer-pulse {
   animation: activeTimerPulse 1.8s infinite ease-in-out;
+}
+
+/* --- PHYSICAL DESK UI OVERHAUL CLASSES --- */
+.sketched-divider {
+  width: 100%;
+  height: 10px;
+  margin: 5px 0 20px 0;
+  background-image: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' viewBox='0 0 1000 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 5 Q 50 1, 100 5 T 200 5 T 300 3 T 400 6 T 500 5 T 600 4 T 700 5 T 800 6 T 900 4 T 1000 5' stroke='%232b2b2b' stroke-width='1.5' fill='none' stroke-linecap='round' /%3E%3Cpath d='M0 7 Q 60 4, 120 7 T 240 6 T 360 8 T 480 7 T 600 5 T 720 7 T 840 6 T 960 7 T 1000 6' stroke='%232b2b2b' stroke-width='1' fill='none' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.stopwatch-container {
+  width: 100%;
+  max-width: 550px;
+  height: 200px;
+  margin: 0 auto 30px auto;
+  position: relative;
+  background-image: url('/assets/stopwatch_bg.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.1));
+}
+
+.stopwatch-title {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #111;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.6); /* Cyan glow behind text */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stopwatch-time {
+  font-size: 5rem;
+  font-weight: 700;
+  letter-spacing: -2px;
+  color: #1a1a1a;
+  margin-top: 10px;
+  /* Add slight tilt for sketchy look */
+  transform: rotate(-1.5deg);
+}
+
+.cardboard-panel {
+  background-color: #f2ead6;
+  border: 2px solid var(--color-border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: 2px 3px 0 rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.02);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  /* Cardboard texture */
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.cardboard-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 12px;
+  background-color: #e3d2b3;
+  border-bottom: 2px solid rgba(0,0,0,0.15);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.marker-highlight-teal {
+  position: relative;
+  z-index: 1;
+  font-weight: 600;
+}
+
+.marker-highlight-teal::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  right: -8px;
+  height: 120%;
+  transform: translateY(-50%) rotate(-1deg);
+  background: rgba(45, 212, 191, 0.4); /* Teal transparent */
+  z-index: -1;
+  border-radius: 3px;
+  /* Marker stroke texture */
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(45, 212, 191, 0.3) 2px,
+    rgba(45, 212, 191, 0.3) 4px
+  );
+}
+
+.doodle-pen {
+  position: fixed;
+  left: 2%;
+  top: 45%;
+  width: 140px;
+  height: auto;
+  transform: rotate(-10deg);
+  z-index: 0;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.doodle-books {
+  position: fixed;
+  right: 1%;
+  bottom: 2%;
+  width: 280px;
+  height: auto;
+  z-index: 0;
+  opacity: 0.95;
+  pointer-events: none;
 }
