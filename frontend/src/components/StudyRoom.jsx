@@ -86,6 +86,11 @@ function StudyRoom({ currentUser }) {
   const idleTicksRef = useRef(0); 
   const audioRef = useRef(null);
   const workspaceEnteredRef = useRef(false);
+  const activeTaskIdRef = useRef(null);
+
+  useEffect(() => {
+    activeTaskIdRef.current = activeTaskId;
+  }, [activeTaskId]);
 
   const globalSocket = useSocket();
 
@@ -250,6 +255,22 @@ function StudyRoom({ currentUser }) {
       } else {
         setRoomUptimeSeconds((prev) => prev + 1); // For solo mode
       }
+
+      // Increment the active task's time spent locally!
+      const currentActiveId = activeTaskIdRef.current;
+      if (currentActiveId) {
+        setTasks((prevTasks) => {
+          const updated = prevTasks.map((t) => 
+            t.id === currentActiveId 
+              ? { ...t, time_spent_seconds: (t.time_spent_seconds || 0) + 1 }
+              : t
+          );
+          if (isSolo) {
+            localStorage.setItem('solo_tasks', JSON.stringify(updated));
+          }
+          return updated;
+        });
+      }
       
       runCameraPresenceAI();
     }, 1000);
@@ -259,7 +280,7 @@ function StudyRoom({ currentUser }) {
       if (socketRef.current && !isSolo) {
         socketRef.current.emit('timer-heartbeat', {
           incrementSeconds: 15,
-          activeTaskId: activeTaskId
+          activeTaskId: activeTaskIdRef.current
         });
       }
     }, 15000);
@@ -446,7 +467,12 @@ function StudyRoom({ currentUser }) {
     const updatedTasks = tasks.map((t) => {
       if (t.id === taskId) {
         const completed = !t.is_completed;
-        if (completed) confetti({ particleCount: 80, spread: 60 });
+        if (completed) {
+          confetti({ particleCount: 80, spread: 60 });
+          if (activeTaskId === taskId) {
+            setActiveTaskId(null);
+          }
+        }
         return { ...t, is_completed: completed };
       }
       return t;
@@ -519,6 +545,13 @@ function StudyRoom({ currentUser }) {
     const mins = Math.floor((totalSecs % 3600) / 60);
     const secs = totalSecs % 60;
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatTaskTimer = (totalSecs) => {
+    if (!totalSecs || totalSecs <= 0) return '0:00';
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Determine which layout to show
@@ -748,9 +781,23 @@ function StudyRoom({ currentUser }) {
                                 </button>
                               )}
 
-                              {task.time_spent_seconds > 0 && (
-                                <span className="task-meta" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <Clock size={12} /> {Math.floor(task.time_spent_seconds / 60)}m
+                              {(task.time_spent_seconds > 0 || activeTaskId === task.id) && (
+                                <span 
+                                  className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
+                                  style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '6px',
+                                    color: activeTaskId === task.id ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                                    fontWeight: activeTaskId === task.id ? 'bold' : 'normal',
+                                    padding: activeTaskId === task.id ? '2px 8px' : '0',
+                                    background: activeTaskId === task.id ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
+                                    borderRadius: '4px',
+                                    border: activeTaskId === task.id ? '1px solid rgba(139, 92, 246, 0.2)' : 'none'
+                                  }}
+                                >
+                                  <Clock size={12} style={{ color: activeTaskId === task.id ? 'var(--color-primary)' : 'inherit' }} />
+                                  {formatTaskTimer(task.time_spent_seconds)}
                                 </span>
                               )}
                             </div>
@@ -759,33 +806,39 @@ function StudyRoom({ currentUser }) {
                       </div>
                     </div>
 
-                    {/* Peers' Objectives */}
-                    {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
-                      const peerTasks = tasks.filter(t => t.owner_id === peerId);
-                      const peerName = peerTasks[0]?.owner_name || 'Classmate';
-                      return (
-                        <div key={peerId}>
-                          <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8 }}>
-                            {peerTasks.map((task) => (
-                              <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)' }}>
-                                <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
-                                  {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                  <span className="task-title" style={{ fontSize: '0.85rem' }}>{task.title}</span>
-                                </div>
-                                {task.time_spent_seconds > 0 && (
-                                  <span className="task-meta" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem' }}>
-                                    <Clock size={10} /> {Math.floor(task.time_spent_seconds / 60)}m
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                     {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
+                       const peerTasks = tasks.filter(t => t.owner_id === peerId);
+                       const peerName = peerTasks[0]?.owner_name || 'Classmate';
+                       const peerParticipant = participants.find(p => p.userId === peerId);
+                       const peerActiveTaskId = peerParticipant?.activeTaskId;
+                       return (
+                         <div key={peerId}>
+                           <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
+                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8 }}>
+                             {peerTasks.map((task) => {
+                               const isPeerFocusing = peerActiveTaskId === task.id;
+                               return (
+                                 <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)', borderLeft: isPeerFocusing ? '4px solid #10b981' : '' }}>
+                                   <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
+                                     {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
+                                   </div>
+                                   <div style={{ flex: 1 }}>
+                                     <span className="task-title" style={{ fontSize: '0.85rem' }}>{task.title}</span>
+                                     {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: '#10b981', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
+                                   </div>
+                                   {(task.time_spent_seconds > 0 || isPeerFocusing) && (
+                                     <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: isPeerFocusing ? '#10b981' : 'var(--color-text-muted)' }}>
+                                       <Clock size={10} style={{ color: isPeerFocusing ? '#10b981' : 'inherit' }} />
+                                       {formatTaskTimer(task.time_spent_seconds)}
+                                     </span>
+                                   )}
+                                 </div>
+                               );
+                             })}
+                           </div>
+                         </div>
+                       );
+                     })}
                   </>
                 )}
               </div>

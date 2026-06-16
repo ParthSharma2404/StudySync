@@ -995,6 +995,8 @@ io.on('connection', (socket) => {
           'UPDATE tasks SET time_spent_seconds = time_spent_seconds + ? WHERE id = ?',
           [incrementSeconds, activeTaskId]
         );
+        const tasks = await dbAll('SELECT t.id, t.title, t.is_completed, t.time_spent_seconds, t.owner_id, u_owner.username as owner_name, u.username as completed_by_name FROM tasks t LEFT JOIN users u ON t.completed_by = u.id LEFT JOIN users u_owner ON t.owner_id = u_owner.id WHERE t.room_id = ?', [roomId]);
+        io.to(roomId).emit('tasks-updated', tasks);
       }
 
       const participantsList = Object.values(roomsState[roomId].participants);

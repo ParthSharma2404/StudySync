@@ -5,17 +5,17 @@
   --font-display: 'Outfit', -apple-system, sans-serif;
   --font-sans: 'Inter', -apple-system, sans-serif;
 
-  /* Sketchbook Notebook Light Mode */
-  --color-bg-deep: #fdfbf7;       /* Cream paper */
-  --color-bg-slate: #f5f5ec;      /* Slightly darker cream */
-  --color-bg-hover: #ebebd9;      
+  /* Sketchbook Notebook Light Mode - Warm Aesthetic */
+  --color-bg-deep: #fffaf8;       /* Warm cream */
+  --color-bg-slate: #fdf5f2;      /* Warmer slightly darker cream */
+  --color-bg-hover: #fcece7;      
   
-  --color-border-glass: #2b2b2b;  /* Ink outline */
-  --color-border-hover: #000000;  /* Dark ink */
+  --color-border-glass: #4a3f3f;  /* Warm dark brown/grey */
+  --color-border-hover: #2a2222;  /* Dark warm ink */
 
-  --color-primary: #2b2b2b;       /* Dark Ink */
-  --color-primary-hover: #000000; 
-  --color-primary-fg: #fdfbf7;    /* Paper color for text on primary button */
+  --color-primary: #4a3f3f;       /* Warm Dark Ink */
+  --color-primary-hover: #2a2222; 
+  --color-primary-fg: #fffaf8;    /* Paper color for text on primary button */
   
   --color-accent: #6366f1;        /* Indigo 500 */
   --color-accent-hover: #4f46e5;  
@@ -25,12 +25,12 @@
   --color-danger: #ef4444;
   --color-danger-bg: rgba(239, 68, 68, 0.1);
 
-  --color-text-title: #2b2b2b;    /* Charcoal Ink */
-  --color-text-main: #3d3d3d;     /* Dark Gray Ink */
-  --color-text-muted: #5e5e5e;    /* Faded Ink */
+  --color-text-title: #362f2f;    /* Warm Charcoal */
+  --color-text-main: #4d4343;     /* Warm Dark Gray */
+  --color-text-muted: #786c6c;    /* Warm Faded Ink */
 
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-dropdown: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 8px 24px -4px rgba(74, 63, 63, 0.15), 0 4px 10px -2px rgba(74, 63, 63, 0.1);
+  --shadow-dropdown: 0 16px 32px -4px rgba(74, 63, 63, 0.2), 0 8px 16px -4px rgba(74, 63, 63, 0.15);
 
   --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -48,12 +48,14 @@
 
 body {
   font-family: 'Kalam', cursive;
-  background-color: #fdfbf7;
+  background-color: #fcf4f3; /* Warm pastel base */
   background-image: 
-    linear-gradient(#e8e8e8 1px, transparent 1px),
-    linear-gradient(90deg, transparent 40px, #ffc0c0 40px, #ffc0c0 42px, transparent 42px);
-  background-size: 100% 30px, 100% 100%;
-  color: #2b2b2b;
+    linear-gradient(#f0e1e1 1px, transparent 1px), /* Warmer horizontal lines */
+    linear-gradient(90deg, transparent 40px, #ffbaba 40px, #ffbaba 42px, transparent 42px), /* Slightly softer red margin */
+    radial-gradient(circle at 50% 0%, rgba(255, 240, 235, 0.6) 0%, rgba(252, 244, 243, 0.1) 100%);
+  background-size: 100% 30px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+  color: var(--color-text-main);
   line-height: 1.5;
   margin: 0;
   -webkit-font-smoothing: antialiased;
@@ -769,4 +771,13 @@ button, input, textarea, select {
 .chart-bar-container:hover .tooltip {
   opacity: 1 !important;
   transform: translateY(-5px);
+}
+
+/* Active Task Timer Pulse Animation */
+@keyframes activeTimerPulse {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.timer-pulse {
+  animation: activeTimerPulse 1.8s infinite ease-in-out;
 }
