@@ -23,10 +23,14 @@
   /* Force background and text color for the room */
   background-color: var(--color-bg-deep);
   color: var(--color-text-main);
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 24px 48px;
 }
 
 .premium-study-room * {

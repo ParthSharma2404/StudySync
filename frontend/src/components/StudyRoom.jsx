@@ -597,7 +597,7 @@ function StudyRoom({ currentUser }) {
   const showLobby = !workspaceEntered;
 
   return (
-    <div className="premium-study-room container" style={{ position: 'relative' }}>
+    <div className="premium-study-room">
       {/* Hidden Audio Element */}
       <audio ref={audioRef} loop />
 
