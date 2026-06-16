@@ -684,26 +684,35 @@ function StudyRoom({ currentUser }) {
                 )}
               </div>
 
-              {/* Ambient Audio panel */}
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Ambient Audio panel - Retro Tape Recorder */}
+              <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#e2dacf', border: '2px solid #8c7e6b' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '2px solid #bdafa0', paddingBottom: '8px' }}>
+                  <h3 style={{ fontSize: '0.95rem', color: '#4a4036', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
+                  </h3>
+                  {/* Fake cassette buttons */}
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                     <div style={{ width: '12px', height: '6px', background: '#4a4036', borderRadius: '2px' }}></div>
+                     <div style={{ width: '12px', height: '6px', background: '#4a4036', borderRadius: '2px' }}></div>
+                     <div style={{ width: '12px', height: '6px', background: '#ef4444', borderRadius: '2px' }}></div>
+                  </div>
+                </div>
+
+                <div style={{ background: '#2c2825', padding: '16px', borderRadius: '8px', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.4)', border: '2px solid #1a1816' }}>
                   <select 
                     value={ambientAudio} 
                     onChange={handleChangeAmbientAudio}
                     disabled={!isSolo && moderatorId !== user?.id}
                     className="form-input"
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', background: '#1a1816', color: '#a3e635', border: '1px solid #3f3933', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}
                   >
                     {Object.entries(AUDIO_TRACKS).map(([key, track]) => (
                       <option key={key} value={key}>{track.name}</option>
                     ))}
                   </select>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#a3a3a3', textTransform: 'uppercase', fontWeight: 'bold' }}>VOL</span>
                     <input 
                       type="range" 
                       min="0" 
@@ -711,13 +720,13 @@ function StudyRoom({ currentUser }) {
                       step="0.05" 
                       value={audioVolume} 
                       onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
-                      style={{ flex: 1, cursor: 'pointer', height: '4px', accentColor: 'var(--color-primary)' }}
+                      style={{ flex: 1, cursor: 'pointer', height: '6px', background: '#1a1816', borderRadius: '3px', accentColor: '#a3e635' }}
                     />
                   </div>
                 </div>
                 {!isSolo && moderatorId !== user?.id && (
-                  <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '16px', fontStyle: 'italic', lineHeight: 1.4 }}>
-                    * The room's ambient audio is controlled by the host. You can adjust your personal volume.
+                  <p style={{ fontSize: '0.7rem', color: '#8c7e6b', marginTop: '12px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    * Sync controlled by host.
                   </p>
                 )}
               </div>
