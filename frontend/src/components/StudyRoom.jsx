@@ -651,29 +651,46 @@ function StudyRoom({ currentUser }) {
             {/* Torn Paper Header Divider */}
             <div className="sketched-divider"></div>
 
-            {/* Physical Desk Custom Stopwatch */}
-            <div className="stopwatch-container">
+            {/* Physical Desk Custom Stopwatch (Pure CSS/SVG) */}
+            <div className="stopwatch-wrapper">
               {!timerStarted ? (
-                <div className="stopwatch-title" style={{ color: '#d97706' }}>
-                  <ClipboardList size={16} /> Planning Phase
+                <div className="stopwatch-title" style={{ color: '#0f766e', background: 'rgba(217, 119, 6, 0.2)' }}>
+                  <ClipboardList size={14} /> Planning Phase
                 </div>
               ) : (
                 <div className="stopwatch-title" style={{ color: '#0f766e' }}>
-                  <Play size={16} /> Room Uptime
+                  <Play size={14} /> Room Uptime
                 </div>
               )}
+
+              <svg className="stopwatch-svg-frame" viewBox="0 0 280 90">
+                {/* Background Gears SVG */}
+                <g opacity="0.08" stroke="#000" strokeWidth="1.5" fill="none">
+                  <circle cx="230" cy="20" r="15"/>
+                  <path d="M230 5 L230 35 M215 20 L245 20 M219 9 L241 31 M219 31 L241 9" />
+                  <circle cx="30" cy="70" r="18"/>
+                  <path d="M30 52 L30 88 M12 70 L48 70 M17 57 L43 83 M17 83 L43 57" />
+                </g>
+                {/* Watch Body */}
+                <rect x="5" y="10" width="270" height="75" rx="8" fill="#f8f8f8" stroke="#333" strokeWidth="2" />
+                {/* Inner Screen */}
+                <rect x="15" y="20" width="250" height="55" rx="4" fill="#fff" stroke="#333" strokeWidth="1.5" />
+                {/* Buttons */}
+                <rect x="40" y="4" width="25" height="6" rx="2" fill="#fff" stroke="#333" strokeWidth="1.5" />
+                <rect x="75" y="6" width="15" height="4" rx="1" fill="#fff" stroke="#333" strokeWidth="1.5" />
+              </svg>
               
               <div className="stopwatch-time">
                 {formatTime(roomUptimeSeconds)}
               </div>
 
               {!timerStarted && (
-                <div style={{ position: 'absolute', bottom: '-40px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
+                <div style={{ position: 'absolute', bottom: '-45px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%', zIndex: 20 }}>
                   {isSolo || moderatorId === user?.id ? (
                       <button 
                         onClick={handleStartTimer} 
                         className="btn btn-primary" 
-                        style={{ padding: '10px 24px', fontSize: '0.9rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                        style={{ padding: '8px 20px', fontSize: '0.9rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
                       >
                       <Play size={16} /> Start Session
                     </button>
@@ -958,10 +975,6 @@ function StudyRoom({ currentUser }) {
           </div>
         </div>
       )}
-
-      {/* Desk Doodles */}
-      <img src="/assets/pen_doodle.png" alt="" className="doodle-pen" />
-      <img src="/assets/books_doodle.png" alt="" className="doodle-books" />
 
       {/* Hidden Canvas for Local Motion / Presence AI Detection */}
       <canvas ref={canvasRef} width="32" height="24" style={{ display: 'none' }}></canvas>

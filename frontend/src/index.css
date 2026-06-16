@@ -790,117 +790,104 @@ button, input, textarea, select {
   background-repeat: no-repeat;
 }
 
-.stopwatch-container {
-  width: 100%;
-  max-width: 550px;
-  height: 200px;
-  margin: 0 auto 30px auto;
+.stopwatch-wrapper {
   position: relative;
-  background-image: url('/assets/stopwatch_bg.png');
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
+  width: 100%;
+  max-width: 420px;
+  height: 140px;
+  margin: 0 auto 30px auto;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+  transform: rotate(-1deg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.1));
+  z-index: 10;
+}
+
+.stopwatch-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to right, #f4f4f4, #fff);
+  border-right: 1px dashed rgba(0,0,0,0.1);
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  box-shadow: inset 2px 0 5px rgba(0,0,0,0.03);
+}
+
+.stopwatch-svg-frame {
+  position: absolute;
+  width: 300px;
+  height: 100px;
+  pointer-events: none;
 }
 
 .stopwatch-title {
   position: absolute;
-  top: 15px;
+  top: -30px;
   left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.95rem;
-  font-weight: bold;
+  transform: translateX(-50%) rotate(1deg);
+  font-size: 0.85rem;
+  font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: #111;
-  text-shadow: 0 0 8px rgba(34, 211, 238, 0.6); /* Cyan glow behind text */
+  background: rgba(45, 212, 191, 0.3); /* Teal glow */
+  padding: 2px 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .stopwatch-time {
-  font-size: 5rem;
-  font-weight: 700;
-  letter-spacing: -2px;
-  color: #1a1a1a;
-  margin-top: 10px;
-  /* Add slight tilt for sketchy look */
-  transform: rotate(-1.5deg);
+  position: relative;
+  z-index: 10;
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #222;
+  font-family: 'Kalam', cursive;
 }
 
 .cardboard-panel {
-  background-color: #f2ead6;
-  border: 2px solid var(--color-border-glass);
-  border-radius: var(--radius-md);
-  box-shadow: 2px 3px 0 rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.02);
+  background-color: #f5eedc; /* Lighter main paper */
+  border: 1px solid #d4c8b2;
+  border-radius: 4px;
+  box-shadow: 2px 4px 8px rgba(0,0,0,0.05);
   padding: 1.5rem;
   position: relative;
-  overflow: hidden;
-  /* Cardboard texture */
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  margin-top: 15px; /* Space for back layer */
 }
 
 .cardboard-panel::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 12px;
-  background-color: #e3d2b3;
-  border-bottom: 2px solid rgba(0,0,0,0.15);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  top: -10px;
+  left: -5px;
+  right: 5px;
+  bottom: 10px;
+  background-color: #e8dbbf; /* Darker back folder */
+  border: 1px solid #c9bda5;
+  border-radius: 4px;
+  z-index: -1;
+  transform: rotate(-0.5deg);
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
 }
 
 .marker-highlight-teal {
   position: relative;
   z-index: 1;
   font-weight: 600;
-}
-
-.marker-highlight-teal::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -8px;
-  right: -8px;
-  height: 120%;
-  transform: translateY(-50%) rotate(-1deg);
-  background: rgba(45, 212, 191, 0.4); /* Teal transparent */
-  z-index: -1;
-  border-radius: 3px;
-  /* Marker stroke texture */
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 2px,
-    rgba(45, 212, 191, 0.3) 2px,
-    rgba(45, 212, 191, 0.3) 4px
-  );
-}
-
-.doodle-pen {
-  position: fixed;
-  left: 2%;
-  top: 45%;
-  width: 140px;
-  height: auto;
-  transform: rotate(-10deg);
-  z-index: 0;
-  opacity: 0.9;
-  pointer-events: none;
-}
-
-.doodle-books {
-  position: fixed;
-  right: 1%;
-  bottom: 2%;
-  width: 280px;
-  height: auto;
-  z-index: 0;
-  opacity: 0.95;
-  pointer-events: none;
+  background-color: #a5f3e4; /* Solid teal highlight */
+  padding: 4px 8px;
+  border-radius: 2px;
+  transform: rotate(-1deg);
+  display: inline-block;
+  margin-left: -8px;
 }
