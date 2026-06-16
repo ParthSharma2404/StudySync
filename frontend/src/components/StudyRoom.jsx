@@ -705,9 +705,13 @@ function StudyRoom({ currentUser }) {
               </div>
 
               {/* Ambient Audio panel */}
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
+              {/* Ambient Audio panel - Sketched Media Player */}
+              <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#fffdf0', border: '2px solid #3d3d3d', borderRadius: '4px 15px 4px 15px / 15px 4px 15px 4px', position: 'relative', transform: 'rotate(-1deg)', boxShadow: '4px 6px 0 rgba(0,0,0,0.06)' }}>
+                {/* Decorative tape */}
+                <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%) rotate(2deg)', width: '80px', height: '24px', backgroundColor: 'rgba(255, 255, 255, 0.6)', border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', zIndex: 10 }}></div>
+                
+                <h3 style={{ fontSize: '1.2rem', color: '#2b2b2b', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontFamily: "'Kalam', cursive", fontWeight: 'bold' }}>
+                  <Headphones size={20} strokeWidth={2.5} /> Ambient Audio {isSolo ? '' : 'Sync'}
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <select 
@@ -715,14 +719,14 @@ function StudyRoom({ currentUser }) {
                     onChange={handleChangeAmbientAudio}
                     disabled={!isSolo && moderatorId !== user?.id}
                     className="form-input"
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', backgroundColor: 'transparent', border: '2px dashed #a3a3a3', color: '#4a4a4a', fontWeight: '500' }}
                   >
                     {Object.entries(AUDIO_TRACKS).map(([key, track]) => (
                       <option key={key} value={key}>{track.name}</option>
                     ))}
                   </select>
 
-                  {/* YouTube URL Input (only shown to host when custom_youtube is selected) */}
+                  {/* YouTube URL Input */}
                   {(ambientAudio === 'custom_youtube' || ambientAudio.startsWith('youtube:')) && (isSolo || moderatorId === user?.id) && (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input 
@@ -731,38 +735,43 @@ function StudyRoom({ currentUser }) {
                         className="form-input" 
                         value={youtubeUrlInput}
                         onChange={(e) => setYoutubeUrlInput(e.target.value)}
-                        style={{ flex: 1 }}
+                        style={{ flex: 1, backgroundColor: 'transparent', borderBottom: '2px solid #3d3d3d', borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none', paddingLeft: '4px' }}
                       />
-                      <button onClick={handleSetYoutubeUrl} className="btn btn-primary" style={{ padding: '8px 16px' }}>Set</button>
+                      <button onClick={handleSetYoutubeUrl} className="btn btn-primary" style={{ padding: '6px 14px', transform: 'rotate(2deg)' }}>Set</button>
                     </div>
                   )}
 
                   {/* Hidden YouTube Player */}
                   {ambientAudio.startsWith('youtube:') && (
-                     <div style={{ display: 'none' }}>
+                     <div style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none', overflow: 'hidden' }}>
                         <ReactPlayer 
                            url={ambientAudio.replace('youtube:', '')}
                            playing={true}
                            volume={audioVolume}
                            loop={true}
-                           width="0"
-                           height="0"
+                           width="10px"
+                           height="10px"
+                           config={{
+                             youtube: {
+                               playerVars: { autoplay: 1, controls: 0 }
+                             }
+                           }}
                         />
                      </div>
                   )}
                   
                   {/* Visualizer if playing YouTube */}
                   {ambientAudio.startsWith('youtube:') && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', background: 'rgba(16, 185, 129, 0.1)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600' }}>
-                      <Headphones className="animate-pulse" size={18} /> 
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444', padding: '4px 0', fontSize: '1rem', fontWeight: 'bold', fontFamily: "'Kalam', cursive" }}>
+                      <Headphones className="animate-pulse" size={18} strokeWidth={2.5} /> 
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                         Playing YouTube Audio
+                         ♪ Playing YouTube Audio...
                       </span>
                     </div>
                   )}
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
+                    <Volume2 size={18} color="#64748b" />
                     <input 
                       type="range" 
                       min="0" 
@@ -770,13 +779,13 @@ function StudyRoom({ currentUser }) {
                       step="0.05" 
                       value={audioVolume} 
                       onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
-                      style={{ flex: 1, cursor: 'pointer', height: '4px', accentColor: 'var(--color-primary)' }}
+                      style={{ flex: 1, cursor: 'pointer', height: '6px', accentColor: '#2b2b2b', background: '#e5e5e5', borderRadius: '4px' }}
                     />
                   </div>
                 </div>
                 {!isSolo && moderatorId !== user?.id && (
-                  <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '16px', fontStyle: 'italic', lineHeight: 1.4 }}>
-                    * The room's ambient audio is controlled by the host. You can adjust your personal volume.
+                  <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '16px', fontFamily: "'Kalam', cursive" }}>
+                    * Sync controlled by host.
                   </p>
                 )}
               </div>
