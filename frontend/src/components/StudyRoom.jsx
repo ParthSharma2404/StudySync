@@ -6,12 +6,15 @@ import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 
+import ReactPlayer from 'react-player';
+
 const AUDIO_TRACKS = {
   none: { name: 'No Ambient Audio', url: null },
   rain: { name: 'Heavy Rain', url: 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg' },
   forest: { name: 'Morning Forest', url: 'https://actions.google.com/sounds/v1/ambiences/forest_morning.ogg' },
   cafe: { name: 'Coffee Shop', url: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg' },
-  stream: { name: 'Flowing Stream', url: 'https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg' }
+  stream: { name: 'Flowing Stream', url: 'https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg' },
+  custom_youtube: { name: 'Custom YouTube Link', url: null }
 };
 
 function StudyRoom({ currentUser }) {
@@ -34,6 +37,7 @@ function StudyRoom({ currentUser }) {
   // Ambient Audio
   const [ambientAudio, setAmbientAudio] = useState('none');
   const [audioVolume, setAudioVolume] = useState(0.5);
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   
   const user = currentUser;
   const [participants, setParticipants] = useState([]);
@@ -210,12 +214,14 @@ function StudyRoom({ currentUser }) {
   // --- AUDIO SYNC EFFECT ---
   useEffect(() => {
     if (audioRef.current) {
-      if (ambientAudio === 'none') {
+      if (ambientAudio === 'none' || ambientAudio.startsWith('youtube:') || ambientAudio === 'custom_youtube') {
         audioRef.current.pause();
       } else {
-        audioRef.current.src = AUDIO_TRACKS[ambientAudio].url;
-        audioRef.current.volume = audioVolume;
-        audioRef.current.play().catch(e => console.log('Audio autoplay blocked', e));
+        if (AUDIO_TRACKS[ambientAudio]) {
+          audioRef.current.src = AUDIO_TRACKS[ambientAudio].url;
+          audioRef.current.volume = audioVolume;
+          audioRef.current.play().catch(e => console.log('Audio autoplay blocked', e));
+        }
       }
     }
   }, [ambientAudio]);
@@ -233,6 +239,20 @@ function StudyRoom({ currentUser }) {
     } else {
       if (moderatorId === user?.id) {
         socketRef.current.emit('change-ambient-audio', { trackId });
+        setAmbientAudio(trackId);
+      }
+    }
+  };
+
+  const handleSetYoutubeUrl = () => {
+    if (!youtubeUrlInput) return;
+    const trackId = `youtube:${youtubeUrlInput}`;
+    if (isSolo) {
+      setAmbientAudio(trackId);
+    } else {
+      if (moderatorId === user?.id) {
+        socketRef.current.emit('change-ambient-audio', { trackId });
+        setAmbientAudio(trackId);
       }
     }
   };
@@ -691,7 +711,7 @@ function StudyRoom({ currentUser }) {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <select 
-                    value={ambientAudio} 
+                    value={ambientAudio.startsWith('youtube:') ? 'custom_youtube' : ambientAudio} 
                     onChange={handleChangeAmbientAudio}
                     disabled={!isSolo && moderatorId !== user?.id}
                     className="form-input"
@@ -701,6 +721,45 @@ function StudyRoom({ currentUser }) {
                       <option key={key} value={key}>{track.name}</option>
                     ))}
                   </select>
+
+                  {/* YouTube URL Input (only shown to host when custom_youtube is selected) */}
+                  {(ambientAudio === 'custom_youtube' || ambientAudio.startsWith('youtube:')) && (isSolo || moderatorId === user?.id) && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Paste YouTube URL..." 
+                        className="form-input" 
+                        value={youtubeUrlInput}
+                        onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                        style={{ flex: 1 }}
+                      />
+                      <button onClick={handleSetYoutubeUrl} className="btn btn-primary" style={{ padding: '8px 16px' }}>Set</button>
+                    </div>
+                  )}
+
+                  {/* Hidden YouTube Player */}
+                  {ambientAudio.startsWith('youtube:') && (
+                     <div style={{ display: 'none' }}>
+                        <ReactPlayer 
+                           url={ambientAudio.replace('youtube:', '')}
+                           playing={true}
+                           volume={audioVolume}
+                           loop={true}
+                           width="0"
+                           height="0"
+                        />
+                     </div>
+                  )}
+                  
+                  {/* Visualizer if playing YouTube */}
+                  {ambientAudio.startsWith('youtube:') && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', background: 'rgba(16, 185, 129, 0.1)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600' }}>
+                      <Headphones className="animate-pulse" size={18} /> 
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                         Playing YouTube Audio
+                      </span>
+                    </div>
+                  )}
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
