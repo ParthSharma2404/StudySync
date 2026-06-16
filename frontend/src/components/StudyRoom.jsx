@@ -5,8 +5,7 @@ import Peer from 'peerjs';
 import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
-
-import ReactPlayer from 'react-player';
+import YouTubePlayer from './YouTubePlayer';
 
 const AUDIO_TRACKS = {
   none: { name: 'No Ambient Audio', url: null },
@@ -738,22 +737,11 @@ function StudyRoom({ currentUser }) {
                     </div>
                   )}
 
-                  {/* Hidden YouTube Player (always mounted to prevent autoplay blocks, sized off-screen) */}
-                  <div style={{ position: 'absolute', top: '-1000px', left: '-1000px', opacity: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-                     <ReactPlayer 
-                        url={ambientAudio.startsWith('youtube:') ? ambientAudio.replace('youtube:', '') : ''}
-                        playing={ambientAudio.startsWith('youtube:')}
-                        volume={audioVolume}
-                        loop={true}
-                        width="200px"
-                        height="200px"
-                        config={{
-                          youtube: {
-                            playerVars: { autoplay: 1, controls: 0 }
-                          }
-                        }}
-                     />
-                  </div>
+                  {/* Hidden YouTube Player using react-youtube */}
+                  <YouTubePlayer 
+                    videoUrl={ambientAudio.startsWith('youtube:') ? ambientAudio.replace('youtube:', '') : ''} 
+                    volume={audioVolume} 
+                  />
                   
                   {/* Visualizer if playing YouTube */}
                   {ambientAudio.startsWith('youtube:') && (
