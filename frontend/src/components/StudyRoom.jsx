@@ -648,77 +648,79 @@ function StudyRoom({ currentUser }) {
               </div>
             </div>
 
-            {/* Stopwatch panel */}
-            <div className="glass-panel timer-card">
-              {!timerStarted ? (
-                <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <ClipboardList size={16} /> Planning Phase (Decide tasks and start timer)
-                </p>
-              ) : (
-                <p style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <Play size={16} /> Room Uptime
-                </p>
-              )}
+            {/* Top Row: Stopwatch and Audio */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
               
-              <div className="timer-digits">
-                {formatTime(roomUptimeSeconds)}
-              </div>
-
-              {!timerStarted && (
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
-                  {isSolo || moderatorId === user?.id ? (
-                      <button 
-                        onClick={handleStartTimer} 
-                        className="btn btn-primary" 
-                        style={{ padding: '12px 28px', fontSize: '0.95rem' }}
-                      >
-                      <Play size={18} /> Start Study Session
-                    </button>
-                  ) : (
-                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
-                  )}
-                </div>
-              )}
-
-
-            </div>
-
-            {/* Ambient Audio panel */}
-            <div className="glass-panel" style={{ padding: '24px' }}>
-              <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                <select 
-                  value={ambientAudio} 
-                  onChange={handleChangeAmbientAudio}
-                  disabled={!isSolo && moderatorId !== user?.id}
-                  className="form-input"
-                  style={{ width: 'auto', flex: 1 }}
-                >
-                  {Object.entries(AUDIO_TRACKS).map(([key, track]) => (
-                    <option key={key} value={key}>{track.name}</option>
-                  ))}
-                </select>
+              {/* Stopwatch panel */}
+              <div className="glass-panel timer-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {!timerStarted ? (
+                  <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <ClipboardList size={16} /> Planning Phase
+                  </p>
+                ) : (
+                  <p style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <Play size={16} /> Room Uptime
+                  </p>
+                )}
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="1" 
-                    step="0.05" 
-                    value={audioVolume} 
-                    onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
-                    style={{ flex: 1, cursor: 'pointer' }}
-                  />
+                <div className="timer-digits" style={{ fontSize: '3.5rem', margin: '8px 0' }}>
+                  {formatTime(roomUptimeSeconds)}
                 </div>
+
+                {!timerStarted && (
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
+                    {isSolo || moderatorId === user?.id ? (
+                        <button 
+                          onClick={handleStartTimer} 
+                          className="btn btn-primary" 
+                          style={{ padding: '10px 24px', fontSize: '0.9rem' }}
+                        >
+                        <Play size={16} /> Start Study Session
+                      </button>
+                    ) : (
+                      <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Waiting for host...</span>
+                    )}
+                  </div>
+                )}
               </div>
-              {!isSolo && moderatorId !== user?.id && (
-                <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '12px', fontStyle: 'italic' }}>
-                  * The room's ambient audio is controlled by the host. You can adjust your personal volume.
-                </p>
-              )}
+
+              {/* Ambient Audio panel */}
+              <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <select 
+                    value={ambientAudio} 
+                    onChange={handleChangeAmbientAudio}
+                    disabled={!isSolo && moderatorId !== user?.id}
+                    className="form-input"
+                    style={{ width: '100%' }}
+                  >
+                    {Object.entries(AUDIO_TRACKS).map(([key, track]) => (
+                      <option key={key} value={key}>{track.name}</option>
+                    ))}
+                  </select>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="1" 
+                      step="0.05" 
+                      value={audioVolume} 
+                      onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
+                      style={{ flex: 1, cursor: 'pointer', height: '4px', accentColor: 'var(--color-primary)' }}
+                    />
+                  </div>
+                </div>
+                {!isSolo && moderatorId !== user?.id && (
+                  <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '16px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    * The room's ambient audio is controlled by the host. You can adjust your personal volume.
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Quest Board Tasks list */}
