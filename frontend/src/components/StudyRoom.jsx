@@ -5,7 +5,6 @@ import Peer from 'peerjs';
 import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
-import './StudyRoom.css';
 
 const AUDIO_TRACKS = {
   none: { name: 'No Ambient Audio', url: null },
@@ -295,21 +294,33 @@ function StudyRoom({ currentUser }) {
   const authorizeWebcam = async () => {
     setSetupError('');
     try {
-      // Adaptive video quality based on network conditions
-      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      const effectiveType = conn?.effectiveType || '4g';
-      const isSlowNetwork = ['slow-2g', '2g', '3g'].includes(effectiveType);
+      // Adaptive WebRTC Constraint Handling
+      let constraints = { video: true, audio: true };
       
-      const videoConstraints = isSlowNetwork
-        ? { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } }
-        : { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24 } };
+      // Detect slow networks and downscale video aggressively
+      if (navigator.connection && navigator.connection.effectiveType) {
+        const type = navigator.connection.effectiveType;
+        if (type === '2g' || type === '3g') {
+          constraints = {
+            video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } },
+            audio: true
+          };
+          console.warn('Slow network detected. Reducing video quality to 320x240 @ 15fps');
+        } else {
+          constraints = {
+            video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24 } },
+            audio: true
+          };
+        }
+      }
 
       let stream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
       } catch (audioErr) {
         console.warn('Failed to get video+audio, falling back to video only:', audioErr);
-        stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+        constraints.audio = false;
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
       }
       localCameraStreamRef.current = stream;
       setWebcamEnabled(true);
@@ -325,28 +336,9 @@ function StudyRoom({ currentUser }) {
     }
   };
 
-  const authorizeScreenshare = async () => {
-    setSetupError('');
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      localScreenStreamRef.current = stream;
-      setScreenEnabled(true);
-
-      // Listener to trigger auto-pause if user stops sharing from browser bar mid-session
-      stream.getVideoTracks()[0].onended = () => {
-        pauseStopwatch('Stopped Sharing ⚠️');
-        alert('Screenshare stopped. Study session paused.');
-      };
-    } catch (err) {
-      console.error(err);
-      setSetupError('Screenshare denied. Tab/Screen sharing is required to verify active tab focus.');
-    }
-  };
-
   const handleEnterWorkspace = () => {
-    // Proceed to the actual room workspace now that both webcam and screenshare are approved
+    // Proceed to the actual room workspace now that webcam is approved
     setWebcamEnabled(true);
-    setScreenEnabled(true);
     setWorkspaceEntered(true);
     workspaceEnteredRef.current = true;
 
@@ -381,72 +373,8 @@ function StudyRoom({ currentUser }) {
 
   // --- ANTI-CHEAT ENGINE (Canvas Motion Detection) ---
   const runCameraPresenceAI = () => {
-    const video = document.getElementById('local-webcam-feed');
-    const canvas = canvasRef.current;
-    if (!video || !canvas || video.paused || video.ended) return;
-
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.drawImage(video, 0, 0, width, height);
-
-    try {
-      const imgData = ctx.getImageData(0, 0, width, height);
-      const data = imgData.data;
-
-      // 1. Brightness Check
-      let totalBrightness = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        totalBrightness += (r + g + b) / 3;
-      }
-      const avgBrightness = totalBrightness / (data.length / 4);
-
-      if (avgBrightness < 12) { 
-        idleTicksRef.current += 1;
-        if (idleTicksRef.current >= 30) { 
-          pauseStopwatch('Camera Covered');
-          alert('Stopwatch paused: Camera lens appears to be covered or blocked.');
-          idleTicksRef.current = 0;
-        }
-        return;
-      }
-
-      // 2. Motion / Static Frame Check
-      if (lastFrameDataRef.current) {
-        let diffCount = 0;
-        const threshold = 15; 
-
-        for (let i = 0; i < data.length; i += 4) {
-          const oldVal = lastFrameDataRef.current[i];
-          const newVal = data[i];
-          if (Math.abs(oldVal - newVal) > threshold) {
-            diffCount++;
-          }
-        }
-
-        const changeRatio = diffCount / (data.length / 4);
-
-        if (changeRatio < 0.005) { 
-          idleTicksRef.current += 1;
-          if (idleTicksRef.current >= 60) { 
-            pauseStopwatch('Away');
-            alert('Stopwatch paused: Zero movement detected. Are you still at your desk?');
-            idleTicksRef.current = 0;
-          }
-        } else {
-          idleTicksRef.current = 0; 
-        }
-      }
-
-      lastFrameDataRef.current = data;
-
-    } catch (e) {
-      console.error('Canvas reading blocked by CORS/Media restrictions:', e);
-    }
+    // Function disabled to prevent high CPU usage / crashing
+    return;
   };
 
   // --- WEBRTC REMOTE STREAM MANAGEMENT ---
@@ -597,7 +525,7 @@ function StudyRoom({ currentUser }) {
   const showLobby = !workspaceEntered;
 
   return (
-    <div className="premium-study-room">
+    <div className="container" style={{ position: 'relative' }}>
       {/* Hidden Audio Element */}
       <audio ref={audioRef} loop />
 
@@ -613,7 +541,7 @@ function StudyRoom({ currentUser }) {
       {/* 1. MANDATORY PERMISSIONS LOBBY */}
       {showLobby ? (
         <div style={{ padding: '60px 0', maxWidth: '600px', margin: '0 auto' }}>
-          <div className="pro-panel" style={{ padding: '40px', textAlign: 'center' }}>
+          <div className="glass-panel" style={{ padding: '40px', textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--color-text-title)' }}><Camera size={28} color="#6366f1" /> Permissions Lobby</h2>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginBottom: '32px', lineHeight: '1.5' }}>
               StudySync requires your Webcam and Tab Share permissions to verify desk presence and active work before you can join the room.
@@ -627,7 +555,7 @@ function StudyRoom({ currentUser }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
               {/* Webcam auth box */}
-              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--color-bg-slate)', borderRadius: '12px', border: '1px solid var(--color-border-glass)' }}>
+              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.06)' }}>
                 <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.1rem', marginBottom: '6px' }}>1. Webcam Feed (Presence verification)</h4>
                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>We scan this locally to verify you are sitting at your desk.</p>
                 
@@ -639,23 +567,8 @@ function StudyRoom({ currentUser }) {
                     <span style={{ color: '#10b981', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle2 size={16} /> Webcam Active</span>
                   </div>
                 ) : (
-                  <button onClick={authorizeWebcam} className="pro-btn pro-btn-primary" style={{ padding: '10px 24px', fontSize: '0.9rem' }}>
+                  <button onClick={authorizeWebcam} className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '0.9rem' }}>
                     Enable Webcam
-                  </button>
-                )}
-              </div>
-
-              {/* Screenshare auth box */}
-              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--color-bg-slate)', borderRadius: '12px', border: '1px solid var(--color-border-glass)' }}>
-                <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.1rem', marginBottom: '6px' }}>2. Tab Share (Anti-Cheat lock)</h4>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>Select the tab/screen where you will be reading your lecture or coding.</p>
-                <p style={{ color: '#f59e0b', fontSize: '0.75rem', marginBottom: '16px', fontStyle: 'italic', padding: '6px 12px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '6px' }}>Note: The browser may switch to the tab you share. Please return to this page to continue.</p>
-                
-                {screenEnabled ? (
-                  <span style={{ color: '#10b981', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle2 size={16} /> Tab Share Confirmed</span>
-                ) : (
-                  <button onClick={authorizeScreenshare} className="pro-btn pro-btn-primary" style={{ padding: '10px 24px', fontSize: '0.9rem' }}>
-                    Enable Tab Share
                   </button>
                 )}
               </div>
@@ -664,9 +577,9 @@ function StudyRoom({ currentUser }) {
             {/* Entry button */}
             <button
               onClick={handleEnterWorkspace}
-              className="pro-btn pro-btn-primary"
+              className="btn btn-primary"
               style={{ width: '100%', padding: '16px', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-              disabled={!(webcamEnabled && screenEnabled)}
+              disabled={!webcamEnabled}
             >
               <LogIn size={18} /> Enter Study Workspace
             </button>
@@ -685,7 +598,7 @@ function StudyRoom({ currentUser }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div>
                 <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>
+                <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
                   {isSolo ? 'Private Workspace' : `Room ID: ${roomId} • Moderator: ${participants.find(p => p.userId === moderatorId)?.username || 'System'}`}
                 </p>
               </div>
@@ -703,7 +616,7 @@ function StudyRoom({ currentUser }) {
             </div>
 
             {/* Stopwatch panel */}
-            <div className="pro-panel timer-card">
+            <div className="glass-panel timer-card">
               {!timerStarted ? (
                 <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   <ClipboardList size={16} /> Planning Phase (Decide tasks and start timer)
@@ -723,13 +636,13 @@ function StudyRoom({ currentUser }) {
                   {isSolo || moderatorId === user?.id ? (
                       <button 
                         onClick={handleStartTimer} 
-                        className="pro-btn pro-btn-primary" 
+                        className="btn btn-primary" 
                         style={{ padding: '12px 28px', fontSize: '0.95rem' }}
                       >
                       <Play size={18} /> Start Study Session
                     </button>
                   ) : (
-                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
+                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Waiting for host to start timer...</span>
                   )}
                 </div>
               )}
@@ -738,7 +651,7 @@ function StudyRoom({ currentUser }) {
             </div>
 
             {/* Ambient Audio panel */}
-            <div className="pro-panel" style={{ padding: '24px' }}>
+            <div className="glass-panel" style={{ padding: '24px' }}>
               <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                 <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
               </h3>
@@ -756,7 +669,7 @@ function StudyRoom({ currentUser }) {
                 </select>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Volume</span>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
                   <input 
                     type="range" 
                     min="0" 
@@ -769,14 +682,14 @@ function StudyRoom({ currentUser }) {
                 </div>
               </div>
               {!isSolo && moderatorId !== user?.id && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '12px', fontStyle: 'italic' }}>
+                <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '12px', fontStyle: 'italic' }}>
                   * The room's ambient audio is controlled by the host. You can adjust your personal volume.
                 </p>
               )}
             </div>
 
             {/* Quest Board Tasks list */}
-            <div className="pro-panel tasks-panel">
+            <div className="glass-panel tasks-panel">
               <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Target size={18} /> Objectives
                 <span style={{ marginLeft: 'auto', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '50px' }}>
@@ -793,26 +706,26 @@ function StudyRoom({ currentUser }) {
                   placeholder="Add a new objective..."
                   style={{ flex: 1 }}
                 />
-                <button type="submit" className="pro-btn pro-btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
                   Add Task
                 </button>
               </form>
 
               <div className="task-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {tasks.length === 0 ? (
-                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
+                  <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
                 ) : (
                   <>
                     {/* My Objectives */}
                     <div>
-                      <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid var(--color-border-glass)', paddingBottom: '4px' }}>My Objectives</h4>
+                      <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
-                          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
+                          <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
                         ) : (
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
                             <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
-                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid var(--color-border-glass)' }}>
+                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
                                 {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                               </div>
                               <div style={{ flex: 1 }}>
@@ -824,7 +737,7 @@ function StudyRoom({ currentUser }) {
                                   onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
                                   className="btn"
                                   style={{
-                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'var(--color-bg-hover)',
+                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'rgba(255,255,255,0.03)',
                                     border: '1px solid var(--color-border-glass)',
                                     padding: '4px 10px',
                                     fontSize: '0.75rem',
@@ -852,11 +765,11 @@ function StudyRoom({ currentUser }) {
                       const peerName = peerTasks[0]?.owner_name || 'Classmate';
                       return (
                         <div key={peerId}>
-                          <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '8px', borderBottom: '1px solid var(--color-border-glass)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
+                          <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8 }}>
                             {peerTasks.map((task) => (
-                              <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'var(--color-bg-slate)' }}>
-                                <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid var(--color-border-glass)', opacity: task.is_completed ? 1 : 0.3 }}>
+                              <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)' }}>
+                                <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
                                   {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                                 </div>
                                 <div style={{ flex: 1 }}>
@@ -883,7 +796,7 @@ function StudyRoom({ currentUser }) {
           <div className="workspace-right">
             {/* Invite link widget */}
             {!isSolo && (
-              <div className="pro-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
                 
                 {/* URL Copy */}
@@ -893,7 +806,7 @@ function StudyRoom({ currentUser }) {
                     className="form-input" 
                     value={window.location.href} 
                     readOnly 
-                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'var(--color-bg-slate)', flex: 1 }}
+                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
                   />
                   <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                     {copiedLink ? 'Copied!' : 'Copy'}
@@ -901,7 +814,7 @@ function StudyRoom({ currentUser }) {
                 </div>
 
                 {/* Invite by Username */}
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', borderTop: '1px solid var(--color-border-glass)', paddingTop: '10px' }}>
+                <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
                   Invite by Username:
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -934,7 +847,7 @@ function StudyRoom({ currentUser }) {
               </div>
             )}
 
-            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid var(--color-border-glass)', paddingBottom: '8px', marginTop: '10px' }}>
+            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px', marginTop: '10px' }}>
               Active Peers ({participants.length || 1})
             </h3>
 
@@ -976,7 +889,7 @@ function StudyRoom({ currentUser }) {
                       {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
                     </span>
                   </div>
-                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'var(--color-bg-hover)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={12} /> {formatTime(p.studySeconds)}
                   </div>
                 </div>
