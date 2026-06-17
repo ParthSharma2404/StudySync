@@ -13,6 +13,7 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { v4: uuidv4 } = require('uuid');
 const { db, dbGet, dbAll, dbRun } = require('./db');
+const { AccessToken } = require('livekit-server-sdk');
 
 
 
@@ -23,6 +24,25 @@ app.use(cookieParser());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'studysync_secret_key_123456';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_123456';
+
+// --- LiveKit API Helpers ---
+const generateLiveKitToken = (roomId, participantName) => {
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+  
+  if (!apiKey || !apiSecret) return null;
+
+  // For very short lived tokens
+  const at = new AccessToken(apiKey, apiSecret, {
+    identity: participantName,
+    name: participantName,
+    ttl: '24h' // 24 hours
+  });
+  
+  at.addGrant({ roomJoin: true, room: roomId, canPublish: true, canSubscribe: true });
+  return at.toJwt();
+};
+
 
 // Helper to send email via Resend API
 const sendVerificationEmail = async (email, verifyUrl) => {
@@ -586,15 +606,40 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
     if (!name) return res.status(400).json({ error: 'Room name is required.' });
 
     const roomId = crypto.randomUUID();
+
     await dbRun(
-      'INSERT INTO rooms (id, name, description, creator_id, passcode) VALUES (?, ?, ?, ?, ?)',
-      [roomId, name, description || '', req.user.id, passcode || null]
+      'INSERT INTO rooms (id, name, description, creator_id, passcode, hms_room_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [roomId, name, description || '', req.user.id, passcode || null, null]
     );
 
     res.status(201).json({ roomId, name });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error creating study room.' });
+  }
+});
+
+// Endpoint to generate a LiveKit Token for joining a room
+app.get('/api/rooms/:id/token', authenticateToken, async (req, res) => {
+  try {
+    const room = await dbGet('SELECT * FROM rooms WHERE id = ?', [req.params.id]);
+    if (!room) return res.status(404).json({ error: 'Room not found.' });
+
+    // Ensure the env vars are available
+    if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET || !process.env.LIVEKIT_URL) {
+      return res.status(500).json({ error: 'LiveKit keys not configured on server.' });
+    }
+
+    const token = generateLiveKitToken(room.id, req.user.username);
+    
+    if (!token) {
+      return res.status(500).json({ error: 'Failed to generate LiveKit token.' });
+    }
+
+    res.json({ token, serverUrl: process.env.LIVEKIT_URL });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error generating token.' });
   }
 });
 

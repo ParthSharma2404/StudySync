@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Pause, Square, Plus, Trash2, Camera, Mic, MicOff, VideoOff, ScreenShare, Volume2, ShieldAlert, Award, MessageSquare, Clock, Users, X, Monitor, LogOut, LogIn, CheckCircle2, Link as LinkIcon, Share2, ClipboardList, Target, AlertCircle, Headphones } from 'lucide-react';
-import Peer from 'peerjs';
+import { LiveKitRoom, useTracks, VideoTrack, useLocalParticipant } from '@livekit/components-react';
+import { Track } from 'livekit-client';
+import '@livekit/components-styles';
+
 import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
@@ -14,6 +17,30 @@ const AUDIO_TRACKS = {
   cafe: { name: 'Coffee Shop', url: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg' },
   stream: { name: 'Flowing Stream', url: 'https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg' },
   custom_youtube: { name: 'Custom YouTube Link', url: null }
+};
+
+const LiveKitVideoSidebar = () => {
+  const tracks = useTracks(
+    [
+      { source: Track.Source.Camera, withPlaceholder: true },
+      { source: Track.Source.ScreenShare, withPlaceholder: false },
+    ],
+    { onlySubscribed: false },
+  );
+  return (
+    <div className="video-sidebar">
+      {tracks.map((trackRef) => (
+        <div key={trackRef.participant.identity + trackRef.source} className="video-wrapper">
+          <VideoTrack trackRef={trackRef} />
+          <div className="video-overlay-info">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="participant-label">{trackRef.participant.name} {trackRef.participant.isLocal ? '(You)' : ''}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 function StudyRoom({ currentUser }) {
@@ -50,7 +77,12 @@ function StudyRoom({ currentUser }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(false);
 
+  // State for LiveKit
+  const [liveKitToken, setLiveKitToken] = useState('');
+  const [liveKitUrl, setLiveKitUrl] = useState('');
+
   const toggleMic = () => {
+    // We will let LiveKit handle mic muting via its own UI, but for solo mode we toggle the local track
     if (localCameraStreamRef.current) {
       const audioTrack = localCameraStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
@@ -79,7 +111,6 @@ function StudyRoom({ currentUser }) {
 
   // --- REFS & WEBRTC CONFIG ---
   const socketRef = useRef(null);
-  const peerRef = useRef(null);
   const localCameraStreamRef = useRef(null);
   const localScreenStreamRef = useRef(null);
   const timerIntervalRef = useRef(null);
@@ -96,6 +127,9 @@ function StudyRoom({ currentUser }) {
   }, [activeTaskId]);
 
   const globalSocket = useSocket();
+
+  // Let LiveKit handle disconnects natively via its components
+
 
   // --- WEBSOCKET & PEERJS ROOM SYNC ---
   useEffect(() => {
@@ -376,30 +410,34 @@ function StudyRoom({ currentUser }) {
     }
   };
 
-  const handleEnterWorkspace = () => {
-    // Proceed to the actual room workspace now that webcam is approved
+  const handleEnterWorkspace = async () => {
     setWebcamEnabled(true);
     setWorkspaceEntered(true);
     workspaceEnteredRef.current = true;
 
     if (!isSolo) {
-      const customPeerId = user.id + '-' + Math.random().toString(36).substr(2, 5);
-      // Connect to PeerJS for WebRTC grid video calls
-      peerRef.current = new Peer(customPeerId);
+      // Fetch LiveKit Token
+      try {
+        if (localCameraStreamRef.current) {
+          localCameraStreamRef.current.getTracks().forEach(t => t.stop());
+          localCameraStreamRef.current = null;
+        }
+
+        const res = await fetchApi(`/api/rooms/${roomId}/token`);
+        if (!res.ok) throw new Error("Could not fetch LiveKit token");
+        const { token, serverUrl } = await res.json();
+        
+        setLiveKitToken(token);
+        setLiveKitUrl(serverUrl);
+      } catch (err) {
+        console.error("LiveKit Join Error:", err);
+      }
 
       socketRef.current.emit('join-room', {
         roomId,
         userId: user.id,
         username: user.username,
-        peerId: customPeerId
-      });
-
-      peerRef.current.on('call', (call) => {
-        // Answer call with local webcam stream
-        call.answer(localCameraStreamRef.current);
-        call.on('stream', (remoteStream) => {
-          addRemoteStream(call.peer, remoteStream);
-        });
+        peerId: user.id
       });
     } else {
       socketRef.current.emit('join-room', {
@@ -416,27 +454,6 @@ function StudyRoom({ currentUser }) {
     // Function disabled to prevent high CPU usage / crashing
     return;
   };
-
-  // --- WEBRTC REMOTE STREAM MANAGEMENT ---
-  const addRemoteStream = (peerId, stream) => {
-    const remoteVideo = document.getElementById(`video-${peerId}`);
-    if (remoteVideo) {
-      remoteVideo.srcObject = stream;
-    }
-  };
-
-  useEffect(() => {
-    if (isSolo || !participants.length || !peerRef.current || !localCameraStreamRef.current) return;
-
-    participants.forEach((p) => {
-      if (p.userId !== user?.id && p.peerId && p.peerId !== 'solo') {
-        const call = peerRef.current.call(p.peerId, localCameraStreamRef.current);
-        call.on('stream', (remoteStream) => {
-          addRemoteStream(p.peerId, remoteStream);
-        });
-      }
-    });
-  }, [participants, user, isSolo]);
 
   // --- TIMER STARTER TRIGGER ---
   const handleStartTimer = () => {
@@ -512,6 +529,10 @@ function StudyRoom({ currentUser }) {
       navigate('/dashboard');
       return;
     }
+    
+    if (!isSolo && socketRef.current) socketRef.current.emit('leave-room', { roomId });
+    navigate('/dashboard');
+    return;
 
     const confirmEnd = window.confirm('Are you sure you want to end this study session? This will close the room for everyone and delete all tasks.');
     if (!confirmEnd) return;
@@ -954,53 +975,41 @@ function StudyRoom({ currentUser }) {
             )}
 
             <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px', marginTop: '10px' }}>
-              Active Peers ({participants.length || 1})
+              Active Peers
             </h3>
 
-            <div className="video-sidebar">
-              {/* Local Stream (Webcam feed) */}
-              <div className="video-wrapper">
-                <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
-                
-                <div className="video-overlay-info">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="participant-label">{user?.username} (You)</span>
-                    <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                      Lv {Math.floor((user?.xp || 0) / 100) + 1}
-                    </span>
-                    <button onClick={toggleMic} style={{ background: isMicMuted ? '#ef4444' : 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }} title={isMicMuted ? "Unmute Mic" : "Mute Mic"}>
-                      {isMicMuted ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 1l22 22M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>}
-                    </button>
-                  </div>
-                  <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    {!timerStarted ? 'Planning' : 'Focusing'}
-                    {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
-                  </span>
-                </div>
-              </div>
-
-              {/* Remote Peer video streams */}
-              {!isSolo && participants.filter(p => p.userId !== user?.id).map((p) => (
-                <div key={p.peerId} className="video-wrapper">
-                  <video id={`video-${p.peerId}`} autoPlay playsInline />
+            {isSolo ? (
+              <div className="video-sidebar">
+                <div className="video-wrapper">
+                  <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
+                  
                   <div className="video-overlay-info">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="participant-label">{p.username}</span>
+                      <span className="participant-label">{user?.username} (You)</span>
                       <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                        Lv {Math.floor((p.xp || 0) / 100) + 1}
+                        Lv {Math.floor((user?.xp || 0) / 100) + 1}
                       </span>
                     </div>
                     <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {!timerStarted ? 'Planning' : p.status || 'Focusing'}
-                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(p.studySeconds)}</span>}
+                      {!timerStarted ? 'Planning' : 'Focusing'}
+                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
                     </span>
                   </div>
-                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={12} /> {formatTime(p.studySeconds)}
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : liveKitToken && liveKitUrl ? (
+              <LiveKitRoom
+                video={true}
+                audio={true}
+                token={liveKitToken}
+                serverUrl={liveKitUrl}
+                data-lk-theme="default"
+              >
+                <LiveKitVideoSidebar />
+              </LiveKitRoom>
+            ) : (
+              <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', fontSize: '0.9rem' }}>Connecting to Video Server...</div>
+            )}
           </div>
         </div>
       )}

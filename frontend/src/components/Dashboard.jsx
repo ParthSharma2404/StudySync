@@ -235,8 +235,36 @@ function Dashboard({ currentUser }) {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100vh - 120px)' }}>
-        <h2 style={{ color: '#8b5cf6' }}>Loading your dashboard...</h2>
+      <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+        {/* Skeleton Top Welcome Bar */}
+        <div className="hide-on-mobile" style={{ marginBottom: '40px' }}>
+          <div className="skeleton-pulse" style={{ width: '350px', height: '36px', borderRadius: '8px', marginBottom: '12px' }}></div>
+          <div className="skeleton-pulse" style={{ width: '280px', height: '18px', borderRadius: '8px' }}></div>
+        </div>
+
+        <div className="dashboard-grid">
+          {/* Left Column Skeletons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div className="pro-panel" style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="skeleton-pulse" style={{ width: '96px', height: '96px', borderRadius: '50%', marginBottom: '20px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '160px', height: '24px', borderRadius: '8px', marginBottom: '8px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '120px', height: '16px', borderRadius: '8px', marginBottom: '24px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '140px', height: '32px', borderRadius: '50px' }}></div>
+            </div>
+            <div className="pro-panel skeleton-pulse" style={{ height: '300px' }}></div>
+          </div>
+
+          {/* Right Column Skeletons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <div className="stats-row" style={{ gap: '24px' }}>
+              <div className="pro-panel stat-card skeleton-pulse" style={{ height: '160px' }}></div>
+              <div className="pro-panel stat-card skeleton-pulse" style={{ height: '160px' }}></div>
+              <div className="pro-panel stat-card skeleton-pulse" style={{ height: '160px' }}></div>
+            </div>
+            <div className="pro-panel skeleton-pulse" style={{ height: '250px' }}></div>
+            <div className="pro-panel skeleton-pulse" style={{ height: '300px' }}></div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -57,9 +57,13 @@ const initDb = async () => {
         description TEXT,
         creator_id TEXT REFERENCES users(id) ON DELETE SET NULL,
         passcode TEXT,
+        hms_room_id TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add hms_room_id if it doesn't exist (for existing DBs)
+    await client.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS hms_room_id TEXT`);
 
     // Tasks Table
     await client.query(`
