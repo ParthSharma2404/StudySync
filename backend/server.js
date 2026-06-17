@@ -26,9 +26,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'studysync_secret_key_123456';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_123456';
 
 // --- LiveKit API Helpers ---
+const getLiveKitConfig = () => {
+  return {
+    apiKey: process.env.LIVEKIT_API_KEY?.replace(/['"]/g, '').trim(),
+    apiSecret: process.env.LIVEKIT_API_SECRET?.replace(/['"]/g, '').trim(),
+    url: process.env.LIVEKIT_URL?.replace(/['"]/g, '').trim()
+  };
+};
+
 const generateLiveKitToken = async (roomId, participantName) => {
-  const apiKey = process.env.LIVEKIT_API_KEY;
-  const apiSecret = process.env.LIVEKIT_API_SECRET;
+  const { apiKey, apiSecret } = getLiveKitConfig();
   
   if (!apiKey || !apiSecret) return null;
 
@@ -626,8 +633,9 @@ app.get('/api/rooms/:id/token', authenticateToken, async (req, res) => {
     if (!room) return res.status(404).json({ error: 'Room not found.' });
 
     // Ensure the env vars are available
-    if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET || !process.env.LIVEKIT_URL) {
-      return res.status(500).json({ error: 'LiveKit keys not configured on server.' });
+    const { apiKey, apiSecret, url } = getLiveKitConfig();
+    if (!apiKey || !apiSecret || !url) {
+      return res.status(500).json({ error: `LiveKit config missing -> API_KEY: ${!!apiKey}, SECRET: ${!!apiSecret}, URL: ${!!url}` });
     }
 
     const token = await generateLiveKitToken(room.id, req.user.username);
@@ -636,7 +644,7 @@ app.get('/api/rooms/:id/token', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Failed to generate LiveKit token.' });
     }
 
-    res.json({ token, serverUrl: process.env.LIVEKIT_URL });
+    res.json({ token, serverUrl: url });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error generating token.' });

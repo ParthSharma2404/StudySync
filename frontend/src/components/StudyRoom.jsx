@@ -80,6 +80,7 @@ function StudyRoom({ currentUser }) {
   // State for LiveKit
   const [liveKitToken, setLiveKitToken] = useState('');
   const [liveKitUrl, setLiveKitUrl] = useState('');
+  const [liveKitError, setLiveKitError] = useState('');
 
   const toggleMic = () => {
     // We will let LiveKit handle mic muting via its own UI, but for solo mode we toggle the local track
@@ -424,13 +425,17 @@ function StudyRoom({ currentUser }) {
         }
 
         const res = await fetchApi(`/api/rooms/${roomId}/token`);
-        if (!res.ok) throw new Error("Could not fetch LiveKit token");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Could not fetch LiveKit token");
+        }
         const { token, serverUrl } = await res.json();
         
         setLiveKitToken(token);
         setLiveKitUrl(serverUrl);
       } catch (err) {
         console.error("LiveKit Join Error:", err);
+        setLiveKitError(err.message);
       }
 
       socketRef.current.emit('join-room', {
@@ -996,6 +1001,15 @@ function StudyRoom({ currentUser }) {
                     </span>
                   </div>
                 </div>
+              </div>
+            ) : liveKitError ? (
+              <div style={{ padding: '20px', color: '#ef4444', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
+                <ShieldAlert size={24} style={{ marginBottom: '8px' }} />
+                <br />
+                <strong>LiveKit Server Error:</strong> {liveKitError}
+                <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                  Check your Render environment variables (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET) to make sure they are correct.
+                </p>
               </div>
             ) : liveKitToken && liveKitUrl ? (
               <LiveKitRoom
