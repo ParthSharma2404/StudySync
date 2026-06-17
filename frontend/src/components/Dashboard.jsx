@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Trophy, Flame, Clock, Target, Play, LogOut, Search, Plus, UserPlus, Users, ArrowRight, X as XIcon, X, Check, Gift, Copy, Bell, Trash2, BookOpen, GraduationCap, TrendingUp, BarChart2, Info, Award, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Trophy, Flame, Clock, Target, Play, LogOut, Search, Plus, UserPlus, Users, ArrowRight, X as XIcon, X, Check, Gift, Copy, Bell, Trash2, BookOpen, GraduationCap, TrendingUp, BarChart2, Info, Award, CheckCircle2, Medal } from 'lucide-react';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 
@@ -30,6 +30,8 @@ function Dashboard({ currentUser }) {
   const [friendSuccess, setFriendSuccess] = useState('');
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [userRankData, setUserRankData] = useState(null);
   const navigate = useNavigate();
 
   
@@ -70,6 +72,14 @@ function Dashboard({ currentUser }) {
           const friendsData = await friendsResponse.json();
           setFriends(friendsData.friends);
           setIncomingRequests(friendsData.incomingRequests);
+        }
+
+        // Fetch Leaderboard
+        const leaderboardResponse = await fetchApi('/api/users/leaderboard', {});
+        if (leaderboardResponse.ok) {
+          const lbData = await leaderboardResponse.json();
+          setLeaderboard(lbData.topUsers);
+          setUserRankData({ rank: lbData.currentUserRank, data: lbData.currentUserData });
         }
 
       } catch (err) {
@@ -562,6 +572,79 @@ function Dashboard({ currentUser }) {
                 <span>{userXp} Total XP</span>
                 <span>Level {currentLevel + 1}</span>
               </div>
+            </div>
+          </div>
+
+          {/* Global Leaderboard Panel */}
+          <div className="pro-panel feature-card" style={{ padding: '32px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', opacity: 0.03, pointerEvents: 'none' }}>
+              <Trophy size={200} />
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-text-title)', letterSpacing: '0.02em', margin: 0 }}>
+                <Trophy size={22} color="#f59e0b" style={{ filter: 'drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3))' }} /> Global Leaderboard
+              </h3>
+              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', background: 'rgba(0,0,0,0.03)', padding: '4px 12px', borderRadius: '50px', fontWeight: 600 }}>Top 10 Focusers</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {leaderboard.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '30px', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Loading leaderboard...</div>
+              ) : (
+                leaderboard.map((lbUser, index) => {
+                  const isTop3 = index < 3;
+                  const rankColors = ['#fbbf24', '#94a3b8', '#b45309']; // Gold, Silver, Bronze
+                  const rankColor = index < 3 ? rankColors[index] : 'var(--color-text-muted)';
+                  const isCurrentUser = lbUser.id === user?.id;
+                  
+                  return (
+                    <div key={lbUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: isCurrentUser ? 'rgba(99, 102, 241, 0.05)' : 'var(--color-bg-slate)', border: `1px solid ${isCurrentUser ? 'rgba(99, 102, 241, 0.3)' : 'var(--color-border)'}`, borderRadius: '12px', transition: 'transform 0.2s', transform: isTop3 ? 'scale(1.01)' : 'scale(1)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: isTop3 ? '1.1rem' : '1rem', color: rankColor }}>
+                          {index === 0 ? <Trophy size={20} color={rankColor} /> : index === 1 || index === 2 ? <Medal size={20} color={rankColor} /> : `#${index + 1}`}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--color-text-title)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {lbUser.username} {isCurrentUser && <span style={{ fontSize: '0.65rem', background: '#6366f1', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>YOU</span>}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {Math.floor((lbUser.xp || 0) / 100) + 1}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontWeight: 800, color: 'var(--color-text-title)', fontSize: '1.1rem' }}>
+                        {(lbUser.total_study_seconds / 3600).toFixed(1)} <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>hrs</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Current User Rank Sticky Row (if not in top 10) */}
+              {userRankData && userRankData.rank > 10 && userRankData.data && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0', opacity: 0.5 }}>
+                    <div style={{ width: '4px', height: '4px', background: 'var(--color-text-muted)', borderRadius: '50%', margin: '0 4px' }} />
+                    <div style={{ width: '4px', height: '4px', background: 'var(--color-text-muted)', borderRadius: '50%', margin: '0 4px' }} />
+                    <div style={{ width: '4px', height: '4px', background: 'var(--color-text-muted)', borderRadius: '50%', margin: '0 4px' }} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.4)', borderRadius: '12px', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.1)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1rem', color: 'var(--color-text-muted)' }}>
+                        #{userRankData.rank}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--color-text-title)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {userRankData.data.username} <span style={{ fontSize: '0.65rem', background: '#6366f1', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>YOU</span>
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {Math.floor((userRankData.data.xp || 0) / 100) + 1}</span>
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 800, color: 'var(--color-text-title)', fontSize: '1.1rem' }}>
+                      {(userRankData.data.total_study_seconds / 3600).toFixed(1)} <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>hrs</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

@@ -490,6 +490,41 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ message: 'Logged out successfully.' });
 });
 
+// --- LEADERBOARD API ---
+app.get('/api/users/leaderboard', authenticateToken, async (req, res) => {
+  try {
+    const topUsers = await dbAll(
+      `SELECT id, username, total_study_seconds, xp 
+       FROM users 
+       ORDER BY total_study_seconds DESC 
+       LIMIT 10`
+    );
+
+    const userRankData = await dbGet(
+      `SELECT COUNT(*) as higher_users 
+       FROM users 
+       WHERE total_study_seconds > (SELECT total_study_seconds FROM users WHERE id = ?)`
+      , [req.user.id]
+    );
+    
+    const rank = parseInt(userRankData?.higher_users || 0) + 1;
+    
+    const currentUserIndex = topUsers.findIndex(u => u.id === req.user.id);
+    let currentUserData = null;
+    if (currentUserIndex === -1) {
+      currentUserData = await dbGet(
+        `SELECT id, username, total_study_seconds, xp FROM users WHERE id = ?`, 
+        [req.user.id]
+      );
+    }
+
+    res.json({ topUsers, currentUserRank: rank, currentUserData });
+  } catch (err) {
+    console.error('Leaderboard error:', err);
+    res.status(500).json({ error: 'Failed to load leaderboard.' });
+  }
+});
+
 // --- DASHBOARD API ---
 app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
   try {
