@@ -780,3 +780,11 @@ button, input, textarea, select {
   animation: activeTimerPulse 1.8s infinite ease-in-out;
 }
 
+
+
+/* Override LiveKit default theme background */
+.lk-room-container {
+  background-color: transparent !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
