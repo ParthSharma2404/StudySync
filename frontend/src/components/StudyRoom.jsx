@@ -1003,6 +1003,7 @@ function StudyRoom({ currentUser }) {
                 audio={true}
                 token={liveKitToken}
                 serverUrl={liveKitUrl}
+                connect={true}
                 data-lk-theme="default"
               >
                 <LiveKitVideoSidebar />
