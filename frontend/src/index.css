@@ -788,3 +788,214 @@ button, input, textarea, select {
   padding: 0 !important;
   min-height: 0 !important;
 }
+
+/* --- ENHANCED OBJECTIVES UI --- */
+
+/* Shared Task list */
+.tasks-panel {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Objective Progress Bar */
+.objective-progress-container {
+  width: 100%;
+  height: 8px;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 6px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+.objective-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 12px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+/* Objective Input Group */
+.objective-input-group {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-deep);
+  border: 1.5px solid var(--color-border-glass);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  padding: 4px 4px 4px 16px;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.objective-input-group:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.objective-input-group input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--color-text-title);
+  padding: 8px 0;
+  outline: none;
+}
+.objective-input-group input::placeholder {
+  color: var(--color-text-muted);
+}
+.objective-input-group button {
+  padding: 8px 20px;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-left: 8px;
+}
+
+/* Objective Cards (User Tasks) */
+.objective-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--color-bg-slate);
+  border: 1.5px solid var(--color-border-glass);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+.objective-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px -2px rgba(0,0,0,0.05);
+  border-color: var(--color-border-hover);
+}
+.objective-card.completed {
+  opacity: 0.65;
+  background: transparent;
+  border-style: dashed;
+}
+
+/* Focusing Active State */
+.objective-card.active-focus {
+  background: #ffffff;
+  border-color: transparent;
+}
+.objective-card.active-focus::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  z-index: -1;
+  border-radius: inherit;
+  animation: pulseGlow 3s infinite alternate;
+}
+
+/* Checkbox Animations */
+.objective-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--color-border-glass);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--color-bg-deep);
+  flex-shrink: 0;
+}
+.objective-checkbox:hover {
+  transform: scale(1.1);
+  border-color: var(--color-accent);
+}
+.objective-card.completed .objective-checkbox {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  transform: scale(1);
+}
+.objective-checkbox svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  transition: stroke-dashoffset 0.3s ease-out;
+}
+.objective-card.completed .objective-checkbox svg {
+  stroke-dashoffset: 0;
+}
+
+/* Task Typography */
+.task-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-title);
+  font-family: var(--font-sans);
+  transition: color 0.3s;
+}
+.objective-card.completed .task-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--color-text-muted);
+  color: var(--color-text-muted);
+}
+.task-meta {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/* Peer Task Cards */
+.peer-task-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+}
+.peer-task-card.completed {
+  opacity: 0.5;
+}
+.peer-task-card.is-focusing {
+  border-left: 3px solid var(--color-success);
+  background: rgba(16, 185, 129, 0.05);
+  opacity: 1;
+}
+.peer-task-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.peer-task-card.completed .peer-task-checkbox {
+  background: var(--color-text-muted);
+  border-color: var(--color-text-muted);
+}
+.peer-task-card.completed .peer-task-checkbox svg {
+  width: 10px; height: 10px; stroke: white; stroke-width: 3; fill: none;
+}

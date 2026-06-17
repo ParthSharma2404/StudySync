@@ -802,28 +802,33 @@ function StudyRoom({ currentUser }) {
 
             {/* Quest Board Tasks list */}
             <div className="glass-panel tasks-panel">
-              <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
                 <Target size={18} /> Objectives
-                <span style={{ marginLeft: 'auto', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '50px' }}>
+                <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
                   {tasks.filter(t => t.is_completed).length} / {tasks.length} Completed
                 </span>
               </h3>
+              
+              <div className="objective-progress-container" style={{ marginBottom: '16px' }}>
+                <div 
+                  className="objective-progress-bar" 
+                  style={{ width: `${tasks.length > 0 ? (tasks.filter(t => t.is_completed).length / tasks.length) * 100 : 0}%` }}
+                />
+              </div>
 
-              <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '10px' }}>
+              <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
                 <input
                   type="text"
-                  className="form-input"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   placeholder="Add a new objective..."
-                  style={{ flex: 1 }}
                 />
-                <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                <button type="submit" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
                   Add Task
                 </button>
               </form>
 
-              <div className="task-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="task-list">
                 {tasks.length === 0 ? (
                   <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
                 ) : (
@@ -831,16 +836,16 @@ function StudyRoom({ currentUser }) {
                     {/* My Objectives */}
                     <div>
                       <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
                           <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
                         ) : (
                           tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
-                            <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ borderLeft: activeTaskId === task.id ? '4px solid #8b5cf6' : '' }}>
-                              <div onClick={() => handleToggleTask(task.id)} className="task-checkbox" style={{ background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)' }}>
-                                {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
+                            <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
+                              <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
+                                <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
                               </div>
-                              <div style={{ flex: 1 }}>
+                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span className="task-title">{task.title}</span>
                               </div>
 
@@ -849,11 +854,11 @@ function StudyRoom({ currentUser }) {
                                   onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
                                   className="btn"
                                   style={{
-                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'rgba(255,255,255,0.03)',
+                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
                                     border: '1px solid var(--color-border-glass)',
                                     padding: '4px 10px',
                                     fontSize: '0.75rem',
-                                    color: activeTaskId === task.id ? '#fff' : 'var(--color-text-muted)'
+                                    color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)'
                                   }}
                                 >
                                   {activeTaskId === task.id ? 'Focusing' : 'Focus'}
@@ -867,15 +872,11 @@ function StudyRoom({ currentUser }) {
                                     display: 'flex', 
                                     alignItems: 'center', 
                                     gap: '6px',
-                                    color: activeTaskId === task.id ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                                    fontWeight: activeTaskId === task.id ? 'bold' : 'normal',
-                                    padding: activeTaskId === task.id ? '2px 8px' : '0',
-                                    background: activeTaskId === task.id ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
-                                    borderRadius: '4px',
-                                    border: activeTaskId === task.id ? '1px solid rgba(139, 92, 246, 0.2)' : 'none'
+                                    color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                    fontWeight: activeTaskId === task.id ? '700' : '600'
                                   }}
                                 >
-                                  <Clock size={12} style={{ color: activeTaskId === task.id ? 'var(--color-primary)' : 'inherit' }} />
+                                  <Clock size={12} />
                                   {formatTaskTimer(task.time_spent_seconds)}
                                 </span>
                               )}
@@ -891,23 +892,23 @@ function StudyRoom({ currentUser }) {
                        const peerParticipant = participants.find(p => p.userId === peerId);
                        const peerActiveTaskId = peerParticipant?.activeTaskId;
                        return (
-                         <div key={peerId}>
+                         <div key={peerId} style={{ marginTop: '16px' }}>
                            <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
-                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.8 }}>
+                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                              {peerTasks.map((task) => {
                                const isPeerFocusing = peerActiveTaskId === task.id;
                                return (
-                                 <div key={task.id} className={`task-item ${task.is_completed ? 'completed' : ''}`} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)', borderLeft: isPeerFocusing ? '4px solid #10b981' : '' }}>
-                                   <div className="task-checkbox" style={{ cursor: 'default', background: task.is_completed ? 'var(--color-primary)' : 'transparent', border: task.is_completed ? 'none' : '1px solid rgba(255,255,255,0.2)', opacity: task.is_completed ? 1 : 0.3 }}>
-                                     {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
+                                 <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
+                                   <div className="peer-task-checkbox">
+                                     {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
                                    </div>
-                                   <div style={{ flex: 1 }}>
-                                     <span className="task-title" style={{ fontSize: '0.85rem' }}>{task.title}</span>
-                                     {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: '#10b981', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
+                                   <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                                     <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
+                                     {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
                                    </div>
                                    {(task.time_spent_seconds > 0 || isPeerFocusing) && (
-                                     <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: isPeerFocusing ? '#10b981' : 'var(--color-text-muted)' }}>
-                                       <Clock size={10} style={{ color: isPeerFocusing ? '#10b981' : 'inherit' }} />
+                                     <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                                       <Clock size={10} />
                                        {formatTaskTimer(task.time_spent_seconds)}
                                      </span>
                                    )}
