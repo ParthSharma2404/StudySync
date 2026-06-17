@@ -26,7 +26,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'studysync_secret_key_123456';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'studysync_refresh_secret_123456';
 
 // --- LiveKit API Helpers ---
-const generateLiveKitToken = (roomId, participantName) => {
+const generateLiveKitToken = async (roomId, participantName) => {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
   
@@ -40,7 +40,7 @@ const generateLiveKitToken = (roomId, participantName) => {
   });
   
   at.addGrant({ roomJoin: true, room: roomId, canPublish: true, canSubscribe: true });
-  return at.toJwt();
+  return await at.toJwt();
 };
 
 
@@ -630,7 +630,7 @@ app.get('/api/rooms/:id/token', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'LiveKit keys not configured on server.' });
     }
 
-    const token = generateLiveKitToken(room.id, req.user.username);
+    const token = await generateLiveKitToken(room.id, req.user.username);
     
     if (!token) {
       return res.status(500).json({ error: 'Failed to generate LiveKit token.' });
