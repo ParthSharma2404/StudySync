@@ -865,7 +865,7 @@ function StudyRoom({ currentUser }) {
                                 </button>
                               )}
 
-                              {(task.time_spent_seconds > 0 || activeTaskId === task.id) && (
+                              {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
                                 <span 
                                   className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
                                   style={{ 
@@ -877,7 +877,7 @@ function StudyRoom({ currentUser }) {
                                   }}
                                 >
                                   <Clock size={12} />
-                                  {formatTaskTimer(task.time_spent_seconds)}
+                                  {formatTaskTimer(task.time_spent_seconds || 0)}
                                 </span>
                               )}
                             </div>
@@ -906,10 +906,10 @@ function StudyRoom({ currentUser }) {
                                      <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
                                      {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
                                    </div>
-                                   {(task.time_spent_seconds > 0 || isPeerFocusing) && (
+                                   {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
                                      <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
                                        <Clock size={10} />
-                                       {formatTaskTimer(task.time_spent_seconds)}
+                                       {formatTaskTimer(task.time_spent_seconds || 0)}
                                      </span>
                                    )}
                                  </div>
