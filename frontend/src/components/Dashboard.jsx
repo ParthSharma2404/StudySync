@@ -576,7 +576,7 @@ function Dashboard({ currentUser }) {
                   <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' }}>
                     <div style={{ width: `${levelProgressPercent}%`, height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)', borderRadius: '4px' }}></div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{100 - xpIntoCurrentLevel} XP to Level {currentLevel + 1}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{xpForNextLevel - xpIntoCurrentLevel} XP to Level {currentLevel + 1}</div>
                 </div>
               </div>
             </div>
