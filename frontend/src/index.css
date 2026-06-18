@@ -700,11 +700,13 @@ button, input, textarea, select {
   .glass-panel {
     padding: 16px !important;
   }
-  .stats-row {
-    grid-template-columns: 1fr;
+  .stats-row, .bento-grid {
+    grid-template-columns: 1fr !important;
   }
   .nav-links {
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .nav-links a.btn {
     padding: 6px 12px;
@@ -714,10 +716,20 @@ button, input, textarea, select {
     font-size: 1.1rem;
   }
   .hide-on-mobile {
-    display: none;
+    display: none !important;
   }
   .mobile-break {
     display: block;
+  }
+  .bento-span-2 {
+    grid-column: span 1 !important;
+  }
+  .bento-row-span-2 {
+    grid-row: span 1 !important;
+  }
+  .video-wrapper {
+    flex: 0 0 260px !important;
+    width: 260px !important;
   }
 }
 

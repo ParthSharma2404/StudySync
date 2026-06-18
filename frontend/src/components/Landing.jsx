@@ -108,7 +108,7 @@ function Landing({ currentUser }) {
           {/* Live Pulse Ticker */}
           <div className="animate-fade-up delay-4" style={{ marginTop: '32px', display: 'flex', justifyContent: 'center', position: 'relative' }}>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(16, 185, 129, 0.1)', border: '2px solid rgba(16, 185, 129, 0.4)', padding: '8px 24px 8px 12px', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', color: '#34d399', fontSize: '1rem', fontWeight: 500, boxShadow: '4px 4px 0 rgba(16, 185, 129, 0.2)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '16px', background: 'rgba(16, 185, 129, 0.1)', border: '2px solid rgba(16, 185, 129, 0.4)', padding: '8px 24px 8px 12px', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', color: '#34d399', fontSize: '1rem', fontWeight: 500, boxShadow: '4px 4px 0 rgba(16, 185, 129, 0.2)' }}>
               
               <div style={{ display: 'flex' }}>
                 <img src="/avatar1.png" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fdfbf7' }} />
@@ -129,7 +129,7 @@ function Landing({ currentUser }) {
 
         {/* CSS UI Mockup - The Dashboard */}
         <div 
-          className="animate-fade-up delay-4 glass-panel" 
+          className="animate-fade-up delay-4 glass-panel hide-on-mobile" 
           onMouseEnter={() => setIsHoveringMockup(true)}
           onMouseLeave={() => setIsHoveringMockup(false)}
           style={{ 
