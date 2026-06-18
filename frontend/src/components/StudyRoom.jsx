@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Pause, Square, Plus, Trash2, Camera, Mic, MicOff, VideoOff, ScreenShare, Volume2, ShieldAlert, Award, MessageSquare, Clock, Users, X, Monitor, LogOut, LogIn, CheckCircle2, Link as LinkIcon, Share2, ClipboardList, Target, AlertCircle, Headphones } from 'lucide-react';
 import { LiveKitRoom, useTracks, VideoTrack, useLocalParticipant, RoomAudioRenderer } from '@livekit/components-react';
 import { Track } from 'livekit-client';
-import '@livekit/components-styles';
 
 import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
@@ -787,6 +786,9 @@ function StudyRoom({ currentUser }) {
             </div>
             
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={toggleMic} className={`btn ${isMicMuted ? 'btn-danger' : 'btn-secondary'}`} style={{ padding: '8px 16px', fontSize: '0.85rem' }} title={isMicMuted ? "Unmute Microphone" : "Mute Microphone"}>
+                {isMicMuted ? <MicOff size={14} /> : <Mic size={14} />} {isMicMuted ? 'Muted' : 'Mic On'}
+              </button>
               {(isSolo || moderatorId === user?.id) && (
                 <button onClick={handleEndRoomSession} className="btn btn-danger" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                   <Trash2 size={14} /> {isSolo ? 'Clear Workspace' : 'End Room Session'}
@@ -833,7 +835,6 @@ function StudyRoom({ currentUser }) {
                 token={liveKitToken}
                 serverUrl={liveKitUrl}
                 connect={true}
-                data-lk-theme="default"
                 options={{
                   videoCaptureDefaults: selectedVideoId ? { deviceId: selectedVideoId } : undefined,
                   audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
