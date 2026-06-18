@@ -1096,6 +1096,7 @@ function StudyRoom({ currentUser }) {
             </div>
           </div>
         </div>
+      )}
 
       {/* Hidden Canvas for Local Motion / Presence AI Detection */}
       <canvas ref={canvasRef} width="32" height="24" style={{ display: 'none' }}></canvas>
