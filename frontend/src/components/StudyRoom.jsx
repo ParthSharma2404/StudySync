@@ -251,12 +251,12 @@ function StudyRoom({ currentUser }) {
     // Auto-rejoin room if socket briefly drops and reconnects
     const handleConnect = () => {
       if (workspaceEnteredRef.current) {
-        if (!isSolo && peerRef.current) {
+        if (!isSolo) {
           globalSocket.emit('join-room', {
             roomId,
             userId: user.id,
             username: user.username,
-            peerId: peerRef.current.id
+            peerId: 'livekit-peer'
           });
         } else if (isSolo) {
           globalSocket.emit('join-room', {
@@ -282,7 +282,7 @@ function StudyRoom({ currentUser }) {
       globalSocket.off('badge-earned', handleBadgeEarned);
       globalSocket.off('connect', handleConnect);
       
-      if (peerRef.current) peerRef.current.destroy();
+      // PeerJS has been removed in favor of LiveKit
       stopStreams();
     };
   }, [user, roomId, isSolo, navigate, globalSocket]);
