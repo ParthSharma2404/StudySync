@@ -1057,7 +1057,7 @@ button, input, textarea, select {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
+}
 .peer-task-card.completed .peer-task-checkbox {
   background: var(--color-text-muted);
   border-color: var(--color-text-muted);
@@ -1075,7 +1075,10 @@ button, input, textarea, select {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 60%, #020617 100%);
+  background-color: #0f172a;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.357-.13.72-.264 1.088-.402l1.768-.661C33.64 15.347 39.647 14 50 14c10.271 0 15.362 1.222 24.629 4.928.955.383 1.869.74 2.75 1.072h6.225c-2.51-.73-5.139-1.691-8.233-2.928C65.888 13.278 60.562 12 50 12c-10.626 0-16.855 1.397-26.66 5.063l-1.767.662c-2.475.923-4.66 1.674-6.724 2.275h6.335zm0-20C13.258 2.892 8.077 4 0 4V2c5.744 0 9.951-.574 14.85-2h6.334zM42.184 0C35.151 3.151 29.587 5 22 5c-7.36 0-13.147-1.92-22-5h-2C6.967 3.397 13.626 5.5 22 5.5c8.374 0 15.033-2.103 24-5.5h-3.816zM50 0c-8.604 0-14.717-2.148-24.168-5.5h3.916C38.307-2.548 43.682-1 50-1c6.318 0 11.693-1.548 20.252-4.5h3.916C64.717-2.148 58.604 0 50 0zm42.184 0C85.151 3.151 79.587 5 72 5c-7.36 0-13.147-1.92-22-5h-2C56.967 3.397 63.626 5.5 72 5.5c8.374 0 15.033-2.103 24-5.5h-3.816zM100 4c-8.077 0-13.258-1.108-21.184-4h-6.334C77.383 1.426 81.59 2 87.334 2 92.425 2 96.554 1.258 100 0v4z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E"),
+    radial-gradient(circle at center, transparent 0%, #020617 100%);
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
@@ -1138,7 +1141,23 @@ button, input, textarea, select {
 .study-room-container.zen-aizome .btn-secondary {
   color: #e2e8f0;
   border-color: rgba(226, 232, 240, 0.3);
+  background: rgba(255, 255, 255, 0.05);
 }
 .study-room-container.zen-aizome .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Fix Objective Cards brightness in dark mode */
+.study-room-container.zen-aizome .objective-card {
+  background: rgba(15, 23, 42, 0.5); /* Dark background instead of white */
+  border-color: rgba(148, 163, 184, 0.2);
+}
+.study-room-container.zen-aizome .objective-card.active-focus {
+  background: rgba(245, 158, 11, 0.1); /* Gold tint instead of white */
+}
+.study-room-container.zen-aizome .objective-card.active-focus::before {
+  background: linear-gradient(135deg, #f59e0b, #d97706); /* Gold glow instead of purple/blue */
+}
+.study-room-container.zen-aizome .objective-checkbox {
+  background: rgba(15, 23, 42, 0.8);
 }

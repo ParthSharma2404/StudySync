@@ -43,6 +43,34 @@ const LiveKitVideoSidebar = () => {
   );
 };
 
+const EnsoCircle = () => (
+  <svg 
+    style={{ 
+      position: 'absolute', 
+      top: '50%', 
+      left: '50%', 
+      transform: 'translate(-50%, -50%)', 
+      opacity: 0.04, 
+      pointerEvents: 'none', 
+      width: '85vh', 
+      height: '85vh',
+      maxWidth: '800px',
+      maxHeight: '800px'
+    }}
+    viewBox="0 0 200 200" 
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path 
+      fill="none" 
+      stroke="#ffffff" 
+      strokeWidth="5" 
+      strokeLinecap="round"
+      d="M100,20 C144.18278,20 180,55.81722 180,100 C180,144.18278 144.18278,180 100,180 C55.81722,180 20,144.18278 20,100 C20,60 50,25 90,20"
+      style={{ filter: 'blur(1.5px)' }}
+    />
+  </svg>
+);
+
 function StudyRoom({ currentUser }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -744,7 +772,9 @@ function StudyRoom({ currentUser }) {
       ) : (
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
         <>
-        <div className={`zen-backdrop ${isZenMode ? 'zen-active' : ''}`} />
+        <div className={`zen-backdrop ${isZenMode ? 'zen-active' : ''}`}>
+          <EnsoCircle />
+        </div>
         <div className={`study-room-container ${isZenMode ? 'zen-aizome' : ''}`}>
           {/* Header */}
           <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', position: 'relative', zIndex: 1 }}>
