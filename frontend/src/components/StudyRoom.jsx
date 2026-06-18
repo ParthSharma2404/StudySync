@@ -54,6 +54,10 @@ function StudyRoom({ currentUser }) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [activeTaskId, setActiveTaskId] = useState(null);
   
+  // Zen Mode & Objectives State
+  const [isObjectivesCollapsed, setIsObjectivesCollapsed] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
+  
   // Stopwatch states
   const [seconds, setSeconds] = useState(0); // Personal study timer
   const [roomUptimeSeconds, setRoomUptimeSeconds] = useState(0); // Global room uptime
@@ -741,7 +745,7 @@ function StudyRoom({ currentUser }) {
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
         <div className="study-room-container">
           {/* Header */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
             <div>
               <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
               <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
@@ -762,7 +766,7 @@ function StudyRoom({ currentUser }) {
           </div>
 
           {/* Top Row: Video Gallery */}
-          <div className="video-gallery" style={{ marginBottom: '16px' }}>
+          <div className={`video-gallery ${isZenMode ? 'zen-hidden' : ''}`} style={{ marginBottom: '16px' }}>
             {isSolo ? (
               <div className="video-wrapper">
                 <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
@@ -809,11 +813,21 @@ function StudyRoom({ currentUser }) {
             )}
           </div>
 
-          <div className="study-room-layout">
+          <div className={`study-room-layout ${isZenMode ? 'zen-active' : ''}`}>
             {/* Left Workspace Panel (Focus Zone) */}
             <div className="workspace-left">
               {/* Stopwatch panel */}
-              <div className="glass-panel timer-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div className="glass-panel timer-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+                {/* Zen Mode Toggle */}
+                <button 
+                  onClick={() => setIsZenMode(!isZenMode)}
+                  className="btn btn-secondary"
+                  style={{ position: 'absolute', top: '16px', right: '16px', padding: '8px', borderRadius: '50%', zIndex: 10 }}
+                  title={isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}
+                >
+                  <Monitor size={18} color={isZenMode ? "var(--color-primary)" : "var(--color-text-title)"} />
+                </button>
+                
                 {!timerStarted ? (
                   <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                     <ClipboardList size={16} /> Planning Phase
@@ -852,126 +866,163 @@ function StudyRoom({ currentUser }) {
                   <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
                     {tasks.filter(t => t.is_completed).length} / {tasks.length} Completed
                   </span>
+                  {!isZenMode && (
+                    <button 
+                      onClick={() => setIsObjectivesCollapsed(!isObjectivesCollapsed)} 
+                      className="btn btn-secondary" 
+                      style={{ padding: '2px 8px', marginLeft: '8px', fontSize: '0.8rem', borderRadius: '6px' }}
+                    >
+                      {isObjectivesCollapsed ? '+' : '-'}
+                    </button>
+                  )}
                 </h3>
                 
-                <div className="objective-progress-container" style={{ marginBottom: '16px' }}>
+                <div className="objective-progress-container" style={{ marginBottom: (isObjectivesCollapsed && !isZenMode) ? '0' : '16px' }}>
                   <div 
                     className="objective-progress-bar" 
                     style={{ width: `${tasks.length > 0 ? (tasks.filter(t => t.is_completed).length / tasks.length) * 100 : 0}%` }}
                   />
                 </div>
 
-                <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
-                  <input
-                    type="text"
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    placeholder="Add a new objective..."
-                  />
-                  <button type="submit" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
-                    Add Task
-                  </button>
-                </form>
-
-                <div className="task-list">
-                  {tasks.length === 0 ? (
-                    <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
-                  ) : (
-                    <>
-                      {/* My Objectives */}
-                      <div>
-                        <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
-                            <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
-                          ) : (
-                            tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
-                              <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
-                                <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
-                                  <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                                </div>
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span className="task-title">{task.title}</span>
-                                </div>
-
-                                {!task.is_completed && (
-                                  <button
-                                    onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
-                                    className="btn"
-                                    style={{
-                                      background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
-                                      border: '1px solid var(--color-border-glass)',
-                                      padding: '4px 10px',
-                                      fontSize: '0.75rem',
-                                      color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)'
-                                    }}
-                                  >
-                                    {activeTaskId === task.id ? 'Focusing' : 'Focus'}
-                                  </button>
-                                )}
-
-                                {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
-                                  <span 
-                                    className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
-                                    style={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      gap: '6px',
-                                      color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                                      fontWeight: activeTaskId === task.id ? '700' : '600'
-                                    }}
-                                  >
-                                    <Clock size={12} />
-                                    {formatTaskTimer(task.time_spent_seconds || 0)}
-                                  </span>
-                                )}
-                              </div>
-                            ))
-                          )}
+                {isZenMode ? (
+                  // ZEN MODE: Show only the active task
+                  activeTaskId ? (
+                    <div className="task-list">
+                      {tasks.filter(t => t.id === activeTaskId).map((task) => (
+                        <div key={task.id} className="objective-card active-focus">
+                          <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
+                            <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="task-title" style={{ fontSize: '1.1rem' }}>{task.title}</span>
+                          </div>
+                          <span className="task-meta timer-pulse" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent)', fontWeight: '700' }}>
+                            <Clock size={12} />
+                            {formatTaskTimer(task.time_spent_seconds || 0)}
+                          </span>
                         </div>
-                      </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '10px 0', fontStyle: 'italic' }}>
+                      No active task selected. Exit Zen Mode to pick one!
+                    </p>
+                  )
+                ) : !isObjectivesCollapsed && (
+                  <>
+                    <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
+                      <input
+                        type="text"
+                        value={newTaskTitle}
+                        onChange={(e) => setNewTaskTitle(e.target.value)}
+                        placeholder="Add a new objective..."
+                      />
+                      <button type="submit" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
+                        Add Task
+                      </button>
+                    </form>
 
-                       {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
-                         const peerTasks = tasks.filter(t => t.owner_id === peerId);
-                         const peerName = peerTasks[0]?.owner_name || 'Classmate';
-                         const peerParticipant = participants.find(p => p.userId === peerId);
-                         const peerActiveTaskId = peerParticipant?.activeTaskId;
-                         return (
-                           <div key={peerId} style={{ marginTop: '16px' }}>
-                             <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
-                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                               {peerTasks.map((task) => {
-                                 const isPeerFocusing = peerActiveTaskId === task.id;
-                                 return (
-                                   <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
-                                     <div className="peer-task-checkbox">
-                                       {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
-                                     </div>
-                                     <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                                       <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
-                                       {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
-                                     </div>
-                                     {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
-                                       <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
-                                         <Clock size={10} />
-                                         {formatTaskTimer(task.time_spent_seconds || 0)}
-                                       </span>
-                                     )}
-                                   </div>
-                                 );
-                               })}
-                             </div>
-                           </div>
-                         );
-                       })}
-                    </>
-                  )}
-                </div>
+                    <div className="task-list">
+                      {tasks.length === 0 ? (
+                        <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
+                      ) : (
+                        <>
+                          {/* My Objectives */}
+                          <div>
+                            <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
+                                <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
+                              ) : (
+                                tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
+                                  <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
+                                    <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
+                                      <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span className="task-title">{task.title}</span>
+                                    </div>
+
+                                    {!task.is_completed && (
+                                      <button
+                                        onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
+                                        className="btn"
+                                        style={{
+                                          background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
+                                          border: '1px solid var(--color-border-glass)',
+                                          padding: '4px 10px',
+                                          fontSize: '0.75rem',
+                                          color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)'
+                                        }}
+                                      >
+                                        {activeTaskId === task.id ? 'Focusing' : 'Focus'}
+                                      </button>
+                                    )}
+
+                                    {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
+                                      <span 
+                                        className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
+                                        style={{ 
+                                          display: 'flex', 
+                                          alignItems: 'center', 
+                                          gap: '6px',
+                                          color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                          fontWeight: activeTaskId === task.id ? '700' : '600'
+                                        }}
+                                      >
+                                        <Clock size={12} />
+                                        {formatTaskTimer(task.time_spent_seconds || 0)}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+
+                          {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
+                            const peerTasks = tasks.filter(t => t.owner_id === peerId);
+                            const peerName = peerTasks[0]?.owner_name || 'Classmate';
+                            const peerParticipant = participants.find(p => p.userId === peerId);
+                            const peerActiveTaskId = peerParticipant?.activeTaskId;
+                            return (
+                              <div key={peerId} style={{ marginTop: '16px' }}>
+                                <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {peerTasks.map((task) => {
+                                    const isPeerFocusing = peerActiveTaskId === task.id;
+                                    return (
+                                      <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
+                                        <div className="peer-task-checkbox">
+                                          {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                                          <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
+                                          {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
+                                        </div>
+                                        {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
+                                          <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                                            <Clock size={10} />
+                                            {formatTaskTimer(task.time_spent_seconds || 0)}
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Right Sidebar Panel */}
-            <div className="workspace-right">
+            <div className={`workspace-right ${isZenMode ? 'zen-hidden' : ''}`}>
               {/* Ambient Audio panel */}
               <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>

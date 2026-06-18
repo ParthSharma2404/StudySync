@@ -334,6 +334,12 @@ button, input, textarea, select {
   flex: 1;
   min-height: 0;
   margin: 20px 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.study-room-layout.zen-active {
+  grid-template-columns: 1fr;
+  max-width: 800px;
+  margin: 20px auto;
 }
 .workspace-left {
   display: flex;
@@ -341,6 +347,17 @@ button, input, textarea, select {
   gap: 20px;
   overflow-y: auto;
   padding-right: 8px;
+  transition: all 0.4s ease;
+}
+.zen-hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 /* Timer card */
