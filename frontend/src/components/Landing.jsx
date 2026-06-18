@@ -433,7 +433,7 @@ function Landing({ currentUser }) {
       </ScrollRevealSection>
 
       {/* Security & Privacy Section */}
-      <ScrollRevealSection className="container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '60px', paddingBottom: '60px', borderTop: '1px solid var(--color-border-glass)' }}>
+      <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '150px', paddingBottom: '150px', borderTop: '1px solid var(--color-border-glass)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '64px', alignItems: 'center' }}>
           
           {/* Text Side */}
