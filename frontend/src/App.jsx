@@ -68,8 +68,17 @@ function App() {
   const ProtectedRoute = ({ children }) => {
     if (loadingUser) {
       return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0b0c10' }}>
-          <div style={{ color: '#8b5cf6', fontSize: '1.2rem', fontWeight: 600 }}>Loading StudySync...</div>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--color-bg-deep)' }}>
+          <div className="loader-spinner" style={{ marginBottom: '24px' }}></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <BookOpen size={32} color="var(--color-accent)" />
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, color: 'var(--color-text-title)', margin: 0, letterSpacing: '-0.02em' }}>
+              StudySync<span style={{ color: 'var(--color-accent)' }}>.</span>
+            </h1>
+          </div>
+          <div style={{ color: 'var(--color-text-muted)', fontSize: '1rem', marginTop: '12px', fontWeight: 500, opacity: 0.8, animation: 'pulseGlow 2s infinite' }}>
+            Preparing your workspace...
+          </div>
         </div>
       );
     }

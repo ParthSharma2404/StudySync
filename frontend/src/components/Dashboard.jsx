@@ -235,34 +235,94 @@ function Dashboard({ currentUser }) {
 
   if (loading) {
     return (
-      <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+      <div className="container dashboard-container pro-font animate-fade-up" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
         {/* Skeleton Top Welcome Bar */}
         <div className="hide-on-mobile" style={{ marginBottom: '40px' }}>
-          <div className="skeleton-pulse" style={{ width: '350px', height: '36px', borderRadius: '8px', marginBottom: '12px' }}></div>
-          <div className="skeleton-pulse" style={{ width: '280px', height: '18px', borderRadius: '8px' }}></div>
+          <div className="skeleton-pulse" style={{ width: '350px', height: '42px', borderRadius: '10px', marginBottom: '12px' }}></div>
+          <div className="skeleton-pulse" style={{ width: '280px', height: '20px', borderRadius: '8px' }}></div>
         </div>
 
         <div className="dashboard-grid">
           {/* Left Column Skeletons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div className="pro-panel" style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* Profile Card Skeleton */}
+            <div className="pro-panel skeleton-panel" style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div className="skeleton-pulse" style={{ width: '96px', height: '96px', borderRadius: '50%', marginBottom: '20px' }}></div>
-              <div className="skeleton-pulse" style={{ width: '160px', height: '24px', borderRadius: '8px', marginBottom: '8px' }}></div>
-              <div className="skeleton-pulse" style={{ width: '120px', height: '16px', borderRadius: '8px', marginBottom: '24px' }}></div>
-              <div className="skeleton-pulse" style={{ width: '140px', height: '32px', borderRadius: '50px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '160px', height: '28px', borderRadius: '8px', marginBottom: '8px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '120px', height: '18px', borderRadius: '8px', marginBottom: '24px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '140px', height: '36px', borderRadius: '50px', marginBottom: '24px' }}></div>
+              
+              <div style={{ width: '100%', display: 'flex', gap: '16px', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '24px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <div className="skeleton-pulse" style={{ width: '60px', height: '14px', borderRadius: '4px' }}></div>
+                  <div className="skeleton-pulse" style={{ width: '50px', height: '28px', borderRadius: '6px' }}></div>
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(0,0,0,0.05)' }}>
+                  <div className="skeleton-pulse" style={{ width: '60px', height: '14px', borderRadius: '4px' }}></div>
+                  <div className="skeleton-pulse" style={{ width: '50px', height: '28px', borderRadius: '6px' }}></div>
+                </div>
+              </div>
             </div>
-            <div className="pro-panel skeleton-pulse" style={{ height: '300px' }}></div>
+
+            {/* Workspaces Skeleton */}
+            <div className="pro-panel skeleton-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="skeleton-pulse" style={{ width: '140px', height: '24px', borderRadius: '8px' }}></div>
+              <div className="skeleton-pulse" style={{ width: '100%', height: '120px', borderRadius: '12px' }}></div>
+              <div style={{ borderTop: '1px dashed rgba(0,0,0,0.05)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="skeleton-pulse" style={{ width: '160px', height: '20px', borderRadius: '6px' }}></div>
+                <div className="skeleton-pulse" style={{ width: '100%', height: '40px', borderRadius: '8px' }}></div>
+                <div className="skeleton-pulse" style={{ width: '100%', height: '60px', borderRadius: '8px' }}></div>
+                <div className="skeleton-pulse" style={{ width: '100%', height: '40px', borderRadius: '8px' }}></div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column Skeletons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            {/* Stats Row Skeleton */}
             <div className="stats-row" style={{ gap: '24px' }}>
-              <div className="pro-panel stat-card skeleton-pulse" style={{ height: '160px' }}></div>
-              <div className="pro-panel stat-card skeleton-pulse" style={{ height: '160px' }}></div>
-              <div className="pro-panel stat-card skeleton-pulse" style={{ height: '160px' }}></div>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="pro-panel skeleton-panel stat-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', height: '160px' }}>
+                  <div className="skeleton-pulse" style={{ width: '120px', height: '16px', borderRadius: '6px' }}></div>
+                  <div className="skeleton-pulse" style={{ width: '80px', height: '40px', borderRadius: '8px', marginTop: 'auto' }}></div>
+                  <div className="skeleton-pulse" style={{ width: '140px', height: '14px', borderRadius: '4px' }}></div>
+                </div>
+              ))}
             </div>
-            <div className="pro-panel skeleton-pulse" style={{ height: '250px' }}></div>
-            <div className="pro-panel skeleton-pulse" style={{ height: '300px' }}></div>
+
+            {/* Analytics Skeleton */}
+            <div className="pro-panel skeleton-panel" style={{ padding: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+                <div className="skeleton-pulse" style={{ width: '180px', height: '24px', borderRadius: '8px' }}></div>
+                <div className="skeleton-pulse" style={{ width: '100px', height: '24px', borderRadius: '12px' }}></div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                    <div className="skeleton-pulse" style={{ width: '100%', height: `${Math.random() * 100 + 40}px`, borderRadius: '8px 8px 0 0' }}></div>
+                    <div className="skeleton-pulse" style={{ width: '30px', height: '14px', borderRadius: '4px' }}></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RPG Skeleton */}
+            <div className="pro-panel skeleton-panel" style={{ padding: '32px' }}>
+              <div className="skeleton-pulse" style={{ width: '200px', height: '28px', borderRadius: '8px', marginBottom: '32px' }}></div>
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
+                <div className="skeleton-pulse" style={{ width: '80px', height: '80px', borderRadius: '20px' }}></div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="skeleton-pulse" style={{ width: '140px', height: '20px', borderRadius: '6px' }}></div>
+                  <div className="skeleton-pulse" style={{ width: '180px', height: '48px', borderRadius: '8px' }}></div>
+                </div>
+                <div className="skeleton-pulse" style={{ width: '100px', height: '60px', borderRadius: '12px' }}></div>
+              </div>
+              <div className="skeleton-pulse" style={{ width: '100%', height: '16px', borderRadius: '50px', marginBottom: '12px' }}></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="skeleton-pulse" style={{ width: '80px', height: '14px', borderRadius: '4px' }}></div>
+                <div className="skeleton-pulse" style={{ width: '80px', height: '14px', borderRadius: '4px' }}></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
