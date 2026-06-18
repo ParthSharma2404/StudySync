@@ -743,7 +743,9 @@ function StudyRoom({ currentUser }) {
         </div>
       ) : (
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
-        <div className={`study-room-container ${isZenMode ? 'zen-antique' : ''}`}>
+        <>
+        <div className={`zen-backdrop ${isZenMode ? 'zen-active' : ''}`} />
+        <div className={`study-room-container ${isZenMode ? 'zen-aizome' : ''}`}>
           {/* Header */}
           <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', position: 'relative', zIndex: 1 }}>
             <div>
@@ -1158,6 +1160,7 @@ function StudyRoom({ currentUser }) {
             </div>
           </div>
         </div>
+        </>
       )}
 
       {/* Hidden Canvas for Local Motion / Presence AI Detection */}
