@@ -408,38 +408,9 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     // Reset failed attempts on successful login
     await dbRun('UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?', [user.id]);
 
-    // Update Streak check on login
-    const todayStr = new Date().toISOString().split('T')[0];
-    let newStreak = user.current_streak;
-    let newXp = user.xp || 0;
-
-    if (user.last_active_date) {
-      const lastActive = new Date(user.last_active_date);
-      const today = new Date(todayStr);
-      const diffTime = Math.abs(today - lastActive);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 1) {
-        newStreak += 1;
-        newXp += 20; // 20 XP streak bonus
-      } else if (diffDays > 1) {
-        newStreak = 1; // Streak reset
-        newXp += 10; // 10 XP daily login
-      }
-    } else {
-      newStreak = 1;
-      newXp += 10;
-    }
-
-    let longestStreak = user.longest_streak;
-    if (newStreak > longestStreak) {
-      longestStreak = newStreak;
-    }
-
-    await dbRun(
-      'UPDATE users SET current_streak = ?, longest_streak = ?, last_active_date = ?, xp = ? WHERE id = ?',
-      [newStreak, longestStreak, todayStr, newXp, user.id]
-    );
+    // Streak logic has been moved to timer-heartbeat (Study Streak)
+    const newStreak = user.current_streak || 0;
+    const newXp = user.xp || 0;
 
     // Generate Tokens
     const accessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '15m' });
@@ -1129,13 +1100,60 @@ io.on('connection', (socket) => {
         [incrementSeconds, userId]
       );
 
-      const userNew = await dbGet('SELECT total_study_seconds FROM users WHERE id = ?', [userId]);
+      const userNew = await dbGet('SELECT total_study_seconds, current_streak, longest_streak, last_active_date FROM users WHERE id = ?', [userId]);
       const newMinutes = Math.floor((userNew?.total_study_seconds || 0) / 60);
 
       if (newMinutes > oldMinutes) {
         const xpEarned = newMinutes - oldMinutes;
-        await dbRun('UPDATE users SET xp = xp + ? WHERE id = ?', [xpEarned, userId]);
+        let totalXpEarned = xpEarned;
+        
+        // --- Study Streak Logic ---
+        const todayStr = new Date().toISOString().split('T')[0];
+        let newStreak = userNew.current_streak || 0;
+        let longestStreak = userNew.longest_streak || 0;
+        let streakBonusXp = 0;
+
+        if (userNew.last_active_date !== todayStr) {
+          if (userNew.last_active_date) {
+            const lastActive = new Date(userNew.last_active_date);
+            const today = new Date(todayStr);
+            const diffTime = Math.abs(today - lastActive);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+              newStreak += 1;
+              streakBonusXp = 20; // Streak maintained
+            } else {
+              newStreak = 1;
+              streakBonusXp = 10; // Streak broken, start new
+            }
+          } else {
+            newStreak = 1;
+            streakBonusXp = 10; // First time ever studying
+          }
+
+          if (newStreak > longestStreak) {
+            longestStreak = newStreak;
+          }
+
+          await dbRun(
+            'UPDATE users SET current_streak = ?, longest_streak = ?, last_active_date = ? WHERE id = ?',
+            [newStreak, longestStreak, todayStr, userId]
+          );
+          
+          totalXpEarned += streakBonusXp;
+        }
+
+        await dbRun('UPDATE users SET xp = xp + ? WHERE id = ?', [totalXpEarned, userId]);
         socket.emit('xp-earned', { amount: xpEarned, reason: 'Focus Session' });
+        
+        if (streakBonusXp === 20) {
+          socket.emit('xp-earned', { amount: 20, reason: 'Streak Bonus!' });
+          socket.emit('streak-updated', { streak: newStreak });
+        } else if (streakBonusXp === 10) {
+          socket.emit('xp-earned', { amount: 10, reason: 'Daily Study Bonus' });
+          socket.emit('streak-updated', { streak: newStreak });
+        }
       }
 
       if (userNew && userNew.total_study_seconds >= 18000) {
