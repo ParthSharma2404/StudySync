@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Pause, Square, Plus, Trash2, Camera, Mic, MicOff, VideoOff, ScreenShare, Volume2, ShieldAlert, Award, MessageSquare, Clock, Users, X, Monitor, LogOut, LogIn, CheckCircle2, Link as LinkIcon, Share2, ClipboardList, Target, AlertCircle, Headphones } from 'lucide-react';
-import { LiveKitRoom, useTracks, VideoTrack, useLocalParticipant } from '@livekit/components-react';
+import { LiveKitRoom, useTracks, VideoTrack, useLocalParticipant, RoomAudioRenderer } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import '@livekit/components-styles';
 
@@ -840,6 +840,7 @@ function StudyRoom({ currentUser }) {
                 }}
               >
                 <LiveKitVideoSidebar />
+                <RoomAudioRenderer />
               </LiveKitRoom>
             ) : (
               <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', fontSize: '0.9rem', width: '100%' }}>Connecting to Video Server...</div>
