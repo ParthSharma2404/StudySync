@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Clock, Shield, Target, Flame, Headphones, ArrowRight, CheckCircle2, LayoutDashboard, Video, MessageSquare, Plus, Mic } from 'lucide-react';
+import { Users, Clock, Shield, Target, Flame, Headphones, ArrowRight, CheckCircle2, LayoutDashboard, Video, MessageSquare, Plus, Mic, Trophy, Image } from 'lucide-react';
 
 const ScrollRevealSection = ({ children, style, className }) => {
   const ref = useRef(null);
@@ -189,11 +189,18 @@ function Landing({ currentUser }) {
                 </div>
                 
                 {/* Profile Mock */}
-                <div style={{ marginTop: 'auto', padding: '16px', border: '2px solid #2b2b2b', background: 'rgba(0,0,0,0.02)', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src="/avatar1.png" alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #2b2b2b' }} />
-                  <div>
-                    <div style={{ fontSize: '1rem', color: '#2b2b2b', fontWeight: 600 }}>Parth Sharma</div>
-                    <div style={{ fontSize: '0.8rem', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}><Flame size={12} /> 12 Day Streak</div>
+                <div style={{ marginTop: 'auto', padding: '16px', border: '2px solid #2b2b2b', background: 'rgba(0,0,0,0.02)', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img src="/avatar1.png" alt="Profile" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #2b2b2b' }} />
+                    <div style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#6366f1', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', border: '2px solid #2b2b2b', whiteSpace: 'nowrap' }}>
+                      Lv 2
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.95rem', color: '#2b2b2b', fontWeight: 700 }}>Parth</div>
+                    <div style={{ fontSize: '0.75rem', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: '#fef3c7', padding: '4px 8px', borderRadius: '12px', border: '1px solid #f59e0b', marginTop: '6px' }}>
+                      <Flame size={12} /> 3 Day Streak
+                    </div>
                   </div>
                 </div>
               </div>
@@ -318,11 +325,11 @@ function Landing({ currentUser }) {
           {/* Card 3 */}
           <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}>
-              <Shield size={24} />
+              <Image size={24} />
             </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Local Presence AI</h3>
+            <h3 style={{ fontSize: '1.25rem' }}>Zen Mode Environments</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Client-side facial detection pauses your timer if you leave your desk. Screensharing tracks focus without triggering false-positive alerts.
+              Immerse yourself in beautiful, pixel-art lo-fi backgrounds designed to reduce stress and induce deep focus while studying.
             </p>
           </div>
 
@@ -342,20 +349,20 @@ function Landing({ currentUser }) {
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
               <Flame size={24} />
             </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Analytics & Levels</h3>
+            <h3 style={{ fontSize: '1.25rem' }}>Progressive RPG Leveling</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Maintain daily study streaks and earn XP to rank up your Level. Review your personal analytics dashboard to consistently hit your productivity goals.
+              Earn XP to rank up your Level. Every rank is harder to achieve. Maintain True Study Streaks—start a timer and do the work to keep your flame alive.
             </p>
           </div>
 
           {/* Card 6 */}
           <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7dd3fc' }}>
-              <Headphones size={24} />
+              <Trophy size={24} />
             </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Ambient Audio Sync</h3>
+            <h3 style={{ fontSize: '1.25rem' }}>Global Leaderboards</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Synchronize ambient audio across the entire room to ensure everyone shares the exact same relaxing environment during deep focus phases.
+              Compete against students worldwide. Climb the ranks to earn the glowing Champion badge and secure your spot as the top focused learner.
             </p>
           </div>
         </div>
