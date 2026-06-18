@@ -697,19 +697,33 @@ function Dashboard({ currentUser }) {
               ) : (
                 leaderboard.map((lbUser, index) => {
                   const isTop3 = index < 3;
+                  const isRank1 = index === 0;
                   const rankColors = ['#fbbf24', '#94a3b8', '#b45309']; // Gold, Silver, Bronze
                   const rankColor = index < 3 ? rankColors[index] : 'var(--color-text-muted)';
                   const isCurrentUser = lbUser.id === user?.id;
                   
+                  let bgStyle = isCurrentUser ? 'rgba(99, 102, 241, 0.05)' : 'var(--color-bg-slate)';
+                  let borderStyle = `1px solid ${isCurrentUser ? 'rgba(99, 102, 241, 0.3)' : 'var(--color-border)'}`;
+                  let boxSh = 'none';
+
+                  if (isRank1) {
+                    bgStyle = 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.02) 100%)';
+                    borderStyle = '1px solid rgba(251, 191, 36, 0.5)';
+                    boxSh = '0 8px 20px rgba(245, 158, 11, 0.15), inset 0 0 12px rgba(251, 191, 36, 0.1)';
+                  }
+                  
                   return (
-                    <div key={lbUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: isCurrentUser ? 'rgba(99, 102, 241, 0.05)' : 'var(--color-bg-slate)', border: `1px solid ${isCurrentUser ? 'rgba(99, 102, 241, 0.3)' : 'var(--color-border)'}`, borderRadius: '12px', transition: 'transform 0.2s', transform: isTop3 ? 'scale(1.01)' : 'scale(1)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div key={lbUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: bgStyle, border: borderStyle, boxShadow: boxSh, borderRadius: '12px', transition: 'all 0.3s', transform: isRank1 ? 'scale(1.02)' : isTop3 ? 'scale(1.01)' : 'scale(1)', position: 'relative', overflow: 'hidden' }}>
+                      {isRank1 && <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' }}></div>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', zIndex: 1 }}>
                         <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: isTop3 ? '1.1rem' : '1rem', color: rankColor }}>
-                          {index === 0 ? <Trophy size={20} color={rankColor} /> : index === 1 || index === 2 ? <Medal size={20} color={rankColor} /> : `#${index + 1}`}
+                          {index === 0 ? <Trophy size={20} color={rankColor} style={{ filter: 'drop-shadow(0 2px 4px rgba(251,191,36,0.4))' }} /> : index === 1 || index === 2 ? <Medal size={20} color={rankColor} /> : `#${index + 1}`}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 700, color: 'var(--color-text-title)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {lbUser.username} {isCurrentUser && <span style={{ fontSize: '0.65rem', background: '#6366f1', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>YOU</span>}
+                            {lbUser.username} 
+                            {isRank1 && <span style={{ fontSize: '0.65rem', background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', color: '#fff', padding: '2px 6px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(245,158,11,0.2)' }}>CHAMPION</span>}
+                            {isCurrentUser && <span style={{ fontSize: '0.65rem', background: '#6366f1', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>YOU</span>}
                           </span>
                           <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {getLevelInfo(lbUser.xp).level}</span>
                         </div>
