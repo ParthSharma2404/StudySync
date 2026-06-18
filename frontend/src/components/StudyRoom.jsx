@@ -77,18 +77,25 @@ function StudyRoom({ currentUser }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(false);
 
+  // Lobby Context & Devices
+  const [lobbyParticipants, setLobbyParticipants] = useState([]);
+  const [videoDevices, setVideoDevices] = useState([]);
+  const [audioDevices, setAudioDevices] = useState([]);
+  const [selectedVideoId, setSelectedVideoId] = useState('');
+  const [selectedAudioId, setSelectedAudioId] = useState('');
+
   // State for LiveKit
   const [liveKitToken, setLiveKitToken] = useState('');
   const [liveKitUrl, setLiveKitUrl] = useState('');
   const [liveKitError, setLiveKitError] = useState('');
 
   const toggleMic = () => {
-    // We will let LiveKit handle mic muting via its own UI, but for solo mode we toggle the local track
+    const nextMuteState = !isMicMuted;
+    setIsMicMuted(nextMuteState);
     if (localCameraStreamRef.current) {
       const audioTrack = localCameraStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMicMuted(!audioTrack.enabled);
+        audioTrack.enabled = !nextMuteState;
       }
     }
   };
@@ -149,6 +156,9 @@ function StudyRoom({ currentUser }) {
           } else {
             setRoomName(data.room.name);
             setTasks(data.tasks);
+            if (data.activeParticipants) {
+              setLobbyParticipants(data.activeParticipants);
+            }
           }
         })
         .catch(() => navigate('/dashboard'));
@@ -366,27 +376,25 @@ function StudyRoom({ currentUser }) {
   };
 
   // --- LOBBY PERMISSION ACQUISITION ---
-  const authorizeWebcam = async () => {
+  const authorizeWebcam = async (vidId = selectedVideoId, audId = selectedAudioId) => {
     setSetupError('');
     try {
-      // Adaptive WebRTC Constraint Handling
-      let constraints = { video: true, audio: true };
+      let constraints = { 
+        video: vidId ? { deviceId: { exact: vidId } } : true, 
+        audio: audId ? { deviceId: { exact: audId } } : true 
+      };
       
-      // Detect slow networks and downscale video aggressively
       if (navigator.connection && navigator.connection.effectiveType) {
         const type = navigator.connection.effectiveType;
         if (type === '2g' || type === '3g') {
-          constraints = {
-            video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } },
-            audio: true
-          };
-          console.warn('Slow network detected. Reducing video quality to 320x240 @ 15fps');
+          constraints.video = vidId ? { deviceId: { exact: vidId }, width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } } : { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } };
         } else {
-          constraints = {
-            video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24 } },
-            audio: true
-          };
+          constraints.video = vidId ? { deviceId: { exact: vidId }, width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24 } } : { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24 } };
         }
+      }
+
+      if (localCameraStreamRef.current) {
+        localCameraStreamRef.current.getTracks().forEach(t => t.stop());
       }
 
       let stream;
@@ -397,18 +405,43 @@ function StudyRoom({ currentUser }) {
         constraints.audio = false;
         stream = await navigator.mediaDevices.getUserMedia(constraints);
       }
+      
       localCameraStreamRef.current = stream;
       setWebcamEnabled(true);
       
-      // Render local webcam preview inside lobby container
       const previewVideo = document.getElementById('lobby-webcam-preview');
       if (previewVideo) {
         previewVideo.srcObject = stream;
       }
+
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !isMicMuted;
+      }
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const vDevices = devices.filter(d => d.kind === 'videoinput');
+      const aDevices = devices.filter(d => d.kind === 'audioinput');
+      setVideoDevices(vDevices);
+      setAudioDevices(aDevices);
+
+      if (!vidId && vDevices.length > 0) setSelectedVideoId(vDevices[0].deviceId);
+      if (!audId && aDevices.length > 0) setSelectedAudioId(aDevices[0].deviceId);
+
     } catch (err) {
       console.error(err);
-      setSetupError('Camera access denied. Webcam permission is required for desk presence AI. Ensure your browser has permission.');
+      setSetupError('Camera access denied. Ensure your browser has permission.');
     }
+  };
+
+  const handleVideoDeviceChange = (e) => {
+    setSelectedVideoId(e.target.value);
+    authorizeWebcam(e.target.value, selectedAudioId);
+  };
+
+  const handleAudioDeviceChange = (e) => {
+    setSelectedAudioId(e.target.value);
+    authorizeWebcam(selectedVideoId, e.target.value);
   };
 
   const handleEnterWorkspace = async () => {
@@ -620,7 +653,12 @@ function StudyRoom({ currentUser }) {
       {showLobby ? (
         <div style={{ padding: '60px 0', maxWidth: '600px', margin: '0 auto' }}>
           <div className="glass-panel" style={{ padding: '40px', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--color-text-title)' }}><Camera size={28} color="#6366f1" /> Permissions Lobby</h2>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--color-text-title)' }}><Camera size={28} color="#6366f1" /> {roomName !== 'Loading Room...' ? `Joining: ${roomName}` : 'Permissions Lobby'}</h2>
+            {!isSolo && lobbyParticipants.length > 0 && (
+              <p style={{ color: '#10b981', fontSize: '0.9rem', marginBottom: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Users size={16} /> {lobbyParticipants.length} people are already here: {lobbyParticipants.map(p => p.username).join(', ')}
+              </p>
+            )}
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginBottom: '32px', lineHeight: '1.5' }}>
               StudySync requires your Webcam and Tab Share permissions to verify desk presence and active work before you can join the room.
             </p>
@@ -632,27 +670,54 @@ function StudyRoom({ currentUser }) {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
-              {/* Webcam auth box */}
               <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.06)' }}>
-                <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.1rem', marginBottom: '6px' }}>1. Webcam Feed (Presence verification)</h4>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>We scan this locally to verify you are sitting at your desk.</p>
+                <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.1rem', marginBottom: '6px' }}>1. Device Setup</h4>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>Verify your presence and check your audio.</p>
                 
                 {webcamEnabled ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '180px', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '2px solid #10b981', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}>
-                      <video id="lobby-webcam-preview" autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '220px', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '2px solid #10b981', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}>
+                      <video id="lobby-webcam-preview" autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
                     </div>
-                    <span style={{ color: '#10b981', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle2 size={16} /> Webcam Active</span>
+                    
+                    <div style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
+                      {videoDevices.length > 0 && (
+                        <div>
+                          <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '4px', display: 'block' }}>Camera</label>
+                          <select className="form-input" style={{ width: '100%', padding: '8px', fontSize: '0.85rem' }} value={selectedVideoId} onChange={handleVideoDeviceChange}>
+                            {videoDevices.map(d => <option key={d.deviceId} value={d.deviceId}>{d.label || 'Camera'}</option>)}
+                          </select>
+                        </div>
+                      )}
+                      
+                      {audioDevices.length > 0 && (
+                        <div>
+                          <label style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '4px', display: 'block' }}>Microphone</label>
+                          <select className="form-input" style={{ width: '100%', padding: '8px', fontSize: '0.85rem' }} value={selectedAudioId} onChange={handleAudioDeviceChange}>
+                            {audioDevices.map(d => <option key={d.deviceId} value={d.deviceId}>{d.label || 'Microphone'}</option>)}
+                          </select>
+                        </div>
+                      )}
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px', background: 'rgba(0,0,0,0.03)', padding: '10px 12px', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {isMicMuted ? <MicOff size={16} color="#ef4444" /> : <Mic size={16} color="#10b981" />} 
+                          Microphone
+                        </span>
+                        <button onClick={toggleMic} className={`btn ${isMicMuted ? 'btn-danger' : 'btn-secondary'}`} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                          {isMicMuted ? 'Unmute' : 'Mute'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <button onClick={authorizeWebcam} className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '0.9rem' }}>
-                    Enable Webcam
+                  <button onClick={() => authorizeWebcam()} className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '0.9rem' }}>
+                    Enable Devices
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Entry button */}
             <button
               onClick={handleEnterWorkspace}
               className="btn btn-primary"
@@ -1015,11 +1080,15 @@ function StudyRoom({ currentUser }) {
             ) : liveKitToken && liveKitUrl ? (
               <LiveKitRoom
                 video={true}
-                audio={true}
+                audio={!isMicMuted}
                 token={liveKitToken}
                 serverUrl={liveKitUrl}
                 connect={true}
                 data-lk-theme="default"
+                options={{
+                  videoCaptureDefaults: selectedVideoId ? { deviceId: selectedVideoId } : undefined,
+                  audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
+                }}
               >
                 <LiveKitVideoSidebar />
               </LiveKitRoom>

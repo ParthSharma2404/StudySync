@@ -124,6 +124,10 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// In-memory active state trackers (Moved to top for API access)
+const roomsState = {};
+const onlineUsers = {}; // maps userId -> { socketId, username }
+
 // --- AUTH ROUTES ---
 // --- AUTH ROUTES ---
 app.post('/api/auth/register', async (req, res) => {
@@ -741,8 +745,13 @@ app.get('/api/rooms/:id', authenticateToken, async (req, res) => {
     if (!room) return res.status(404).json({ error: 'Room not found.' });
 
     const tasks = await dbAll('SELECT t.id, t.title, t.is_completed, t.time_spent_seconds, t.owner_id, u_owner.username as owner_name, u.username as completed_by_name FROM tasks t LEFT JOIN users u ON t.completed_by = u.id LEFT JOIN users u_owner ON t.owner_id = u_owner.id WHERE t.room_id = ?', [req.params.id]);
+    
+    // Inject active participants from memory
+    const activeParticipants = roomsState[req.params.id] 
+      ? Object.values(roomsState[req.params.id].participants).map(p => ({ username: p.username })) 
+      : [];
 
-    res.json({ room, tasks });
+    res.json({ room, tasks, activeParticipants });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error fetching room details.' });
@@ -966,10 +975,7 @@ const io = new Server(server, {
   }
 });
 
-// In-memory active state trackers
-const roomsState = {};
-const onlineUsers = {}; // maps userId -> { socketId, username }
-
+// In-memory active state trackers moved to top of file
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
