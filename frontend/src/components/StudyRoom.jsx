@@ -43,32 +43,6 @@ const LiveKitVideoSidebar = () => {
   );
 };
 
-const SakuraPetals = () => {
-  // Generate a random array of petals (e.g. 15-20 petals)
-  const petals = Array.from({ length: 20 }).map((_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    animationDelay: `${Math.random() * 5}s`,
-    animationDuration: `${Math.random() * 4 + 4}s` // 4 to 8s fall
-  }));
-
-  return (
-    <div className="sakura-container">
-      {petals.map(p => (
-        <div 
-          key={p.id} 
-          className="sakura-petal"
-          style={{
-            left: p.left,
-            animationDelay: p.animationDelay,
-            animationDuration: p.animationDuration
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
 function StudyRoom({ currentUser }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -769,8 +743,7 @@ function StudyRoom({ currentUser }) {
         </div>
       ) : (
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
-        <div className={`study-room-container ${isZenMode ? 'zen-theme' : ''}`}>
-          {isZenMode && <SakuraPetals />}
+        <div className={`study-room-container ${isZenMode ? 'zen-antique' : ''}`}>
           {/* Header */}
           <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', position: 'relative', zIndex: 1 }}>
             <div>
