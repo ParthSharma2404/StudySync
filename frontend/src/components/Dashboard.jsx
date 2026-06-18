@@ -658,7 +658,7 @@ function Dashboard({ currentUser }) {
                 
                 <div style={{ textAlign: 'right', background: 'rgba(255,255,255,0.6)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
                   <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Next Rank In</div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f59e0b', textShadow: '0 2px 4px rgba(245, 158, 11, 0.2)', marginTop: '2px' }}>{100 - xpIntoCurrentLevel} XP</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f59e0b', textShadow: '0 2px 4px rgba(245, 158, 11, 0.2)', marginTop: '2px' }}>{xpForNextLevel - xpIntoCurrentLevel} XP</div>
                 </div>
               </div>
 
@@ -829,9 +829,9 @@ function Dashboard({ currentUser }) {
             </div>
 
             <div style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)', borderRadius: '16px', padding: '16px', marginBottom: '32px', border: '1px solid rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: '#fff', color: '#6366f1', padding: '8px 12px', borderRadius: '12px', fontWeight: 800, fontSize: '1.1rem', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>100 XP</div>
+              <div style={{ background: '#fff', color: '#6366f1', padding: '8px 12px', borderRadius: '12px', fontWeight: 800, fontSize: '1.1rem', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>+50 XP</div>
               <div style={{ color: 'var(--color-text-title)', fontSize: '0.95rem', fontWeight: 500, lineHeight: '1.4' }}>
-                Every 100 XP you earn automatically grants you <strong style={{ color: '#6366f1' }}>1 Level Up</strong>. There is no level cap!
+                Levels become progressively harder! Each new rank requires <strong style={{ color: '#6366f1' }}>50 more XP</strong> than the last. How high can you climb?
               </div>
             </div>
 
