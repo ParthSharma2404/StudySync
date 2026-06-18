@@ -43,6 +43,32 @@ const LiveKitVideoSidebar = () => {
   );
 };
 
+const SakuraPetals = () => {
+  // Generate a random array of petals (e.g. 15-20 petals)
+  const petals = Array.from({ length: 20 }).map((_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    animationDelay: `${Math.random() * 5}s`,
+    animationDuration: `${Math.random() * 4 + 4}s` // 4 to 8s fall
+  }));
+
+  return (
+    <div className="sakura-container">
+      {petals.map(p => (
+        <div 
+          key={p.id} 
+          className="sakura-petal"
+          style={{
+            left: p.left,
+            animationDelay: p.animationDelay,
+            animationDuration: p.animationDuration
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 function StudyRoom({ currentUser }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -743,9 +769,10 @@ function StudyRoom({ currentUser }) {
         </div>
       ) : (
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
-        <div className="study-room-container">
+        <div className={`study-room-container ${isZenMode ? 'zen-theme' : ''}`}>
+          {isZenMode && <SakuraPetals />}
           {/* Header */}
-          <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', position: 'relative', zIndex: 1 }}>
             <div>
               <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
               <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
@@ -885,27 +912,38 @@ function StudyRoom({ currentUser }) {
                 </div>
 
                 {isZenMode ? (
-                  // ZEN MODE: Show only the active task
-                  activeTaskId ? (
-                    <div className="task-list">
-                      {tasks.filter(t => t.id === activeTaskId).map((task) => (
-                        <div key={task.id} className="objective-card active-focus">
+                  // ZEN MODE: Show all uncompleted tasks
+                  tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).length > 0 ? (
+                    <div className="task-list" style={{ position: 'relative', zIndex: 1 }}>
+                      {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).map((task) => (
+                        <div key={task.id} className={`objective-card ${activeTaskId === task.id ? 'active-focus' : ''}`}>
                           <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
                             <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
                           </div>
                           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="task-title" style={{ fontSize: '1.1rem' }}>{task.title}</span>
+                            <span className="task-title" style={{ fontSize: '1.05rem' }}>{task.title}</span>
                           </div>
-                          <span className="task-meta timer-pulse" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent)', fontWeight: '700' }}>
-                            <Clock size={12} />
-                            {formatTaskTimer(task.time_spent_seconds || 0)}
-                          </span>
+                          
+                          {activeTaskId !== task.id ? (
+                            <button
+                              onClick={() => setActiveTaskId(task.id)}
+                              className="btn btn-secondary"
+                              style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: '4px' }}
+                            >
+                              Focus
+                            </button>
+                          ) : (
+                            <span className="task-meta timer-pulse" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent)', fontWeight: '700' }}>
+                              <Clock size={12} />
+                              {formatTaskTimer(task.time_spent_seconds || 0)}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '10px 0', fontStyle: 'italic' }}>
-                      No active task selected. Exit Zen Mode to pick one!
+                    <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '10px 0', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>
+                      No active tasks! You are all caught up.
                     </p>
                   )
                 ) : !isObjectivesCollapsed && (

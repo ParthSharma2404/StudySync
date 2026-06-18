@@ -1065,3 +1065,60 @@ button, input, textarea, select {
 .peer-task-card.completed .peer-task-checkbox svg {
   width: 10px; height: 10px; stroke: white; stroke-width: 3; fill: none;
 }
+
+/* =========================================
+   ZEN MODE: THE SAKURA THEME 
+   ========================================= */
+.study-room-container.zen-theme {
+  /* A very subtle darker parchment overlay to make the petals pop */
+  background: linear-gradient(to bottom, rgba(30, 25, 20, 0.04), rgba(40, 30, 25, 0.08));
+  border-radius: 12px;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.02);
+  transition: all 0.8s ease;
+}
+
+/* Container for all falling petals */
+.sakura-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none; /* Let clicks pass through */
+  z-index: 50; /* Above background, behind UI */
+}
+
+/* Individual petal */
+.sakura-petal {
+  position: absolute;
+  top: -10%; /* Start slightly above the screen */
+  width: 12px;
+  height: 16px;
+  background: linear-gradient(135deg, #ffd1dc, #ffb6c1); /* Soft pink */
+  border-radius: 100% 0% 100% 0% / 100% 0% 100% 0%;
+  opacity: 0.8;
+  box-shadow: 0 2px 4px rgba(255, 182, 193, 0.4);
+  animation: sakura-fall linear infinite, sakura-sway ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+/* Downward fall */
+@keyframes sakura-fall {
+  0% {
+    top: -10%;
+  }
+  100% {
+    top: 110%;
+  }
+}
+
+/* Horizontal sway & rotation */
+@keyframes sakura-sway {
+  0% {
+    transform: translateX(0px) rotate(0deg);
+  }
+  100% {
+    transform: translateX(40px) rotate(180deg);
+  }
+}
