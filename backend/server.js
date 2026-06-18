@@ -553,8 +553,74 @@ app.get('/api/users/leaderboard', authenticateToken, async (req, res) => {
 });
 
 // --- DASHBOARD API ---
+const syncUserStreak = async (userId) => {
+  try {
+    const user = await dbGet('SELECT longest_streak, last_active_date FROM users WHERE id = ?', [userId]);
+    if (!user) return;
+
+    const sessions = await dbAll(`
+      SELECT DISTINCT TO_CHAR(start_time, 'YYYY-MM-DD') as day_date
+      FROM study_sessions
+      WHERE user_id = ?
+    `, [userId]);
+
+    const activeDates = new Set(sessions.map(s => s.day_date));
+    if (user.last_active_date) {
+      activeDates.add(user.last_active_date);
+    }
+
+    const sortedDates = Array.from(activeDates).sort((a, b) => new Date(a) - new Date(b));
+
+    if (sortedDates.length === 0) return;
+
+    let tempStreak = 0;
+    let maxStreak = user.longest_streak || 0;
+    let prevDate = null;
+
+    for (const dStr of sortedDates) {
+      if (!prevDate) {
+        tempStreak = 1;
+      } else {
+        const d1 = new Date(prevDate);
+        const d2 = new Date(dStr);
+        const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          tempStreak++;
+        } else if (diffDays > 1) {
+          tempStreak = 1;
+        }
+      }
+      if (tempStreak > maxStreak) maxStreak = tempStreak;
+      prevDate = dStr;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    let currentStreak = 0;
+    const lastActive = sortedDates[sortedDates.length - 1];
+    
+    if (lastActive === todayStr || lastActive === yesterdayStr) {
+      currentStreak = tempStreak;
+    } else {
+      currentStreak = 0;
+    }
+
+    await dbRun(
+      'UPDATE users SET current_streak = ?, longest_streak = ? WHERE id = ?',
+      [currentStreak, maxStreak, userId]
+    );
+  } catch (err) {
+    console.error('Error syncing user streak:', err);
+  }
+};
+
 app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
   try {
+    await syncUserStreak(req.user.id);
     const user = await dbGet('SELECT username, email, current_streak, longest_streak, total_study_seconds, xp, has_seen_welcome, created_at FROM users WHERE id = ?', [req.user.id]);
     const roomsJoined = await dbAll(
       'SELECT DISTINCT r.id, r.name, r.description, r.created_at FROM study_sessions s JOIN rooms r ON s.room_id = r.id WHERE s.user_id = ?',
