@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Clock, Shield, Target, Flame, Headphones, ArrowRight, CheckCircle2, LayoutDashboard, Video, MessageSquare, Plus, Mic, Trophy, Image } from 'lucide-react';
+import { Users, Clock, Shield, Target, Flame, Headphones, ArrowRight, CheckCircle2, LayoutDashboard, Video, MessageSquare, Plus, Mic, Trophy, Image, Lock, EyeOff } from 'lucide-react';
 
 const ScrollRevealSection = ({ children, style, className }) => {
   const ref = useRef(null);
@@ -401,7 +401,7 @@ function Landing({ currentUser }) {
             </div>
             <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Live Video & Audio</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Communicate seamlessly with built-in WebRTC video and audio feeds. Share your screen for real-time collaboration.
+              Communicate seamlessly with high-performance LiveKit video and audio feeds. Share your screen for real-time collaboration.
             </p>
           </div>
 
@@ -429,6 +429,76 @@ function Landing({ currentUser }) {
             </div>
           </div>
 
+        </div>
+      </ScrollRevealSection>
+
+      {/* Security & Privacy Section */}
+      <ScrollRevealSection className="container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '60px', paddingBottom: '60px', borderTop: '1px solid var(--color-border-glass)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '64px', alignItems: 'center' }}>
+          
+          {/* Text Side */}
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #34d399', borderRadius: '20px', color: '#059669', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '24px' }}>
+              <Lock size={14} /> Privacy First
+            </div>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', lineHeight: '1.2' }}>Your focus is your business. <br/><span style={{ color: 'var(--color-text-muted)' }}>Not ours.</span></h2>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '32px' }}>
+              We built StudySync because we wanted a place to focus, not a place to be tracked. We take a radical approach to your data security.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1', flexShrink: 0 }}>
+                  <EyeOff size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Secure Media Routing</h4>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>All video and audio streams are securely routed via an encrypted SFU architecture. We never record or store your sessions. Period.</p>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fbbf24', flexShrink: 0 }}>
+                  <Shield size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Strict Authentication</h4>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>Your study analytics and streaks are bound to your account using secure JWT tokens. No unauthorized access.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Visual Side */}
+          <div style={{ position: 'relative' }}>
+            <div className="glass-panel" style={{ padding: '32px', border: '2px solid #2b2b2b', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', background: '#fdfbf7', position: 'relative', zIndex: 10 }}>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', margin: '0 auto 16px auto', border: '3px solid #2b2b2b' }}>
+                  <CheckCircle2 size={32} />
+                </div>
+                <h3 style={{ fontSize: '1.4rem', color: '#2b2b2b' }}>Connection Secure</h3>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(0,0,0,0.03)', borderRadius: '8px', fontSize: '0.9rem', color: '#2b2b2b' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={14} color="#10b981" /> LiveKit Media</span>
+                  <span style={{ fontWeight: 'bold' }}>E2E Secure</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(0,0,0,0.03)', borderRadius: '8px', fontSize: '0.9rem', color: '#2b2b2b' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={14} color="#10b981" /> Account Data</span>
+                  <span style={{ fontWeight: 'bold' }}>JWT Authenticated</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(0,0,0,0.03)', borderRadius: '8px', fontSize: '0.9rem', color: '#2b2b2b' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><EyeOff size={14} color="#10b981" /> Advertising</span>
+                  <span style={{ fontWeight: 'bold', color: '#10b981' }}>Disabled</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Background Decor */}
+            <div style={{ position: 'absolute', top: '20px', right: '-20px', width: '100%', height: '100%', border: '2px dashed #d1d5db', borderRadius: '15px 255px 15px 225px / 255px 15px 225px 15px', zIndex: 0 }}></div>
+          </div>
+          
         </div>
       </ScrollRevealSection>
 
