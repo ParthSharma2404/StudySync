@@ -677,7 +677,12 @@ function StudyRoom({ currentUser }) {
                 {webcamEnabled ? (
                   <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                     <div style={{ width: '220px', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '2px solid #10b981', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}>
-                      <video id="lobby-webcam-preview" autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+                      <video 
+                        id="lobby-webcam-preview" 
+                        ref={(el) => { if (el && localCameraStreamRef.current && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }}
+                        autoPlay muted playsInline 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} 
+                      />
                     </div>
                     
                     <div style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
