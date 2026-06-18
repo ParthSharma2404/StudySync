@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Sparkles, Trophy, Flame, Clock, Target, Play, LogOut, Search, Plus, UserPlus, Users, ArrowRight, X as XIcon, X, Check, Gift, Copy, Bell, Trash2, BookOpen, GraduationCap, TrendingUp, BarChart2, Info, Award, CheckCircle2, Medal } from 'lucide-react';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
-
+import { getLevelInfo } from '../utils/leveling';
 const mockStudyData = [
   { day: 'Mon', hours: 2.5 },
   { day: 'Tue', hours: 3.2 },
@@ -33,9 +33,26 @@ function Dashboard({ currentUser }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [userRankData, setUserRankData] = useState(null);
   const navigate = useNavigate();
+  const [showLevelUpPopup, setShowLevelUpPopup] = useState(false);
+  const [levelUpData, setLevelUpData] = useState(null);
 
-  
-
+  useEffect(() => {
+    if (data?.user) {
+      const { level } = getLevelInfo(data.user.xp);
+      const savedLevelStr = localStorage.getItem(`studySync_level_${data.user.id}`);
+      
+      if (savedLevelStr) {
+        const savedLevel = parseInt(savedLevelStr, 10);
+        if (level > savedLevel) {
+          setLevelUpData({ level });
+          setShowLevelUpPopup(true);
+        }
+      }
+      
+      // Always update localStorage to the current level
+      localStorage.setItem(`studySync_level_${data.user.id}`, level);
+    }
+  }, [data?.user?.xp, data?.user?.id]);
   useEffect(() => {
     if (!currentUser) {
       navigate('/login');
@@ -333,9 +350,7 @@ function Dashboard({ currentUser }) {
   const totalHours = user ? (user.total_study_seconds / 3600).toFixed(1) : '0.0';
 
   const userXp = user?.xp || 0;
-  const currentLevel = Math.floor(userXp / 100) + 1;
-  const xpIntoCurrentLevel = userXp % 100;
-  const levelProgressPercent = (xpIntoCurrentLevel / 100) * 100;
+  const { level: currentLevel, currentLevelXp: xpIntoCurrentLevel, xpForNextLevel, progressPercent: levelProgressPercent } = getLevelInfo(userXp);
 
   const getRankInfo = (level) => {
     if (level < 10) return { title: 'Novice', icon: BookOpen, color: '#6366f1' };
@@ -499,7 +514,7 @@ function Dashboard({ currentUser }) {
                             <Users size={20} color="#818cf8" />
                           </div>
                           <div style={{ position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 6px', borderRadius: '50px', border: '2px solid var(--color-surface)', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', whiteSpace: 'nowrap' }}>
-                            Lv {Math.floor((friend.xp || 0) / 100) + 1}
+                            Lv {getLevelInfo(friend.xp).level}
                           </div>
                           <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '12px', height: '12px', borderRadius: '50%', background: isOnline ? '#10b981' : '#64748b', border: '2px solid var(--color-surface)' }}></div>
                         </div>
@@ -696,7 +711,7 @@ function Dashboard({ currentUser }) {
                           <span style={{ fontWeight: 700, color: 'var(--color-text-title)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {lbUser.username} {isCurrentUser && <span style={{ fontSize: '0.65rem', background: '#6366f1', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>YOU</span>}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {Math.floor((lbUser.xp || 0) / 100) + 1}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {getLevelInfo(lbUser.xp).level}</span>
                         </div>
                       </div>
                       <div style={{ fontWeight: 800, color: 'var(--color-text-title)', fontSize: '1.1rem' }}>
@@ -724,7 +739,7 @@ function Dashboard({ currentUser }) {
                         <span style={{ fontWeight: 700, color: 'var(--color-text-title)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {userRankData.data.username} <span style={{ fontSize: '0.65rem', background: '#6366f1', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>YOU</span>
                         </span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {Math.floor((userRankData.data.xp || 0) / 100) + 1}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Level {getLevelInfo(userRankData.data.xp).level}</span>
                       </div>
                     </div>
                     <div style={{ fontWeight: 800, color: 'var(--color-text-title)', fontSize: '1.1rem' }}>
@@ -1008,6 +1023,70 @@ function Dashboard({ currentUser }) {
               }}
             >
               Let's Get Started! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+    {/* Level Up Popup */}
+      {showLevelUpPopup && levelUpData && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 99999, padding: '24px'
+        }}
+        onClick={(e) => e.target === e.currentTarget && setShowLevelUpPopup(false)}
+        >
+          <div style={{
+            background: '#ffffff',
+            border: '3px solid #2b2b2b',
+            borderRadius: '24px',
+            padding: '40px',
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
+            position: 'relative',
+            boxShadow: '8px 8px 0 rgba(245,158,11,0.3)',
+            animation: 'fadeUp 0.4s ease-out forwards'
+          }}>
+            <div style={{ position: 'absolute', top: '-10px', left: '20%', width: '10px', height: '10px', borderRadius: '50%', background: '#fbbf24', animation: 'confettiFall 1.5s ease-out infinite' }}></div>
+            <div style={{ position: 'absolute', top: '-5px', right: '25%', width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1', animation: 'confettiFall 1.8s ease-out infinite 0.3s' }}></div>
+            <div style={{ position: 'absolute', top: '-15px', left: '45%', width: '12px', height: '12px', borderRadius: '2px', background: '#10b981', transform: 'rotate(45deg)', animation: 'confettiFall 2s ease-out infinite 0.6s' }}></div>
+
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+              border: '3px solid #2b2b2b',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px auto',
+              boxShadow: '4px 4px 0 rgba(0,0,0,0.1)',
+              animation: 'bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s both'
+            }}>
+              <Trophy size={40} color="#fff" />
+            </div>
+
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-text-title)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+              Level Up! 🎉
+            </h2>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.05rem', marginBottom: '24px' }}>
+              You've successfully reached <strong style={{ color: '#f59e0b', fontSize: '1.2rem' }}>Level {levelUpData.level}</strong>!
+            </p>
+
+            <button
+              onClick={() => setShowLevelUpPopup(false)}
+              className="pro-btn pro-btn-primary"
+              style={{
+                width: '100%', padding: '14px', borderRadius: '12px',
+                fontSize: '1.05rem', fontWeight: 700,
+                background: '#f59e0b', color: '#fff', border: '2px solid #b45309',
+                cursor: 'pointer',
+                boxShadow: '4px 4px 0 rgba(0,0,0,0.15)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              Awesome!
             </button>
           </div>
         </div>

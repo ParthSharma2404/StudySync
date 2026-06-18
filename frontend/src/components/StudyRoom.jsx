@@ -8,6 +8,7 @@ import '@livekit/components-styles';
 import confetti from 'canvas-confetti';
 import { fetchApi } from '../utils/api';
 import { useSocket } from '../context/SocketContext';
+import { getLevelInfo } from '../utils/leveling';
 import YouTubePlayer from './YouTubePlayer';
 
 const AUDIO_TRACKS = {
@@ -807,7 +808,7 @@ function StudyRoom({ currentUser }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span className="participant-label">{user?.username} (You)</span>
                     <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                      Lv {Math.floor((user?.xp || 0) / 100) + 1}
+                      Lv {getLevelInfo(user?.xp || 0).level}
                     </span>
                   </div>
                   <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
