@@ -739,33 +739,79 @@ function StudyRoom({ currentUser }) {
         </div>
       ) : (
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
-        <div className="study-room-layout">
-          {/* Left Workspace Panel */}
-          <div className="workspace-left">
-            {/* Header */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <div>
-                <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
-                <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
-                  {isSolo ? 'Private Workspace' : `Room ID: ${roomId} • Moderator: ${participants.find(p => p.userId === moderatorId)?.username || 'System'}`}
+        <div className="study-room-container">
+          {/* Header */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <div>
+              <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
+              <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
+                {isSolo ? 'Private Workspace' : `Room ID: ${roomId} • Moderator: ${participants.find(p => p.userId === moderatorId)?.username || 'System'}`}
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {(isSolo || moderatorId === user?.id) && (
+                <button onClick={handleEndRoomSession} className="btn btn-danger" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                  <Trash2 size={14} /> {isSolo ? 'Clear Workspace' : 'End Room Session'}
+                </button>
+              )}
+              <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                <LogOut size={14} /> Exit Room
+              </Link>
+            </div>
+          </div>
+
+          {/* Top Row: Video Gallery */}
+          <div className="video-gallery" style={{ marginBottom: '16px' }}>
+            {isSolo ? (
+              <div className="video-wrapper">
+                <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
+                
+                <div className="video-overlay-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="participant-label">{user?.username} (You)</span>
+                    <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                      Lv {Math.floor((user?.xp || 0) / 100) + 1}
+                    </span>
+                  </div>
+                  <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {!timerStarted ? 'Planning' : 'Focusing'}
+                    {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
+                  </span>
+                </div>
+              </div>
+            ) : liveKitError ? (
+              <div style={{ padding: '20px', color: '#ef4444', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', width: '100%' }}>
+                <ShieldAlert size={24} style={{ marginBottom: '8px' }} />
+                <br />
+                <strong>LiveKit Server Error:</strong> {liveKitError}
+                <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                  Check your Render environment variables (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET) to make sure they are correct.
                 </p>
               </div>
-              
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {(isSolo || moderatorId === user?.id) && (
-                  <button onClick={handleEndRoomSession} className="btn btn-danger" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                    <Trash2 size={14} /> {isSolo ? 'Clear Workspace' : 'End Room Session'}
-                  </button>
-                )}
-                <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                  <LogOut size={14} /> Exit Room
-                </Link>
-              </div>
-            </div>
+            ) : liveKitToken && liveKitUrl ? (
+              <LiveKitRoom
+                video={true}
+                audio={!isMicMuted}
+                token={liveKitToken}
+                serverUrl={liveKitUrl}
+                connect={true}
+                data-lk-theme="default"
+                options={{
+                  videoCaptureDefaults: selectedVideoId ? { deviceId: selectedVideoId } : undefined,
+                  audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
+                }}
+              >
+                <LiveKitVideoSidebar />
+              </LiveKitRoom>
+            ) : (
+              <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', fontSize: '0.9rem', width: '100%' }}>Connecting to Video Server...</div>
+            )}
+          </div>
 
-            {/* Top Row: Stopwatch and Audio */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-              
+          <div className="study-room-layout">
+            {/* Left Workspace Panel (Focus Zone) */}
+            <div className="workspace-left">
               {/* Stopwatch panel */}
               <div className="glass-panel timer-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 {!timerStarted ? (
@@ -799,7 +845,133 @@ function StudyRoom({ currentUser }) {
                 )}
               </div>
 
-              {/* Ambient Audio panel */}
+              {/* Quest Board Tasks list */}
+              <div className="glass-panel tasks-panel">
+                <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                  <Target size={18} /> Objectives
+                  <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {tasks.filter(t => t.is_completed).length} / {tasks.length} Completed
+                  </span>
+                </h3>
+                
+                <div className="objective-progress-container" style={{ marginBottom: '16px' }}>
+                  <div 
+                    className="objective-progress-bar" 
+                    style={{ width: `${tasks.length > 0 ? (tasks.filter(t => t.is_completed).length / tasks.length) * 100 : 0}%` }}
+                  />
+                </div>
+
+                <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
+                  <input
+                    type="text"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    placeholder="Add a new objective..."
+                  />
+                  <button type="submit" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
+                    Add Task
+                  </button>
+                </form>
+
+                <div className="task-list">
+                  {tasks.length === 0 ? (
+                    <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
+                  ) : (
+                    <>
+                      {/* My Objectives */}
+                      <div>
+                        <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
+                            <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
+                          ) : (
+                            tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
+                              <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
+                                <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
+                                  <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span className="task-title">{task.title}</span>
+                                </div>
+
+                                {!task.is_completed && (
+                                  <button
+                                    onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
+                                    className="btn"
+                                    style={{
+                                      background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
+                                      border: '1px solid var(--color-border-glass)',
+                                      padding: '4px 10px',
+                                      fontSize: '0.75rem',
+                                      color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)'
+                                    }}
+                                  >
+                                    {activeTaskId === task.id ? 'Focusing' : 'Focus'}
+                                  </button>
+                                )}
+
+                                {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
+                                  <span 
+                                    className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
+                                    style={{ 
+                                      display: 'flex', 
+                                      alignItems: 'center', 
+                                      gap: '6px',
+                                      color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                      fontWeight: activeTaskId === task.id ? '700' : '600'
+                                    }}
+                                  >
+                                    <Clock size={12} />
+                                    {formatTaskTimer(task.time_spent_seconds || 0)}
+                                  </span>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                       {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
+                         const peerTasks = tasks.filter(t => t.owner_id === peerId);
+                         const peerName = peerTasks[0]?.owner_name || 'Classmate';
+                         const peerParticipant = participants.find(p => p.userId === peerId);
+                         const peerActiveTaskId = peerParticipant?.activeTaskId;
+                         return (
+                           <div key={peerId} style={{ marginTop: '16px' }}>
+                             <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
+                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                               {peerTasks.map((task) => {
+                                 const isPeerFocusing = peerActiveTaskId === task.id;
+                                 return (
+                                   <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
+                                     <div className="peer-task-checkbox">
+                                       {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
+                                     </div>
+                                     <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                                       <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
+                                       {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
+                                     </div>
+                                     {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
+                                       <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                                         <Clock size={10} />
+                                         {formatTaskTimer(task.time_spent_seconds || 0)}
+                                       </span>
+                                     )}
+                                   </div>
+                                 );
+                               })}
+                             </div>
+                           </div>
+                         );
+                       })}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Sidebar Panel */}
+            <div className="workspace-right">
               {/* Ambient Audio panel */}
               <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
@@ -868,241 +1040,62 @@ function StudyRoom({ currentUser }) {
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* Quest Board Tasks list */}
-            <div className="glass-panel tasks-panel">
-              <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                <Target size={18} /> Objectives
-                <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
-                  {tasks.filter(t => t.is_completed).length} / {tasks.length} Completed
-                </span>
-              </h3>
-              
-              <div className="objective-progress-container" style={{ marginBottom: '16px' }}>
-                <div 
-                  className="objective-progress-bar" 
-                  style={{ width: `${tasks.length > 0 ? (tasks.filter(t => t.is_completed).length / tasks.length) * 100 : 0}%` }}
-                />
-              </div>
-
-              <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
-                <input
-                  type="text"
-                  value={newTaskTitle}
-                  onChange={(e) => setNewTaskTitle(e.target.value)}
-                  placeholder="Add a new objective..."
-                />
-                <button type="submit" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
-                  Add Task
-                </button>
-              </form>
-
-              <div className="task-list">
-                {tasks.length === 0 ? (
-                  <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
-                ) : (
-                  <>
-                    {/* My Objectives */}
-                    <div>
-                      <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
-                          <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
-                        ) : (
-                          tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
-                            <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
-                              <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
-                                <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                              </div>
-                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span className="task-title">{task.title}</span>
-                              </div>
-
-                              {!task.is_completed && (
-                                <button
-                                  onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
-                                  className="btn"
-                                  style={{
-                                    background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
-                                    border: '1px solid var(--color-border-glass)',
-                                    padding: '4px 10px',
-                                    fontSize: '0.75rem',
-                                    color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)'
-                                  }}
-                                >
-                                  {activeTaskId === task.id ? 'Focusing' : 'Focus'}
-                                </button>
-                              )}
-
-                              {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
-                                <span 
-                                  className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
-                                  style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '6px',
-                                    color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                                    fontWeight: activeTaskId === task.id ? '700' : '600'
-                                  }}
-                                >
-                                  <Clock size={12} />
-                                  {formatTaskTimer(task.time_spent_seconds || 0)}
-                                </span>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                     {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
-                       const peerTasks = tasks.filter(t => t.owner_id === peerId);
-                       const peerName = peerTasks[0]?.owner_name || 'Classmate';
-                       const peerParticipant = participants.find(p => p.userId === peerId);
-                       const peerActiveTaskId = peerParticipant?.activeTaskId;
-                       return (
-                         <div key={peerId} style={{ marginTop: '16px' }}>
-                           <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
-                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                             {peerTasks.map((task) => {
-                               const isPeerFocusing = peerActiveTaskId === task.id;
-                               return (
-                                 <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
-                                   <div className="peer-task-checkbox">
-                                     {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
-                                   </div>
-                                   <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                                     <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
-                                     {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
-                                   </div>
-                                   {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
-                                     <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
-                                       <Clock size={10} />
-                                       {formatTaskTimer(task.time_spent_seconds || 0)}
-                                     </span>
-                                   )}
-                                 </div>
-                               );
-                             })}
-                           </div>
-                         </div>
-                       );
-                     })}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Sidebar Panel */}
-          <div className="workspace-right">
-            {/* Invite link widget */}
-            {!isSolo && (
-              <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
-                
-                {/* URL Copy */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={window.location.href} 
-                    readOnly 
-                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
-                  />
-                  <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                    {copiedLink ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
-
-                {/* Invite by Username */}
-                <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
-                  Invite by Username:
-                </p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    className="form-input"
-                    id="inviteUsernameInput"
-                    placeholder="Enter friend's username"
-                    style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
-                  />
-                  <button
-                    onClick={() => {
-                      const username = document.getElementById('inviteUsernameInput').value.trim();
-                      if (!username) return;
-                      if (!socketRef.current) return;
-                      socketRef.current.emit('send-invite-username', {
-                        targetUsername: username,
-                        roomId,
-                        roomName,
-                        hostName: user.username
-                      });
-                      document.getElementById('inviteUsernameInput').value = '';
-                    }}
-                    className="btn btn-secondary"
-                    style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <h3 style={{ fontSize: '1.15rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px', marginTop: '10px' }}>
-              Active Peers
-            </h3>
-
-            {isSolo ? (
-              <div className="video-sidebar">
-                <div className="video-wrapper">
-                  <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
+              {/* Invite link widget */}
+              {!isSolo && (
+                <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
                   
-                  <div className="video-overlay-info">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="participant-label">{user?.username} (You)</span>
-                      <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                        Lv {Math.floor((user?.xp || 0) / 100) + 1}
-                      </span>
-                    </div>
-                    <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {!timerStarted ? 'Planning' : 'Focusing'}
-                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
-                    </span>
+                  {/* URL Copy */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      value={window.location.href} 
+                      readOnly 
+                      style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
+                    />
+                    <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                      {copiedLink ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+
+                  {/* Invite by Username */}
+                  <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+                    Invite by Username:
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      id="inviteUsernameInput"
+                      placeholder="Enter friend's username"
+                      style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
+                    />
+                    <button
+                      onClick={() => {
+                        const username = document.getElementById('inviteUsernameInput').value.trim();
+                        if (!username) return;
+                        if (!socketRef.current) return;
+                        socketRef.current.emit('send-invite-username', {
+                          targetUsername: username,
+                          roomId,
+                          roomName,
+                          hostName: user.username
+                        });
+                        document.getElementById('inviteUsernameInput').value = '';
+                      }}
+                      className="btn btn-secondary"
+                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                    >
+                      Send
+                    </button>
                   </div>
                 </div>
-              </div>
-            ) : liveKitError ? (
-              <div style={{ padding: '20px', color: '#ef4444', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
-                <ShieldAlert size={24} style={{ marginBottom: '8px' }} />
-                <br />
-                <strong>LiveKit Server Error:</strong> {liveKitError}
-                <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                  Check your Render environment variables (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET) to make sure they are correct.
-                </p>
-              </div>
-            ) : liveKitToken && liveKitUrl ? (
-              <LiveKitRoom
-                video={true}
-                audio={!isMicMuted}
-                token={liveKitToken}
-                serverUrl={liveKitUrl}
-                connect={true}
-                data-lk-theme="default"
-                options={{
-                  videoCaptureDefaults: selectedVideoId ? { deviceId: selectedVideoId } : undefined,
-                  audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
-                }}
-              >
-                <LiveKitVideoSidebar />
-              </LiveKitRoom>
-            ) : (
-              <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', fontSize: '0.9rem' }}>Connecting to Video Server...</div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      )}
 
       {/* Hidden Canvas for Local Motion / Presence AI Detection */}
       <canvas ref={canvasRef} width="32" height="24" style={{ display: 'none' }}></canvas>

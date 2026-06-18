@@ -326,11 +326,13 @@ button, input, textarea, select {
 }
 
 /* Study Room Workspace */
+.study-room-container { display: flex; flex-direction: column; height: calc(100vh - 110px); margin: 20px 0; }
 .study-room-layout {
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 24px;
-  height: calc(100vh - 110px);
+  flex: 1;
+  min-height: 0;
   margin: 20px 0;
 }
 .workspace-left {
@@ -358,6 +360,17 @@ button, input, textarea, select {
 }
 
 /* Video Grid and streams */
+.video-gallery {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 10px 0 20px 0;
+  width: 100%;
+}
+.video-gallery::-webkit-scrollbar { height: 8px; }
+.video-gallery::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+/* deprecated */
 .video-sidebar {
   display: flex;
   flex-direction: column;
@@ -368,7 +381,8 @@ button, input, textarea, select {
 }
 .video-wrapper {
   position: relative;
-  width: 100%;
+  width: 280px;
+  min-width: 280px;
   aspect-ratio: 16/9;
   border-radius: var(--radius-md);
   overflow: hidden;
