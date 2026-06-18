@@ -1218,17 +1218,33 @@ button, input, textarea, select {
 }
 
 .video-sidebar {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 400px));
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
   gap: 20px;
-  justify-content: center;
-  align-items: center;
   width: 100%;
+  padding-bottom: 12px;
+  align-items: center;
+}
+
+/* Custom Scrollbar for Video Gallery */
+.video-sidebar::-webkit-scrollbar {
+  height: 8px;
+}
+.video-sidebar::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+}
+.video-sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 10px;
 }
 
 .video-wrapper {
   position: relative;
-  width: 100%;
+  flex: 0 0 300px; /* Force fixed width, do not shrink */
+  width: 300px;
   aspect-ratio: 16/9;
   background: #fdfbf7;
   border: 2px solid #2b2b2b;
