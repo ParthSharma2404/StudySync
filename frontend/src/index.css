@@ -196,6 +196,58 @@ button, input, textarea, select {
   background: var(--color-bg-deep);
 }
 
+/* --- BENTO GRID STYLES --- */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .bento-span-2 {
+    grid-column: span 2;
+  }
+  .bento-row-span-2 {
+    grid-row: span 2;
+  }
+}
+
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.bento-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.1), 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+.bento-card-visual {
+  flex: 1;
+  min-height: 140px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 8px;
+  border: 1px dashed rgba(0,0,0,0.1);
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
 /* --- COMPONENT STYLES --- */
 
 /* Header / Navbar */

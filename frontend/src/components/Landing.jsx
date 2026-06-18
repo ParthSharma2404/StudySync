@@ -299,72 +299,136 @@ function Landing({ currentUser }) {
           </p>
         </div>
 
-        <div onMouseMove={handleMouseMove} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-          {/* Card 1 */}
-          <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div onMouseMove={handleMouseMove} className="bento-grid">
+          
+          {/* 1. Persistent Study Rooms (Span 2) */}
+          <div className="glass-panel feature-card bento-card bento-span-2" style={{ padding: '32px', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
               <Users size={24} />
             </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Persistent Study Rooms</h3>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Persistent Study Rooms</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '80%' }}>
               Create permanent, shareable workspaces. If the host leaves, the room stays active and privileges transition seamlessly to keep the session alive.
             </p>
+            <div className="bento-card-visual" style={{ background: 'linear-gradient(to right, rgba(99, 102, 241, 0.05), transparent)' }}>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#fff', borderRadius: '8px', border: '2px solid #2b2b2b', boxShadow: '4px 4px 0 rgba(0,0,0,0.1)' }}>
+                  <div style={{ fontWeight: 600 }}>CS101 Prep Room <span style={{ fontSize: '0.75rem', color: '#10b981', marginLeft: '8px' }}>● 12 Online</span></div>
+                  <div style={{ color: '#6366f1', fontWeight: 'bold' }}>Join</div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#fff', borderRadius: '8px', border: '2px dashed #d1d5db', opacity: 0.7, transform: 'scale(0.95)' }}>
+                  <div style={{ fontWeight: 500, color: '#6b7280' }}>Medical Board Study Group <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginLeft: '8px' }}>○ Empty</span></div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Card 2 */}
-          <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* 2. Synchronized Timers */}
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#34d399' }}>
               <Clock size={24} />
             </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Synchronized Timers</h3>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Synchronized Timers</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Track cumulative study seconds collectively. Active times are broadcasted to peers in real-time, enforcing accountability and preventing procrastination.
+              Track cumulative study seconds collectively. Active times are broadcasted to peers in real-time to enforce accountability.
             </p>
           </div>
 
-          {/* Card 3 */}
-          <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}>
-              <Image size={24} />
-            </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Zen Mode Environments</h3>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Immerse yourself in beautiful, pixel-art lo-fi backgrounds designed to reduce stress and induce deep focus while studying.
-            </p>
-          </div>
-
-          {/* Card 4 */}
-          <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fbbf24' }}>
-              <Target size={24} />
-            </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Shared Objectives</h3>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Establish a central task list for the group. As users check off items, the room's progression advances. Complete the list to secure session achievements.
-            </p>
-          </div>
-
-          {/* Card 5 */}
-          <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
-              <Flame size={24} />
-            </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Progressive RPG Leveling</h3>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Earn XP to rank up your Level. Every rank is harder to achieve. Maintain True Study Streaks—start a timer and do the work to keep your flame alive.
-            </p>
-          </div>
-
-          {/* Card 6 */}
-          <div className="glass-panel feature-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* 3. Global Leaderboards */}
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7dd3fc' }}>
               <Trophy size={24} />
             </div>
-            <h3 style={{ fontSize: '1.25rem' }}>Global Leaderboards</h3>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Global Leaderboards</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Compete against students worldwide. Climb the ranks to earn the glowing Champion badge and secure your spot as the top focused learner.
+              Compete against students worldwide. Climb the ranks to earn the glowing Champion badge.
             </p>
           </div>
+
+          {/* 4. Progressive RPG Leveling (Span 2) */}
+          <div className="glass-panel feature-card bento-card bento-span-2" style={{ padding: '32px', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
+              <Flame size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Progressive RPG Leveling</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '80%' }}>
+              Earn XP to rank up your Level. Every rank is exponentially harder to achieve. Maintain True Study Streaks—start a timer and do the work to keep your flame alive.
+            </p>
+            <div className="bento-card-visual" style={{ background: 'rgba(255,255,255,0.5)' }}>
+              <div style={{ width: '80%', maxWidth: '300px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontWeight: 'bold' }}>
+                   <span>Level 4</span>
+                   <span style={{ color: '#a855f7' }}>180 / 200 XP</span>
+                 </div>
+                 <div style={{ height: '12px', background: '#f3f4f6', borderRadius: '8px', overflow: 'hidden', border: '1px solid #d1d5db' }}>
+                   <div className="animate-pulse" style={{ width: '90%', height: '100%', background: 'linear-gradient(90deg, #c084fc, #818cf8)', borderRadius: '8px' }}></div>
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Zen Mode Environments (Span 2) */}
+          <div className="glass-panel feature-card bento-card bento-span-2" style={{ padding: '32px', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}>
+              <Image size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Zen Mode Environments</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '80%' }}>
+              Immerse yourself in beautiful, pixel-art lo-fi backgrounds designed to reduce stress and induce deep focus while studying.
+            </p>
+            <div className="bento-card-visual" style={{ background: 'url("https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop")', backgroundSize: 'cover', backgroundPosition: 'center', border: '2px solid #2b2b2b' }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: 'rgba(255,255,255,0.9)', padding: '8px 16px', borderRadius: '25px', fontWeight: 'bold', fontSize: '0.9rem', border: '2px solid #2b2b2b' }}>Zen Mode: Activated</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 6. Shared Objectives */}
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fbbf24' }}>
+              <Target size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Shared Objectives</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+              Establish a central task list for the group. Complete the list to secure session achievements.
+            </p>
+          </div>
+
+          {/* 7. Live Video & Audio */}
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f472b6' }}>
+              <Video size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Live Video & Audio</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+              Communicate seamlessly with built-in WebRTC video and audio feeds. Share your screen for real-time collaboration.
+            </p>
+          </div>
+
+          {/* 8. Private Workspaces (Span 2) */}
+          <div className="glass-panel feature-card bento-card bento-span-2" style={{ padding: '32px', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(148, 163, 184, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+              <LayoutDashboard size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginTop: '8px' }}>Private Workspaces</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '80%' }}>
+              Need absolute focus? Enter an isolated private workspace to track your personal timers and complete local tasks without any group distractions.
+            </p>
+            <div className="bento-card-visual" style={{ background: '#f8fafc' }}>
+               <div style={{ width: '70%', height: '60%', border: '2px solid #2b2b2b', background: '#fff', borderRadius: '8px 8px 0 0', display: 'flex', flexDirection: 'column' }}>
+                 <div style={{ borderBottom: '2px solid #2b2b2b', padding: '6px 12px', display: 'flex', gap: '6px' }}>
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }}></div>
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+                 </div>
+                 <div style={{ flex: 1, padding: '12px', display: 'flex', gap: '12px' }}>
+                   <div style={{ flex: 1, background: '#f1f5f9', borderRadius: '4px', border: '1px dashed #cbd5e1' }}></div>
+                   <div style={{ width: '40%', background: '#f1f5f9', borderRadius: '4px', border: '1px dashed #cbd5e1' }}></div>
+                 </div>
+               </div>
+            </div>
+          </div>
+
         </div>
       </ScrollRevealSection>
 
