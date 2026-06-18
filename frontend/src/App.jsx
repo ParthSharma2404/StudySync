@@ -130,7 +130,7 @@ function App() {
             <Link to="/" className="navbar-brand" style={{ textDecoration: 'none' }}>
               <span>StudySync</span>
               <span style={{ fontSize: '0.75rem', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: '#fff', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold', boxShadow: '0 2px 10px rgba(99,102,241,0.3)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                Beta
+                2.0
               </span>
             </Link>
 
