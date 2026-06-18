@@ -43,6 +43,16 @@ const LiveKitVideoSidebar = () => {
   );
 };
 
+const LiveKitMicSync = ({ isMicMuted }) => {
+  const { localParticipant } = useLocalParticipant();
+  useEffect(() => {
+    if (localParticipant) {
+      localParticipant.setMicrophoneEnabled(!isMicMuted);
+    }
+  }, [isMicMuted, localParticipant]);
+  return null;
+};
+
 const EnsoCircle = () => (
   <svg 
     style={{ 
@@ -840,6 +850,7 @@ function StudyRoom({ currentUser }) {
                   audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
                 }}
               >
+                <LiveKitMicSync isMicMuted={isMicMuted} />
                 <LiveKitVideoSidebar />
                 <RoomAudioRenderer />
               </LiveKitRoom>
