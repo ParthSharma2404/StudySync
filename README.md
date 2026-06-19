@@ -1,4 +1,3 @@
-# StudySync 2.0
 
 <div align="center">
   <h1>StudySync 2.0</h1>
@@ -119,6 +118,8 @@ Advanced AI study assistant
 Mobile PWA support
 Institution / College plans
 Recording study sessions
+
+```
 
 <h2 align="center">
 Built with ❤️ for students who want to study better, together.
