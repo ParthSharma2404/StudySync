@@ -63,13 +63,17 @@ Whether you're preparing for exams or building consistent study habits, StudySyn
 
 ## 📸 Screenshots
 
-*(Add 6–8 screenshots/GIFs here — very important!)*
+**Landing Page**
+<video src="gif/landing_page.mp4" controls width="800"></video>
 
-<!-- Example placeholders -->
-![Landing Page](gif/landing_page.mp4)
-![Study Room](screenshots/study-room.png)
-![Dashboard](screenshots/dashboard.png)
-![Zen Mode](screenshots/zen-mode.png)
+**Study Room**
+<video src="gif/room_view.mp4" controls width="800"></video>
+
+**Dashboard**
+<video src="gif/dashboard.mp4" controls width="800"></video>
+
+**Zen Mode**
+<video src="gif/zen_mode.mp4" controls width="800"></video>
 
 ---
 
