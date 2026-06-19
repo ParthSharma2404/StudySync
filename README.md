@@ -2,18 +2,19 @@
 
 <div align="center">
   <h1>StudySync 2.0</h1>
-  <img src="./frontend/public/logo.png" alt="StudySync Logo" width="180" />
+  <img src="./frontend/public/logo.png" alt="StudySync Logo" width="250" />
   
   <p><strong>Focus Together. Study Together.</strong></p>
   
   <a href="https://studysync.fun">
-    <strong>Live Demo → studysync.fun</strong>
+    <strong>Live Site → studysync.fun</strong>
   </a>
 </div>
-**A Real-Time Virtual Study Platform** — Study together, stay focused, and build better habits.
-
-**Live Site:** [studysync.fun](https://studysync.fun)
-
+<div align="center">
+<p>
+<strong>A Real-Time Virtual Study Platform</strong> — Study together, stay focused, and build better habits.
+</p>
+</div>
 ---
 
 ## ✨ What is StudySync?
