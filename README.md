@@ -64,16 +64,16 @@ Whether you're preparing for exams or building consistent study habits, StudySyn
 ## 📸 Screenshots
 
 **Landing Page**
-<video src="gif/landing_page.mp4" controls width="800"></video>
+<video src="./frontend/public/gif/landing_page.mp4" controls width="800"></video>
 
 **Study Room**
-<video src="gif/room_view.mp4" controls width="800"></video>
+<video src="./frontend/public/gif/room_view.mp4" controls width="800"></video>
 
 **Dashboard**
-<video src="gif/dashboard.mp4" controls width="800"></video>
+<video src="./frontend/public/gif/dashboard.mp4" controls width="800"></video>
 
 **Zen Mode**
-<video src="gif/zen_mode.mp4" controls width="800"></video>
+<video src="./frontend/public/gif/zen_mode.mp4" controls width="800"></video>
 
 ---
 
