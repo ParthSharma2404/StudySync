@@ -965,7 +965,13 @@ io.on('connection', (socket) => {
   });
 
   // Relay real-time invitations to targeted users
-  socket.on('send-invite', ({ targetUserId, roomId, roomName, hostName }) => {
+  socket.on('send-invite', async ({ targetUserId, roomId, roomName, hostName }) => {
+    const notifId = crypto.randomUUID();
+    await dbRun(
+      "INSERT INTO notifications (id, user_id, message, type, related_id) VALUES (?, ?, ?, 'room_invite', ?)",
+      [notifId, targetUserId, `${hostName} invited you to join: ${roomName}`, roomId]
+    ).catch(console.error);
+
     const targetSocket = onlineUsers[targetUserId];
     if (targetSocket) {
       io.to(targetSocket.socketId).emit('room-invite-received', {
@@ -973,17 +979,28 @@ io.on('connection', (socket) => {
         roomName,
         hostName
       });
+      io.to(targetSocket.socketId).emit('new-notification');
     }
   });
 
-  socket.on('send-invite-username', ({ targetUsername, roomId, roomName, hostName }) => {
-    const targetUser = Object.values(onlineUsers).find(u => u.username === targetUsername);
-    if (targetUser) {
-      io.to(targetUser.socketId).emit('room-invite-received', {
+  socket.on('send-invite-username', async ({ targetUsername, roomId, roomName, hostName }) => {
+    const targetEntry = Object.entries(onlineUsers).find(([id, u]) => u.username === targetUsername);
+    if (targetEntry) {
+      const targetUserId = targetEntry[0];
+      const targetSocketId = targetEntry[1].socketId;
+
+      const notifId = crypto.randomUUID();
+      await dbRun(
+        "INSERT INTO notifications (id, user_id, message, type, related_id) VALUES (?, ?, ?, 'room_invite', ?)",
+        [notifId, targetUserId, `${hostName} invited you to join: ${roomName}`, roomId]
+      ).catch(console.error);
+
+      io.to(targetSocketId).emit('room-invite-received', {
         roomId,
         roomName,
         hostName
       });
+      io.to(targetSocketId).emit('new-notification');
       socket.emit('notification', { message: `Invite sent to ${targetUsername}!` });
     } else {
       socket.emit('notification', { message: `User ${targetUsername} is not online or doesn't exist.` });
@@ -1279,6 +1296,50 @@ io.on('connection', (socket) => {
           icon_name: '🌅'
         });
       }
+    }
+  });
+
+  socket.on('leave-room', async () => {
+    const { roomId, userId, sessionId } = socket;
+    if (roomId && roomsState[roomId]) {
+      const participant = roomsState[roomId].participants[socket.id];
+      const username = participant ? participant.username : 'A user';
+
+      if (sessionId) {
+        await dbRun(
+          'UPDATE study_sessions SET end_time = CURRENT_TIMESTAMP WHERE id = ?',
+          [sessionId]
+        ).catch(err => console.error('Error ending study session:', err));
+      }
+
+      delete roomsState[roomId].participants[socket.id];
+      socket.leave(roomId);
+      
+      // Clean up socket instance variables
+      socket.roomId = null;
+      socket.sessionId = null;
+
+      const activeSockets = Object.keys(roomsState[roomId].participants);
+      if (activeSockets.length > 0) {
+        if (roomsState[roomId].moderatorId === userId) {
+          const firstSocketId = activeSockets[0];
+          const newMod = roomsState[roomId].participants[firstSocketId];
+          roomsState[roomId].moderatorId = newMod.userId;
+        }
+      }
+
+      const participantsList = Object.values(roomsState[roomId].participants);
+      io.to(roomId).emit('room-state-updated', {
+        moderatorId: roomsState[roomId].moderatorId,
+        timerStarted: roomsState[roomId].timerStarted,
+        roomStartTime: roomsState[roomId].roomStartTime,
+        ambientAudio: roomsState[roomId].ambientAudio,
+        participants: participantsList
+      });
+
+      io.to(roomId).emit('notification', {
+        message: `${username} left the room.`
+      });
     }
   });
 

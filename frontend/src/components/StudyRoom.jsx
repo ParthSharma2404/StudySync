@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Play, Pause, Square, Plus, Trash2, Camera, Mic, MicOff, VideoOff, ScreenShare, Volume2, ShieldAlert, Award, MessageSquare, Clock, Users, X, Monitor, LogOut, LogIn, CheckCircle2, Link as LinkIcon, Share2, ClipboardList, Target, AlertCircle, Headphones } from 'lucide-react';
+import { Play, Pause, Square, Plus, Trash2, Camera, Mic, MicOff, VideoOff, ScreenShare, Volume2, ShieldAlert, Award, MessageSquare, Clock, Users, X, Monitor, LogOut, LogIn, CheckCircle2, Link as LinkIcon, Share2, ClipboardList, Target, AlertCircle, Headphones, Sparkles } from 'lucide-react';
 import { LiveKitRoom, useTracks, VideoTrack, useLocalParticipant, RoomAudioRenderer } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 
@@ -65,7 +65,8 @@ const EnsoCircle = () => (
       width: '85vh', 
       height: '85vh',
       maxWidth: '800px',
-      maxHeight: '800px'
+      maxHeight: '800px',
+      animation: 'ensoRotate 60s linear infinite'
     }}
     viewBox="0 0 200 200" 
     xmlns="http://www.w3.org/2000/svg"
@@ -292,6 +293,13 @@ function StudyRoom({ currentUser }) {
       globalSocket.off('badge-earned', handleBadgeEarned);
       globalSocket.off('connect', handleConnect);
       
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+
+      if (workspaceEnteredRef.current && !isSolo) {
+        globalSocket.emit('leave-room');
+      }
+
       // PeerJS has been removed in favor of LiveKit
       stopStreams();
     };
@@ -864,15 +872,26 @@ function StudyRoom({ currentUser }) {
             <div className="workspace-left">
               {/* Stopwatch panel */}
               <div className="glass-panel timer-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
-                {/* Zen Mode Toggle */}
-                <button 
-                  onClick={() => setIsZenMode(!isZenMode)}
-                  className="btn btn-secondary"
-                  style={{ position: 'absolute', top: '16px', right: '16px', padding: '8px', borderRadius: '50%', zIndex: 10 }}
-                  title={isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}
-                >
-                  <Monitor size={18} color={isZenMode ? "var(--color-primary)" : "var(--color-text-title)"} />
-                </button>
+                {/* Prominent Zen Mode Toggle */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+                  <button 
+                    onClick={() => setIsZenMode(!isZenMode)}
+                    className="btn"
+                    style={{ 
+                      padding: '8px 20px', borderRadius: '30px', zIndex: 10,
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                      background: isZenMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                      border: `1px solid ${isZenMode ? 'rgba(245, 158, 11, 0.5)' : 'var(--color-border-glass)'}`,
+                      color: isZenMode ? '#f59e0b' : 'var(--color-text-main)',
+                      transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                      boxShadow: isZenMode ? '0 0 20px rgba(245, 158, 11, 0.2)' : 'none'
+                    }}
+                  >
+                    <Sparkles size={16} color={isZenMode ? "#f59e0b" : "var(--color-text-main)"} />
+                    {isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}
+                  </button>
+                </div>
                 
                 {!timerStarted ? (
                   <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
@@ -890,17 +909,13 @@ function StudyRoom({ currentUser }) {
 
                 {!timerStarted && (
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
-                    {isSolo || moderatorId === user?.id ? (
-                        <button 
-                          onClick={handleStartTimer} 
-                          className="btn btn-primary" 
-                          style={{ padding: '10px 24px', fontSize: '0.9rem' }}
-                        >
-                        <Play size={16} /> Start Study Session
-                      </button>
-                    ) : (
-                      <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Waiting for host...</span>
-                    )}
+                    <button 
+                      onClick={handleStartTimer} 
+                      className="btn btn-primary" 
+                      style={{ padding: '10px 24px', fontSize: '0.9rem' }}
+                    >
+                      <Play size={16} /> Start Study Session
+                    </button>
                   </div>
                 )}
               </div>

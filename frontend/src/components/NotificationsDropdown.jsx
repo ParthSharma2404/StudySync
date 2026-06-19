@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, X, UserPlus, UserCheck, Info } from 'lucide-react';
+import { Bell, Check, X, UserPlus, UserCheck, Info, LogIn } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import { fetchApi } from '../utils/api';
 
@@ -10,6 +11,7 @@ const NotificationsDropdown = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const dropdownRef = useRef(null);
   const socket = useSocket();
+  const navigate = useNavigate();
 
   const fetchNotifications = async () => {
     try {
@@ -91,6 +93,7 @@ const NotificationsDropdown = () => {
   const getNotifIcon = (notif) => {
     if (notif.type === 'friend_request') return <UserPlus size={18} color="#6366f1" />;
     if (notif.type === 'friend_accept') return <UserCheck size={18} color="#10b981" />;
+    if (notif.type === 'room_invite') return <LogIn size={18} color="#f59e0b" />;
     return <Info size={18} color="#64748b" />;
   };
 
@@ -167,7 +170,7 @@ const NotificationsDropdown = () => {
                   {/* Icon */}
                   <div style={{ 
                     width: '36px', height: '36px', borderRadius: '10px', 
-                    background: notif.type === 'friend_request' ? 'rgba(99, 102, 241, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                    background: notif.type === 'friend_request' ? 'rgba(99, 102, 241, 0.12)' : notif.type === 'room_invite' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(16, 185, 129, 0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, marginTop: '2px'
                   }}>
@@ -219,6 +222,31 @@ const NotificationsDropdown = () => {
                           }}
                         >
                           <X size={14} /> Decline
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Join Room action for room invites */}
+                    {notif.type === 'room_invite' && (
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setIsOpen(false);
+                            navigate(`/room/${notif.related_id}`);
+                          }}
+                          style={{ 
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+                            color: '#fff', border: 'none', 
+                            padding: '6px 14px', borderRadius: '8px', 
+                            fontSize: '0.8rem', fontWeight: 600,
+                            cursor: 'pointer', 
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <LogIn size={14} /> Join Room
                         </button>
                       </div>
                     )}
