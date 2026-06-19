@@ -15,7 +15,7 @@
 <strong>A Real-Time Virtual Study Platform</strong> — Study together, stay focused, and build better habits.
 </p>
 </div>
----
+
 
 ## ✨ What is StudySync?
 
@@ -120,7 +120,9 @@ Mobile PWA support
 Institution / College plans
 Recording study sessions
 
-
+<h2 align="center">
 Built with ❤️ for students who want to study better, together.
-
-Made by Parth Sharma
+</h2>
+<h4 align="center">
+Made by <a href="https://github.com/ParthSharma2404">Parth Sharma</a>
+</h4>
