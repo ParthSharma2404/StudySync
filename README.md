@@ -70,7 +70,7 @@ Whether you're preparing for exams or building consistent study habits, StudySyn
 <video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/room_view.mp4" controls width="800"></video>
 
 **Dashboard**
-<video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/dashboard.mp4" controls width="800"></video>
+<img src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/dashboard.gif" alt="Dashboard" width="800" />
 
 **Zen Mode**
 <video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/zen_mode.mp4" controls width="800"></video>
