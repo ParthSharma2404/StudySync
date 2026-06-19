@@ -1,150 +1,125 @@
-# StudySync 2.0 - Complete Project Documentation
+# StudySync 2.0
 
-Welcome to the comprehensive, in-depth documentation for **StudySync 2.0**. This document explains every single feature, technology, architecture decision, and database structure utilized in the project. If you want to understand how StudySync works from the ground up, this is the ultimate guide.
+<div align="center">
+  <h1>StudySync 2.0</h1>
+  <img src="./frontend/public/logo.png" alt="StudySync Logo" width="180" />
+  
+  <p><strong>Focus Together. Study Together.</strong></p>
+  
+  <a href="https://studysync.fun">
+    <strong>Live Demo → studysync.fun</strong>
+  </a>
+</div>
+**A Real-Time Virtual Study Platform** — Study together, stay focused, and build better habits.
 
----
-
-## 🌟 Executive Summary
-
-StudySync is a **real-time, multiplayer virtual study platform**. Built to combat the isolation and distraction of studying alone, it acts as a virtual library. Users can join themed study rooms, see and hear other students studying live alongside them (via LiveKit), manage collaborative to-do lists, and track their productivity through a deeply gamified system featuring Progressive RPG Leveling, True Study Streaks, and Global Leaderboards.
-
----
-
-## 🛠️ Technology Stack (In-Depth)
-
-StudySync is a full-stack JavaScript application built with modern tooling:
-
-### Frontend Architecture
-- **Framework**: **React 18** powered by **Vite** for lightning-fast Hot Module Replacement (HMR) and optimized production builds.
-- **Routing**: **React Router DOM v7** for seamless Single Page Application (SPA) navigation and route protection (checking for JWT tokens).
-- **Styling**: Pure **Vanilla CSS** utilizing modern techniques like CSS Variables, Grid/Bento layouts, and advanced glassmorphic UI design.
-- **Live Video & Audio**: **LiveKit Components** provides high-performance, WebRTC-based SFU routing for real-time peer-to-peer communication.
-- **Data Visualization**: **Recharts** is used to render interactive, responsive SVG charts for the user's weekly study analytics.
-- **Icons**: **Lucide React** provides clean, consistent SVG iconography.
-
-### Backend Architecture
-- **Environment**: **Node.js** running a stateful server.
-- **Framework**: **Express.js (v5)** handling RESTful API routing, JSON body parsing, and serving the compiled static frontend files in production.
-- **Real-Time Engine (Data)**: **Socket.io**. Handles persistent, bi-directional WebSocket connections for synchronized timers, tasks, and XP heartbeats.
-- **Real-Time Engine (Media)**: **LiveKit Server SDK**. Generates secure access tokens to route client media streams without storing any video or audio data.
-- **Authentication**: **JSON Web Tokens (JWT)** for stateless, secure authentication.
-- **Security**: **bcryptjs** is used to salt and hash all user passwords.
-
-### Database & Persistence
-- **Engine**: **PostgreSQL**. A robust, fully relational database management system.
-- **Driver**: **pg (node-postgres)** is used to establish a connection pool.
-- **Migrations**: Database tables are automatically generated on startup via raw SQL queries in `db.js`.
+**Live Site:** [studysync.fun](https://studysync.fun)
 
 ---
 
-## 🗄️ Database Schema & Data Models
+## ✨ What is StudySync?
 
-### 1. `users` Table
-Stores all account information and gamification states.
-- `id` (Primary Key): Unique UUID.
-- `username` & `email`: Unique identifiers.
-- `password_hash`: The bcrypt hashed password.
-- `current_streak` & `longest_streak`: Tracks consecutive days of **active studying**.
-- `last_active_date`: A timestamp used by the timer-heartbeat to calculate if a study streak should be incremented or reset.
-- `total_study_seconds`: Lifetime focus time.
-- `xp`: Experience points earned by studying.
-- `level`: The current RPG rank of the user (calculated dynamically based on XP).
+StudySync transforms solitary studying into a **productive, social, and gamified experience**. It acts as a **virtual library** where students can join live study rooms, see peers working in real-time, track productivity, and stay motivated through community and RPG-style progression.
 
-### 2. `rooms` Table
-Stores the virtual study environments.
-- `id` (Primary Key): Unique UUID.
-- `name` & `description`: Metadata for the room.
-- `creator_id`: Foreign Key linking to the user who created it.
-- `passcode`: Optional field for private rooms.
-
-### 3. `tasks` Table
-Handles the collaborative To-Do lists inside study rooms.
-- `id`, `room_id`, `owner_id`, `title`, `is_completed`, `completed_by`.
-
-### 4. `study_sessions` Table
-The core analytics ledger.
-- `id`, `user_id`, `room_id`, `start_time`, `end_time`, `duration_seconds`.
+Whether you're preparing for exams or building consistent study habits, StudySync makes studying less lonely and more effective.
 
 ---
 
-## ⚙️ Core Features & Engineering Details
+## 🚀 Key Features
 
-### 1. LiveKit Video & Audio Streaming
-Study rooms feature embedded video and audio communication. Instead of pure P2P (which degrades with many users), we use an SFU (Selective Forwarding Unit) via **LiveKit**. The backend securely generates an Access Token for the user, allowing them to publish and subscribe to media tracks securely without any media touching our PostgreSQL database.
-
-### 2. Server-Synchronized Pomodoro Timer
-Unlike typical timers that run locally in the browser, StudySync's timer runs centrally on the **Node.js server** using `setInterval`. Every second, the server broadcasts a `timer_update` event containing the `time_remaining`, ensuring every student is perfectly synced to the exact millisecond.
-
-### 3. Deep Gamification Engine (RPG Leveling & Streaks)
-- **Progressive Leveling**: Users earn XP continuously while studying. Leveling up requires exponentially more XP per rank (e.g., Level 2 requires 100XP, Level 3 requires 150XP, Level 4 requires 200XP).
-- **True Study Streaks**: Streaks are *not* tied to logging in. Instead, the backend listens for a `timer-heartbeat` via WebSockets. Only when a user actively studies for 1 minute on a new day does their streak increment, ensuring streaks represent true effort.
-- **Global Leaderboards**: Users are ranked continuously based on their XP, with the #1 ranked user receiving a unique "Champion" highlighter in the UI.
-
-### 4. Zen Mode Environments
-Users can toggle "Zen Mode" inside study rooms, which replaces the standard UI background with immersive, high-quality pixel-art lo-fi backgrounds to induce deep focus.
-
-### 5. Weekly Analytics
-The `study_sessions` table acts as a raw ledger. On the Dashboard, the backend aggregates this data using the PostgreSQL `TO_CHAR` function to group sessions by day for the past 7 days, feeding into `Recharts` for interactive bar charts.
+- **Live Study Rooms** with real-time video & audio using **LiveKit**
+- **Synchronized Focus Timer** (Pomodoro-style) visible to all room members
+- **Collaborative Objectives** — Real-time shared to-do lists with confetti on completion
+- **Ambient Audio Sync** — Built-in lo-fi sounds + custom YouTube integration
+- **Zen Mode** — Distraction-free deep focus mode
+- **Gamification** — XP, study streaks, levels, and global leaderboard
+- **Analytics Dashboard** — Track your weekly focus hours with beautiful charts
+- **Friends System** — Add friends and see who's online
 
 ---
 
-## 🚀 Deployment & Infrastructure Guide
+## 🛠️ Tech Stack
 
-The project is fully configured to be deployed on **Render.com**.
+### Frontend
+- **React 18** (Vite)
+- **React Router DOM v7**
+- Vanilla CSS (Glassmorphism + Modern Animations)
+- **LiveKit Components** (WebRTC)
+- **Socket.io Client**
+- Recharts, Lucide Icons
 
-### Render Configuration
-1. **Managed PostgreSQL Database**: Provisioned on Render.
-2. **Web Service**: The Node.js application is deployed as a single unified service.
+### Backend
+- **Node.js + Express.js**
+- **PostgreSQL** (Relational Database)
+- **Socket.io** (Real-time synchronization)
+- **LiveKit Server SDK** (Video/Audio Conferencing)
+- **JWT + bcryptjs** (Secure Authentication)
 
-### The Build Process
-The root directory contains a master `package.json` with a `postinstall` script:
-```json
-"postinstall": "cd frontend && npm install && npm run build"
-```
-When Render deploys the app, it automatically compiles the React app into static files located in `frontend/dist`. The Express backend catches all non-API requests and serves the compiled React app.
-
-### Environment Variables (Production)
-- `NODE_ENV`: Set to `production`.
-- `DATABASE_URL`: The PostgreSQL connection string.
-- `JWT_SECRET`: A secure string for auth tokens.
-- `LIVEKIT_API_KEY`: Key from LiveKit Cloud.
-- `LIVEKIT_API_SECRET`: Secret from LiveKit Cloud.
-- `LIVEKIT_WS_URL`: WebSocket URL from LiveKit Cloud.
-
----
-
-## 💻 Local Developer Setup
-
-If you want to run or modify StudySync locally, follow these steps:
-
-1. **Clone the Repo**
-   ```bash
-   git clone https://github.com/ParthSharma2404/StudySync.git
-   cd StudySync
-   ```
-
-2. **Install Dependencies**
-   Open two terminal windows.
-   - Terminal 1 (Backend): `cd backend && npm install`
-   - Terminal 2 (Frontend): `cd frontend && npm install`
-
-3. **Configure Environment**
-   Create a `.env` file in the root folder (or backend folder depending on your setup) with your credentials:
-   ```env
-   PORT=5000
-   DATABASE_URL=postgresql://your_db_user:your_db_password@localhost:5432/your_local_db_name
-   JWT_SECRET=development_secret_key
-   LIVEKIT_API_KEY=your_dev_key
-   LIVEKIT_API_SECRET=your_dev_secret
-   LIVEKIT_WS_URL=wss://your-livekit-project.livekit.cloud
-   NODE_ENV=development
-   ```
-
-4. **Run the Application**
-   - Terminal 1 (Backend): `node server.js` (or `npm start` / `nodemon server.js`)
-   - Terminal 2 (Frontend): `npm run dev`
-   - Open `http://localhost:5173` in your browser.
+### DevOps & Tools
+- Render / Vercel
+- Resend (Email)
+- Neon / Supabase (Database)
 
 ---
 
-*This concludes the complete technical documentation for StudySync 2.0. Every component, from the database schema down to the WebSockets and CSS styling, was purposefully engineered to create a fast, real-time, and deeply engaging user experience.*
+## 📸 Screenshots
+
+*(Add 6–8 screenshots/GIFs here — very important!)*
+
+<!-- Example placeholders -->
+![Landing Page](screenshots/landing.png)
+![Study Room](screenshots/study-room.png)
+![Dashboard](screenshots/dashboard.png)
+![Zen Mode](screenshots/zen-mode.png)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- PostgreSQL
+
+### Local Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/ParthSharma2404/StudySync.git
+cd StudySync
+
+# Backend
+cd backend
+npm install
+cp .env.example .env
+# Add your environment variables
+
+# Frontend
+cd ../frontend
+npm install
+
+# Run both
+# From root (recommended)
+npm run dev
+
+📄 Project Documentation
+For detailed architecture, security practices, and feature breakdown, check PROJECT_DOCUMENTATION.md.
+
+🛡️ Security Features
+
+JWT Authentication with HttpOnly Cookies + Refresh Token Rotation
+Password hashing with bcrypt (12 rounds)
+Rate limiting & account lockout
+Email verification via Resend
+Secure LiveKit token generation
+
+
+💡 Future Roadmap
+
+Advanced AI study assistant
+Mobile PWA support
+Institution / College plans
+Recording study sessions
+
+
+Built with ❤️ for students who want to study better, together.
+
+Made by Parth Sharma
