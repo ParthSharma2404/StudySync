@@ -63,18 +63,17 @@ Whether you're preparing for exams or building consistent study habits, StudySyn
 
 ## 📸 Video Previews
 
-**Landing Page**
-<video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/landing_page.gif" alt="landing_page" controls width="800"></video>
+### 1. Landing Page
+![Landing Page](https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/landing_page.gif)
 
-**Study Room**
-<video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/room.gif" alt="room_view" width="800"></video>
+### 2. Study Room
+![Study Room](https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/room.gif)
 
-**Dashboard**
-<video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/dashboard.gif" alt="Dashboard" width="800"></video>
+### 3. Dashboard
+![Dashboard](https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/dashboard.gif)
 
-**Zen Mode**
-<video src="https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/zen_mode.mp4" controls width="800"></video>
-
+### 4. Zen Mode
+![Zen Mode](https://raw.githubusercontent.com/ParthSharma2404/StudySync/main/frontend/public/gif/zen_mode.gif)
 ---
 
 ## 🚀 Getting Started
