@@ -1441,6 +1441,9 @@ button, input, textarea, select {
     border-bottom: 1px dashed var(--color-border-glass);
     width: 100%;
   }
+  .container {
+    padding: 0 16px 0 54px !important;
+  }
   .responsive-grid-auto-300,
   .responsive-grid-auto-280 {
     grid-template-columns: 1fr !important;
@@ -1487,6 +1490,14 @@ button, input, textarea, select {
   .welcome-header {
     margin-bottom: 24px !important;
     text-align: left;
+    margin-top: 12px;
+  }
+  .welcome-header h1 {
+    font-size: 1.6rem !important;
+    line-height: 1.3 !important;
+  }
+  .welcome-header p {
+    font-size: 0.9rem !important;
   }
   .rpg-header {
     flex-direction: column !important;
