@@ -129,7 +129,7 @@ function Landing({ currentUser }) {
 
         {/* CSS UI Mockup - The Dashboard */}
         <div 
-          className="animate-fade-up delay-4 glass-panel hide-on-mobile" 
+          className="animate-fade-up delay-4 glass-panel hero-mockup-mobile" 
           onMouseEnter={() => setIsHoveringMockup(true)}
           onMouseLeave={() => setIsHoveringMockup(false)}
           style={{ 
@@ -299,7 +299,7 @@ function Landing({ currentUser }) {
           </p>
         </div>
 
-        <div onMouseMove={handleMouseMove} className="bento-grid">
+        <div onMouseMove={handleMouseMove} className="bento-grid bento-grid-mobile-scroll">
           
           {/* 1. Persistent Study Rooms (Span 2) */}
           <div className="glass-panel feature-card bento-card bento-span-2" style={{ padding: '32px', gap: '16px' }}>

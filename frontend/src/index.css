@@ -1449,6 +1449,8 @@ button, input, textarea, select {
     background: rgba(253, 251, 247, 0.98) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    border-bottom: 2px solid #2b2b2b !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
   }
   .responsive-grid-auto-300,
   .responsive-grid-auto-280 {
@@ -1579,6 +1581,43 @@ button, input, textarea, select {
   }
   .glass-panel {
     height: auto !important;
+  }
+  
+  /* Feature Grid Horizontal Scroll on Mobile */
+  .bento-grid-mobile-scroll {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 24px;
+    margin-right: -16px; /* bleed to edge */
+    padding-right: 16px;
+    gap: 16px !important;
+  }
+  
+  .bento-grid-mobile-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .bento-grid-mobile-scroll > .bento-card {
+    flex: 0 0 85% !important;
+    scroll-snap-align: center;
+  }
+  
+  .bento-card-visual {
+    max-height: 200px !important;
+  }
+  
+  .hero-mockup-mobile {
+    display: flex !important;
+    transform: scale(0.38) !important;
+    transform-origin: top left !important;
+    width: 800px !important;
+    max-width: 800px !important;
+    min-width: 800px !important;
+    margin-top: 32px !important;
+    margin-bottom: -350px !important; /* Compensate for scaled height so it doesn't leave a huge gap */
+    margin-left: -10px !important;
   }
   /* Fix sticky navbar overlap */
   body {
