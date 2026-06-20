@@ -1442,7 +1442,13 @@ button, input, textarea, select {
     width: 100%;
   }
   .container {
-    padding: 0 16px 0 54px !important;
+    padding-left: 54px !important;
+    padding-right: 16px !important;
+  }
+  .navbar {
+    background: rgba(253, 251, 247, 0.98) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   .responsive-grid-auto-300,
   .responsive-grid-auto-280 {
