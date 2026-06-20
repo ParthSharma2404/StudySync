@@ -158,9 +158,10 @@ function App() {
 
             {/* Mobile Hamburger Toggle */}
             <button 
+              type="button"
               className="mobile-menu-btn" 
               style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-title)' }}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={(e) => { e.preventDefault(); setIsMobileMenuOpen(!isMobileMenuOpen); }}
             >
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
