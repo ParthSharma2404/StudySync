@@ -1413,6 +1413,14 @@ button, input, textarea, select {
   .responsive-grid-2 {
     grid-template-columns: 1fr !important;
   }
+  .responsive-grid-auto-280,
+  .responsive-grid-auto-300 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .responsive-grid-auto-280 > div:last-child:nth-child(odd),
+  .responsive-grid-auto-300 > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Mobile (Max 640px) */
@@ -1610,14 +1618,22 @@ button, input, textarea, select {
   
   .hero-mockup-mobile {
     display: flex !important;
-    transform: scale(0.38) !important;
-    transform-origin: top left !important;
     width: 800px !important;
     max-width: 800px !important;
     min-width: 800px !important;
+    transform-origin: top left !important;
+    /* Scale mathematically based on available container width (100vw - 70px padding) */
+    transform: scale(calc((100vw - 70px) / 800)) !important;
+    /* Compensate exactly for the scaled height difference to prevent overlaps */
+    margin-bottom: calc((600px * ((100vw - 70px) / 800)) - 600px) !important;
     margin-top: 32px !important;
-    margin-bottom: -350px !important; /* Compensate for scaled height so it doesn't leave a huge gap */
-    margin-left: -10px !important;
+  }
+  
+  .telemetry-panel {
+    padding: 24px 16px !important;
+  }
+  .telemetry-card {
+    padding: 16px !important;
   }
   /* Fix sticky navbar overlap */
   body {

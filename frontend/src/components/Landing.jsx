@@ -470,7 +470,7 @@ function Landing({ currentUser }) {
           </div>
           
           {/* Visual Side */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', overflow: 'hidden', padding: '20px 0' }}>
             <div className="glass-panel" style={{ padding: '32px', border: '2px solid #2b2b2b', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', background: '#fdfbf7', position: 'relative', zIndex: 10 }}>
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', margin: '0 auto 16px auto', border: '3px solid #2b2b2b' }}>
@@ -540,8 +540,8 @@ function Landing({ currentUser }) {
             Join thousands of students and professionals who have leveled up their focus.
           </p>
         </div>
-        <div className="responsive-grid-auto-300" onMouseMove={handleMouseMove} style={{ gap: '24px' }}>
-          <div className="glass-panel feature-card" style={{ padding: '32px' }}>
+        <div className="responsive-grid-auto-300 bento-grid-mobile-scroll" onMouseMove={handleMouseMove} style={{ gap: '24px' }}>
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px' }}>
             <div style={{ display: 'flex', gap: '4px', color: '#fbbf24', marginBottom: '16px' }}>
               ★ ★ ★ ★ ★
             </div>
@@ -556,7 +556,7 @@ function Landing({ currentUser }) {
               </div>
             </div>
           </div>
-          <div className="glass-panel feature-card" style={{ padding: '32px' }}>
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px' }}>
             <div style={{ display: 'flex', gap: '4px', color: '#fbbf24', marginBottom: '16px' }}>
               ★ ★ ★ ★ ★
             </div>
@@ -571,7 +571,7 @@ function Landing({ currentUser }) {
               </div>
             </div>
           </div>
-          <div className="glass-panel feature-card" style={{ padding: '32px' }}>
+          <div className="glass-panel feature-card bento-card" style={{ padding: '32px' }}>
             <div style={{ display: 'flex', gap: '4px', color: '#fbbf24', marginBottom: '16px' }}>
               ★ ★ ★ ★ ★
             </div>
@@ -615,20 +615,20 @@ function Landing({ currentUser }) {
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'transparent' }}>
+          <div className="glass-panel telemetry-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'transparent' }}>
             <h3 style={{ fontSize: '1.5rem', color: '#2b2b2b', marginBottom: '8px', transform: 'rotate(-2deg)', display: 'inline-block' }}>Platform Telemetry</h3>
             
-            <div style={{ padding: '20px', border: '2px solid #2b2b2b', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', background: 'transparent' }}>
+            <div className="telemetry-card" style={{ padding: '20px', border: '2px solid #2b2b2b', borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', background: 'transparent' }}>
               <h4 style={{ fontSize: '2.5rem', color: '#2b2b2b', fontWeight: 700, letterSpacing: '-0.02em', textShadow: '2px 2px 0 #fef08a' }}>98.4%</h4>
               <p style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 500, marginTop: '4px' }}>Average Task Completion Rate</p>
             </div>
             
-            <div style={{ padding: '20px', border: '2px solid #2b2b2b', borderRadius: '15px 255px 15px 225px / 255px 15px 225px 15px', background: 'transparent' }}>
+            <div className="telemetry-card" style={{ padding: '20px', border: '2px solid #2b2b2b', borderRadius: '15px 255px 15px 225px / 255px 15px 225px 15px', background: 'transparent' }}>
               <h4 style={{ fontSize: '2.5rem', color: '#2b2b2b', fontWeight: 700, letterSpacing: '-0.02em', textShadow: '2px 2px 0 #bbf7d0' }}>45 min</h4>
               <p style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 500, marginTop: '4px' }}>Median Deep-Work Duration</p>
             </div>
             
-            <div style={{ padding: '20px', border: '2px solid #2b2b2b', borderRadius: '225px 15px 255px 15px / 15px 255px 15px 225px', background: 'transparent' }}>
+            <div className="telemetry-card" style={{ padding: '20px', border: '2px solid #2b2b2b', borderRadius: '225px 15px 255px 15px / 15px 255px 15px 225px', background: 'transparent' }}>
               <h4 style={{ fontSize: '2.5rem', color: '#2b2b2b', fontWeight: 700, letterSpacing: '-0.02em', textShadow: '2px 2px 0 #bfdbfe' }}>Zero</h4>
               <p style={{ color: 'var(--color-text-main)', fontSize: '0.95rem', fontWeight: 500, marginTop: '4px' }}>Cloud Server Video Storage</p>
             </div>
