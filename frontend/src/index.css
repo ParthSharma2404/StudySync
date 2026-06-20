@@ -1484,6 +1484,34 @@ button, input, textarea, select {
     font-size: 0.8rem !important;
     margin: 12px 0 !important;
   }
+  .welcome-header {
+    margin-bottom: 24px !important;
+    text-align: left;
+  }
+  .rpg-header {
+    flex-direction: column !important;
+    text-align: center;
+  }
+  .rpg-header > div:last-child {
+    text-align: center !important;
+    width: 100%;
+  }
+  .analytics-bars {
+    gap: 4px !important;
+  }
+  .analytics-header, .leaderboard-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+  .leaderboard-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+  .leaderboard-item > div:last-child {
+    align-self: flex-end;
+  }
   /* Fix sticky navbar overlap */
   body {
     padding-top: 0px; 

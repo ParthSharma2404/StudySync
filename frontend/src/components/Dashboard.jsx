@@ -254,9 +254,9 @@ function Dashboard({ currentUser }) {
     return (
       <div className="container dashboard-container pro-font animate-fade-up" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
         {/* Skeleton Top Welcome Bar */}
-        <div className="hide-on-mobile" style={{ marginBottom: '40px' }}>
-          <div className="skeleton-pulse" style={{ width: '350px', height: '42px', borderRadius: '10px', marginBottom: '12px' }}></div>
-          <div className="skeleton-pulse" style={{ width: '280px', height: '20px', borderRadius: '8px' }}></div>
+        <div className="welcome-header" style={{ marginBottom: '40px' }}>
+          <div className="skeleton-pulse" style={{ width: '350px', height: '42px', borderRadius: '10px', marginBottom: '12px', maxWidth: '100%' }}></div>
+          <div className="skeleton-pulse" style={{ width: '280px', height: '20px', borderRadius: '8px', maxWidth: '100%' }}></div>
         </div>
 
         <div className="dashboard-grid">
@@ -309,11 +309,11 @@ function Dashboard({ currentUser }) {
 
             {/* Analytics Skeleton */}
             <div className="pro-panel skeleton-panel" style={{ padding: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+              <div className="analytics-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
                 <div className="skeleton-pulse" style={{ width: '180px', height: '24px', borderRadius: '8px' }}></div>
                 <div className="skeleton-pulse" style={{ width: '100px', height: '24px', borderRadius: '12px' }}></div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
+              <div className="analytics-bars" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
                 {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                     <div className="skeleton-pulse" style={{ width: '100%', height: `${Math.random() * 100 + 40}px`, borderRadius: '8px 8px 0 0' }}></div>
@@ -326,7 +326,7 @@ function Dashboard({ currentUser }) {
             {/* RPG Skeleton */}
             <div className="pro-panel skeleton-panel" style={{ padding: '32px' }}>
               <div className="skeleton-pulse" style={{ width: '200px', height: '28px', borderRadius: '8px', marginBottom: '32px' }}></div>
-              <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
+              <div className="rpg-header" style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
                 <div className="skeleton-pulse" style={{ width: '80px', height: '80px', borderRadius: '20px' }}></div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div className="skeleton-pulse" style={{ width: '140px', height: '20px', borderRadius: '6px' }}></div>
@@ -364,7 +364,7 @@ function Dashboard({ currentUser }) {
     <>
       <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
         {/* Top Welcome Bar */}
-      <div className="welcome-header hide-on-mobile" style={{ marginBottom: '40px' }}>
+      <div className="welcome-header" style={{ marginBottom: '40px' }}>
         <h1 style={{ fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-title)', lineHeight: '1.2' }}>
           Welcome back,<br className="mobile-break" /> {user?.username || 'Learner'}.
         </h1>
@@ -600,13 +600,13 @@ function Dashboard({ currentUser }) {
 
           {/* Study Analytics Chart */}
           <div className="pro-panel" style={{ padding: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <div className="analytics-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BarChart2 size={20} color="#a1a1aa" /> Study Analytics
               </h3>
               <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', background: 'rgba(0,0,0,0.03)', padding: '4px 12px', borderRadius: '50px', fontWeight: 600 }}>Past 7 Days</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
+            <div className="analytics-bars" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
               {(data?.studyAnalytics || mockStudyData).map((d, i) => {
                 const currentMaxHours = Math.max(...(data?.studyAnalytics || mockStudyData).map(item => item.hours), 1);
                 return (
@@ -643,7 +643,7 @@ function Dashboard({ currentUser }) {
                 </button>
               </div>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
+              <div className="rpg-header" style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
                 {/* 3D Shiny Badge */}
                 <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'linear-gradient(135deg, #fff 0%, #f1f5f9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '10px 10px 20px rgba(99, 102, 241, 0.15), -5px -5px 15px rgba(255,255,255,0.8), inset 0 0 10px rgba(99, 102, 241, 0.05)', border: '1px solid rgba(255,255,255,1)', transform: 'rotate(5deg)' }}>
                   <currentRank.icon size={40} color={currentRank.color} style={{ filter: `drop-shadow(0 4px 6px ${currentRank.color}4D)` }} />
@@ -684,7 +684,7 @@ function Dashboard({ currentUser }) {
               <Trophy size={200} />
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div className="leaderboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-text-title)', letterSpacing: '0.02em', margin: 0 }}>
                 <Trophy size={22} color="#f59e0b" style={{ filter: 'drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3))' }} /> Global Leaderboard
               </h3>
@@ -713,7 +713,7 @@ function Dashboard({ currentUser }) {
                   }
                   
                   return (
-                    <div key={lbUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: bgStyle, border: borderStyle, boxShadow: boxSh, borderRadius: '12px', transition: 'all 0.3s', transform: isRank1 ? 'scale(1.02)' : isTop3 ? 'scale(1.01)' : 'scale(1)', position: 'relative', overflow: 'hidden' }}>
+                    <div key={lbUser.id} className="leaderboard-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: bgStyle, border: borderStyle, boxShadow: boxSh, borderRadius: '12px', transition: 'all 0.3s', transform: isRank1 ? 'scale(1.02)' : isTop3 ? 'scale(1.01)' : 'scale(1)', position: 'relative', overflow: 'hidden' }}>
                       {isRank1 && <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' }}></div>}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', zIndex: 1 }}>
                         <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: isTop3 ? '1.1rem' : '1rem', color: rankColor }}>
@@ -744,7 +744,7 @@ function Dashboard({ currentUser }) {
                     <div style={{ width: '4px', height: '4px', background: 'var(--color-text-muted)', borderRadius: '50%', margin: '0 4px' }} />
                     <div style={{ width: '4px', height: '4px', background: 'var(--color-text-muted)', borderRadius: '50%', margin: '0 4px' }} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.4)', borderRadius: '12px', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.1)' }}>
+                  <div className="leaderboard-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.4)', borderRadius: '12px', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.1)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1rem', color: 'var(--color-text-muted)' }}>
                         #{userRankData.rank}
