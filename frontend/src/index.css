@@ -1449,15 +1449,13 @@ button, input, textarea, select {
   .pro-panel, .glass-panel {
     max-width: 100vw;
     overflow-wrap: break-word;
-    word-break: break-word;
+    
     padding: 24px 16px !important;
   }
   img, video, .video-wrapper, .bento-card, .pro-panel, .glass-panel {
     max-width: 100% !important;
   }
-  p, h1, h2, h3, h4, h5, h6, span {
-    word-break: break-word;
-  }
+
   .video-wrapper {
     flex: 0 0 100% !important;
     width: 100% !important;
