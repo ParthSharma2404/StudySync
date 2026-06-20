@@ -1633,16 +1633,7 @@ button, input, textarea, select {
     min-height: 140px !important;
     margin-top: auto !important; /* Push visual to the bottom */
     overflow: hidden !important;
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
     border-radius: 8px !important;
-  }
-  
-  .bento-card-visual > div {
-    transform: scale(0.6) !important;
-    transform-origin: top center !important;
-    width: 150% !important; /* Give it space to scale down from */
   }
   
   .hero-mockup-mobile {
