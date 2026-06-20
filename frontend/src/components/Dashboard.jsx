@@ -651,7 +651,7 @@ function Dashboard({ currentUser }) {
                 
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '1rem', color: currentRank.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '2px', filter: `drop-shadow(0 2px 4px ${currentRank.color}4D)` }}>{currentRank.title} Rank</div>
-                  <div style={{ fontSize: '3rem', fontWeight: 900, background: 'linear-gradient(135deg, #4f46e5 0%, #ec4899 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1', fontStyle: 'italic', letterSpacing: '-0.02em', filter: 'drop-shadow(0 4px 8px rgba(236, 72, 153, 0.15))' }}>
+                  <div style={{ fontSize: '3rem', fontWeight: 900, background: 'linear-gradient(135deg, #4f46e5 0%, #ec4899 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1', fontStyle: 'italic', letterSpacing: '-0.02em', filter: 'drop-shadow(0 4px 8px rgba(236, 72, 153, 0.15))', paddingRight: '0.15em' }}>
                     LEVEL {currentLevel}
                   </div>
                 </div>
