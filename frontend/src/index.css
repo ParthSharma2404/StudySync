@@ -1621,12 +1621,17 @@ button, input, textarea, select {
     width: 800px !important;
     max-width: 800px !important;
     min-width: 800px !important;
-    transform-origin: top left !important;
-    /* Scale mathematically based on available container width (100vw - 70px padding) */
-    transform: scale(calc((100vw - 70px) / 800)) !important;
-    /* Compensate exactly for the scaled height difference to prevent overlaps */
-    margin-bottom: calc((600px * ((100vw - 70px) / 800)) - 600px) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     margin-top: 32px !important;
+    
+    /* Cross-browser layout scaling without transform math */
+    zoom: 0.38 !important;
+    -moz-transform: scale(0.38);
+    -moz-transform-origin: top left;
+    
+    /* Fallback for Firefox negative margin if zoom isn't supported */
+    margin-bottom: -350px;
   }
   
   .telemetry-panel {
