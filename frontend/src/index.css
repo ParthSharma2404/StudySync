@@ -1460,4 +1460,32 @@ button, input, textarea, select {
     flex: 0 0 100% !important;
     width: 100% !important;
   }
+
+  /* Comprehensive Mobile Scaling */
+  html {
+    font-size: 14px; /* Scaled down root font size for smaller rem units */
+  }
+  .pro-panel, .glass-panel {
+    padding: 16px !important;
+  }
+  .dashboard-grid {
+    gap: 16px !important;
+    padding: 16px 0 !important;
+  }
+  h1 { font-size: 1.6rem !important; }
+  h2 { font-size: 1.4rem !important; }
+  h3 { font-size: 1.2rem !important; }
+  .avatar-ring {
+    width: 72px !important;
+    height: 72px !important;
+  }
+  .streak-badge {
+    padding: 4px 12px !important;
+    font-size: 0.8rem !important;
+    margin: 12px 0 !important;
+  }
+  /* Fix sticky navbar overlap */
+  body {
+    padding-top: 0px; 
+  }
 }
