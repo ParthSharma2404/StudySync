@@ -1610,10 +1610,39 @@ button, input, textarea, select {
   .bento-grid-mobile-scroll > .bento-card {
     flex: 0 0 85% !important;
     scroll-snap-align: center;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    gap: 12px !important; /* Tighter gap */
+    padding: 20px !important; /* Tighter padding to save space */
+  }
+  
+  .bento-grid-mobile-scroll > .bento-card h3 {
+    margin-top: 0 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .bento-grid-mobile-scroll > .bento-card p {
+    font-size: 0.85rem !important; /* Smaller text for compact cards */
+    line-height: 1.4 !important;
+    margin-bottom: 0 !important;
   }
   
   .bento-card-visual {
-    max-height: 200px !important;
+    max-height: 140px !important; /* Severely clamp the height */
+    min-height: 140px !important;
+    margin-top: auto !important; /* Push visual to the bottom */
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+  }
+  
+  .bento-card-visual > div {
+    transform: scale(0.6) !important;
+    transform-origin: top center !important;
+    width: 150% !important; /* Give it space to scale down from */
   }
   
   .hero-mockup-mobile {
