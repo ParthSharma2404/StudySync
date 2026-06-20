@@ -1502,6 +1502,12 @@ button, input, textarea, select {
   .hero-section {
     text-align: left !important;
     align-items: flex-start !important;
+    min-height: auto !important;
+    padding: 30px 0 40px 0 !important;
+    justify-content: flex-start !important;
+  }
+  .hero-section .hero-desc {
+    margin-bottom: 24px !important;
   }
   .hero-title, .hero-desc {
     text-align: left !important;
@@ -1546,6 +1552,26 @@ button, input, textarea, select {
   }
   .leaderboard-item > div:last-child {
     align-self: flex-end;
+  }
+  
+  /* Prevent overlap on scroll by resetting section heights and gaps */
+  section {
+    min-height: auto !important;
+  }
+  .responsive-grid-auto-300, 
+  .responsive-grid-auto-280, 
+  .responsive-grid-2 {
+    gap: 32px !important;
+  }
+  .bento-grid {
+    gap: 16px !important;
+  }
+  .bento-card {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  .glass-panel {
+    height: auto !important;
   }
   /* Fix sticky navbar overlap */
   body {
