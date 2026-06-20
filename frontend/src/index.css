@@ -1503,7 +1503,8 @@ button, input, textarea, select {
     text-align: left !important;
     align-items: flex-start !important;
     min-height: auto !important;
-    padding: 30px 0 40px 0 !important;
+    padding-top: 30px !important;
+    padding-bottom: 40px !important;
     justify-content: flex-start !important;
   }
   .hero-section .hero-desc {
