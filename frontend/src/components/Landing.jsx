@@ -291,7 +291,7 @@ function Landing({ currentUser }) {
       </section>
 
       {/* Feature Grid Section */}
-      <ScrollRevealSection className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '150px', paddingBottom: '150px' }}>
+      <ScrollRevealSection className="container py-large" style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: '64px' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '16px' }}>Engineered for Productivity</h2>
           <p style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>
@@ -433,7 +433,7 @@ function Landing({ currentUser }) {
       </ScrollRevealSection>
 
       {/* Security & Privacy Section */}
-      <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '150px', paddingBottom: '150px', borderTop: '1px solid var(--color-border-glass)' }}>
+      <ScrollRevealSection className="container py-large" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '1px solid var(--color-border-glass)' }}>
         <div className="responsive-grid-auto-300" style={{ gap: '64px', alignItems: 'center' }}>
           
           {/* Text Side */}
@@ -503,7 +503,7 @@ function Landing({ currentUser }) {
       </ScrollRevealSection>
 
       {/* How It Works Section */}
-      <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '60px', paddingBottom: '60px', borderTop: '1px solid var(--color-border-glass)' }}>
+      <ScrollRevealSection className="container py-medium" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '1px solid var(--color-border-glass)' }}>
         <div style={{ textAlign: 'center', marginBottom: '64px' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '16px' }}>How StudySync Works</h2>
           <p style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>
@@ -533,7 +533,7 @@ function Landing({ currentUser }) {
       </ScrollRevealSection>
 
       {/* Wall of Love Section */}
-      <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '60px', paddingBottom: '60px', borderTop: '1px solid var(--color-border-glass)' }}>
+      <ScrollRevealSection className="container py-medium" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '1px solid var(--color-border-glass)' }}>
         <div style={{ textAlign: 'center', marginBottom: '64px' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '16px' }}>Wall of Love</h2>
           <p style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>
@@ -590,7 +590,7 @@ function Landing({ currentUser }) {
       </ScrollRevealSection>
 
       {/* Solo vs Group Info Section */}
-      <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '60px', paddingBottom: '60px', borderTop: '1px solid var(--color-border-glass)' }}>
+      <ScrollRevealSection className="container py-medium" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '1px solid var(--color-border-glass)' }}>
         <div className="responsive-grid-2" style={{ gap: '64px', alignItems: 'center' }}>
           <div>
             <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', letterSpacing: '-0.02em' }}>Work Alone, or Together.</h2>

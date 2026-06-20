@@ -252,7 +252,9 @@ button, input, textarea, select {
 
 /* Header / Navbar */
 .navbar {
-  height: 70px;
+  min-height: 70px;
+  height: auto;
+  padding: 10px 0;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -652,6 +654,14 @@ button, input, textarea, select {
 }
 
 /* --- RESPONSIVE OVERRIDES --- */
+.py-large {
+  padding-top: 150px;
+  padding-bottom: 150px;
+}
+.py-medium {
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
 
 /* Tablet (Max 1024px) */
 @media (max-width: 1024px) {
@@ -703,10 +713,24 @@ button, input, textarea, select {
   .stats-row, .bento-grid {
     grid-template-columns: 1fr !important;
   }
+  .navbar .container {
+    flex-direction: column !important;
+    gap: 12px;
+  }
   .nav-links {
+    margin-left: 0;
+    width: 100%;
     gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
+  }
+  .py-large {
+    padding-top: 60px !important;
+    padding-bottom: 60px !important;
+  }
+  .py-medium {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
   }
   .nav-links a.btn {
     padding: 6px 12px;
@@ -1121,7 +1145,8 @@ button, input, textarea, select {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
+
+}
 .peer-task-card.completed .peer-task-checkbox {
   background: var(--color-text-muted);
   border-color: var(--color-text-muted);
