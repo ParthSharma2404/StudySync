@@ -47,6 +47,7 @@
 }
 
 body {
+  overflow-x: hidden;
   font-family: 'Kalam', cursive;
   background-color: #faf8f2;
   background-image: 
@@ -690,6 +691,30 @@ button, input, textarea, select {
 
 /* Mobile (Max 640px) */
 @media (max-width: 640px) {
+  .desktop-nav { display: none !important; }
+  .mobile-menu-btn { display: flex !important; }
+  .mobile-drawer {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 20px;
+    gap: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    z-index: 90;
+    transition: all 0.3s ease;
+  }
+  .mobile-drawer .nav-link {
+    font-size: 1.1rem;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--color-border-glass);
+    width: 100%;
+  }
   .container {
     padding: 0 16px !important;
   }
@@ -713,10 +738,7 @@ button, input, textarea, select {
   .stats-row, .bento-grid {
     grid-template-columns: 1fr !important;
   }
-  .navbar .container {
-    flex-direction: column !important;
-    gap: 12px;
-  }
+
   .nav-links {
     margin-left: 0;
     width: 100%;
@@ -1395,6 +1417,30 @@ button, input, textarea, select {
 
 /* Mobile (Max 640px) */
 @media (max-width: 640px) {
+  .desktop-nav { display: none !important; }
+  .mobile-menu-btn { display: flex !important; }
+  .mobile-drawer {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 20px;
+    gap: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    z-index: 90;
+    transition: all 0.3s ease;
+  }
+  .mobile-drawer .nav-link {
+    font-size: 1.1rem;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--color-border-glass);
+    width: 100%;
+  }
   .responsive-grid-auto-300,
   .responsive-grid-auto-280 {
     grid-template-columns: 1fr !important;

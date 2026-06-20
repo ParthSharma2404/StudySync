@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 
-import { Mail, BookOpen, LogOut, Bell } from 'lucide-react';
+import { Mail, BookOpen, LogOut, Bell, Menu, X } from 'lucide-react';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import NotificationsDropdown from './components/NotificationsDropdown';
 import Landing from './components/Landing';
@@ -15,6 +15,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [globalInvite, setGlobalInvite] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Global socket listener to handle invites
   const GlobalSocketListener = () => {
@@ -126,7 +127,7 @@ function App() {
 
         {/* Navigation Bar */}
         <nav className="navbar">
-          <div className="container" style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+          <div className="container" style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
             <Link to="/" className="navbar-brand" style={{ textDecoration: 'none' }}>
               <span>StudySync</span>
               <span style={{ fontSize: '0.75rem', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: '#fff', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold', boxShadow: '0 2px 10px rgba(99,102,241,0.3)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
@@ -134,7 +135,8 @@ function App() {
               </span>
             </Link>
 
-            <div className="nav-links">
+            {/* Desktop Navigation */}
+            <div className="nav-links desktop-nav">
               <Link to="/" className="nav-link">Features</Link>
               {user ? (
                 <>
@@ -153,6 +155,41 @@ function App() {
                 </>
               )}
             </div>
+
+            {/* Mobile Hamburger Toggle */}
+            <button 
+              className="mobile-menu-btn" 
+              style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-title)' }}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+
+            {/* Mobile Navigation Drawer */}
+            {isMobileMenuOpen && (
+              <div className="mobile-drawer">
+                <Link to="/" className="nav-link" onClick={() => setIsMobileMenuOpen(false)}>Features</Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard" className="nav-link" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderBottom: '1px dashed var(--color-border-glass)', paddingBottom: '8px' }}>
+                      <span className="nav-link" style={{ border: 'none', padding: 0 }}>Notifications</span>
+                      <NotificationsDropdown />
+                    </div>
+                    <button onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-danger)', textAlign: 'left' }}>
+                      <LogOut size={18} /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="nav-link" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
+                    <Link to="/register" className="btn btn-primary" style={{ marginTop: '10px' }} onClick={() => setIsMobileMenuOpen(false)}>
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </nav>
 
