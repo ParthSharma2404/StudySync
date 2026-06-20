@@ -400,7 +400,7 @@ function Dashboard({ currentUser }) {
               <Flame size={16} /> {user?.current_streak} Day Streak
             </div>
 
-            <div style={{ borderTop: '1px solid var(--color-border-glass)', width: '100%', marginTop: '8px', paddingTop: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2" style={{ borderTop: '1px solid var(--color-border-glass)', width: '100%', marginTop: '8px', paddingTop: '24px', gap: '16px' }}>
               <div style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Best Streak</p>
                 <h4 style={{ color: 'var(--color-text-title)', fontSize: '1.4rem', fontWeight: 700, marginTop: '6px' }}>{user?.longest_streak}d</h4>
@@ -850,7 +850,7 @@ function Dashboard({ currentUser }) {
             </div>
 
             <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text-title)', marginBottom: '16px' }}>How to Earn XP</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+            <div className="responsive-grid-2" style={{ gap: '16px', marginBottom: '32px' }}>
               <div style={{ background: 'var(--color-bg-slate)', padding: '16px', borderRadius: '16px', border: '1px solid var(--color-border-glass)' }}>
                 <div style={{ color: '#10b981', fontWeight: 800, fontSize: '1.25rem', marginBottom: '4px' }}>+10 XP</div>
                 <div style={{ color: 'var(--color-text-title)', fontWeight: 600, fontSize: '0.9rem' }}>Daily Login</div>
@@ -861,7 +861,7 @@ function Dashboard({ currentUser }) {
                 <div style={{ color: 'var(--color-text-title)', fontWeight: 600, fontSize: '0.9rem' }}>Streak Bonus</div>
                 <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '4px' }}>Awarded daily while on a streak.</div>
               </div>
-              <div style={{ background: 'var(--color-bg-slate)', padding: '16px', borderRadius: '16px', border: '1px solid var(--color-border-glass)', gridColumn: 'span 2' }}>
+              <div style={{ background: 'var(--color-bg-slate)', padding: '16px', borderRadius: '16px', border: '1px solid var(--color-border-glass)', gridColumn: '1 / -1' }}>
                 <div style={{ color: '#6366f1', fontWeight: 800, fontSize: '1.25rem', marginBottom: '4px' }}>+60 XP / hr</div>
                 <div style={{ color: 'var(--color-text-title)', fontWeight: 600, fontSize: '0.9rem' }}>Study Sessions</div>
                 <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '4px' }}>Earn +1 XP for every minute you spend actively focused in a room.</div>

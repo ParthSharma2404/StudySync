@@ -1344,3 +1344,34 @@ button, input, textarea, select {
 .participant-label {
   color: #2b2b2b;
 }
+
+/* Responsive Grid Utilities */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.responsive-grid-auto-300 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.responsive-grid-auto-280 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Tablet (Max 1024px) */
+@media (max-width: 1024px) {
+  .responsive-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Mobile (Max 640px) */
+@media (max-width: 640px) {
+  .responsive-grid-auto-300,
+  .responsive-grid-auto-280 {
+    grid-template-columns: 1fr !important;
+  }
+}

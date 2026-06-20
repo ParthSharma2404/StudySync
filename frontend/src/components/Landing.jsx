@@ -244,7 +244,7 @@ function Landing({ currentUser }) {
                 </div>
 
                 {/* Video Grid Mock */}
-                <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', flex: 1, minHeight: '400px' }}>
+                <div className="responsive-grid-2" style={{ position: 'relative', gap: '12px', flex: 1, minHeight: '400px' }}>
                   {/* Annotation: P2P Video Feeds */}
                   <div style={{ position: 'absolute', bottom: '-110px', left: '10%', width: '150px', height: '80px', zIndex: 50, pointerEvents: 'none' }}>
                     <svg viewBox="0 0 150 80" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
@@ -434,7 +434,7 @@ function Landing({ currentUser }) {
 
       {/* Security & Privacy Section */}
       <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '150px', paddingBottom: '150px', borderTop: '1px solid var(--color-border-glass)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '64px', alignItems: 'center' }}>
+        <div className="responsive-grid-auto-300" style={{ gap: '64px', alignItems: 'center' }}>
           
           {/* Text Side */}
           <div>
@@ -510,7 +510,7 @@ function Landing({ currentUser }) {
             Three simple steps to enter a flow state and maximize your productivity.
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', position: 'relative' }}>
+        <div className="responsive-grid-auto-280" style={{ gap: '32px', position: 'relative' }}>
           {/* Step 1 */}
           <div style={{ textAlign: 'center', padding: '24px' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', color: '#818cf8', margin: '0 auto 24px auto' }}>1</div>
@@ -540,7 +540,7 @@ function Landing({ currentUser }) {
             Join thousands of students and professionals who have leveled up their focus.
           </p>
         </div>
-        <div onMouseMove={handleMouseMove} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+        <div className="responsive-grid-auto-300" onMouseMove={handleMouseMove} style={{ gap: '24px' }}>
           <div className="glass-panel feature-card" style={{ padding: '32px' }}>
             <div style={{ display: 'flex', gap: '4px', color: '#fbbf24', marginBottom: '16px' }}>
               ★ ★ ★ ★ ★
@@ -591,7 +591,7 @@ function Landing({ currentUser }) {
 
       {/* Solo vs Group Info Section */}
       <ScrollRevealSection className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '60px', paddingBottom: '60px', borderTop: '1px solid var(--color-border-glass)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center' }}>
+        <div className="responsive-grid-2" style={{ gap: '64px', alignItems: 'center' }}>
           <div>
             <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', letterSpacing: '-0.02em' }}>Work Alone, or Together.</h2>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '32px' }}>
