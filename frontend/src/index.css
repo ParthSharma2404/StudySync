@@ -1310,14 +1310,16 @@ button, input, textarea, select {
 }
 
 /* Zen Mode Container (Sits on top of backdrop) */
-.study-room-container.zen-aizome {
+.room-v2-container.zen-aizome {
   position: relative;
   z-index: 1001; /* Above backdrop */
-  margin: 40px auto;
+}
+.room-v2-container.zen-aizome .room-main-stage {
+  background: transparent;
 }
 
 /* Make the sketchy panels dark mode */
-.study-room-container.zen-aizome .glass-panel {
+.room-v2-container.zen-aizome .glass-panel {
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1326,15 +1328,15 @@ button, input, textarea, select {
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.study-room-container.zen-aizome h3, 
-.study-room-container.zen-aizome h4, 
-.study-room-container.zen-aizome .timer-digits,
-.study-room-container.zen-aizome .task-title,
-.study-room-container.zen-aizome p {
+.room-v2-container.zen-aizome h3, 
+.room-v2-container.zen-aizome h4, 
+.room-v2-container.zen-aizome .timer-digits,
+.room-v2-container.zen-aizome .task-title,
+.room-v2-container.zen-aizome p {
   color: #f8fafc;
 }
 
-.study-room-container.zen-aizome .timer-digits {
+.room-v2-container.zen-aizome .timer-digits {
   text-shadow: 0 0 30px rgba(245, 158, 11, 0.4), 0 0 10px rgba(245, 158, 11, 0.2);
   color: #fffbeb;
   transform: scale(1.15);
@@ -1342,46 +1344,46 @@ button, input, textarea, select {
 }
 
 /* Gold / Warm Accents */
-.study-room-container.zen-aizome .objective-progress-bar {
+.room-v2-container.zen-aizome .objective-progress-bar {
   background: #f59e0b;
 }
 
-.study-room-container.zen-aizome .active-focus {
+.room-v2-container.zen-aizome .active-focus {
   border-left: 3px solid #f59e0b;
   background: rgba(245, 158, 11, 0.05);
 }
 
-.study-room-container.zen-aizome .task-meta.timer-pulse {
+.room-v2-container.zen-aizome .task-meta.timer-pulse {
   color: #f59e0b !important;
 }
 
-.study-room-container.zen-aizome .objective-checkbox {
+.room-v2-container.zen-aizome .objective-checkbox {
   border-color: rgba(248, 250, 252, 0.3);
 }
-.study-room-container.zen-aizome .objective-card.completed .objective-checkbox svg {
+.room-v2-container.zen-aizome .objective-card.completed .objective-checkbox svg {
   stroke: #f59e0b;
 }
-.study-room-container.zen-aizome .btn-secondary {
+.room-v2-container.zen-aizome .btn-secondary {
   color: #e2e8f0;
   border-color: rgba(226, 232, 240, 0.3);
   background: rgba(255, 255, 255, 0.05);
 }
-.study-room-container.zen-aizome .btn-secondary:hover {
+.room-v2-container.zen-aizome .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
 /* Fix Objective Cards brightness in dark mode */
-.study-room-container.zen-aizome .objective-card {
+.room-v2-container.zen-aizome .objective-card {
   background: rgba(15, 23, 42, 0.5); /* Dark background instead of white */
   border-color: rgba(148, 163, 184, 0.2);
 }
-.study-room-container.zen-aizome .objective-card.active-focus {
+.room-v2-container.zen-aizome .objective-card.active-focus {
   background: rgba(245, 158, 11, 0.1); /* Gold tint instead of white */
 }
-.study-room-container.zen-aizome .objective-card.active-focus::before {
+.room-v2-container.zen-aizome .objective-card.active-focus::before {
   background: linear-gradient(135deg, #f59e0b, #d97706); /* Gold glow instead of purple/blue */
 }
-.study-room-container.zen-aizome .objective-checkbox {
+.room-v2-container.zen-aizome .objective-checkbox {
   background: rgba(15, 23, 42, 0.8);
 }
 
@@ -1743,4 +1745,10 @@ button, input, textarea, select {
   body {
     padding-top: 0px; 
   }
+}
+
+.room-v2-container.zen-aizome .floating-timer {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(245, 158, 11, 0.15);
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
