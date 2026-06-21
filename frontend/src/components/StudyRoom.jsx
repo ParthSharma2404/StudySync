@@ -822,38 +822,33 @@ function StudyRoom({ currentUser }) {
 
             {/* Zen Mode Tasks Overlay */}
             {isZenMode && (
-              <div className="zen-tasks-overlay" style={{ position: 'absolute', top: '150px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).length > 0 ? (
-                  tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).map((task) => (
-                    <div key={task.id} className={`objective-card ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ background: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', color: '#fff' }}>
-                      <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
-                        <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                      </div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span className="task-title" style={{ fontSize: '0.9rem', color: '#fff' }}>{task.title}</span>
-                      </div>
-                      {activeTaskId !== task.id ? (
-                        <button
-                          onClick={() => setActiveTaskId(task.id)}
-                          className="btn btn-secondary"
-                          style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: '4px', color: '#fff', borderColor: 'rgba(255, 255, 255, 0.2)' }}
-                        >
-                          Focus
-                        </button>
-                      ) : (
-                        <span className="task-meta timer-pulse" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: '700', marginLeft: 'auto' }}>
-                          <Clock size={12} />
-                          {formatTaskTimer(task.time_spent_seconds || 0)}
-                        </span>
-                      )}
+              <>
+                {/* 1. Active Focus Pill (Centered under timer) */}
+                {tasks.find(t => t.id === activeTaskId) && (
+                  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
+                    <div className="zen-focus-pill">
+                      <Target size={16} className="zen-pill-icon" />
+                      <span style={{ fontWeight: 600 }}>{tasks.find(t => t.id === activeTaskId).title}</span>
+                      <span className="zen-pill-timer">
+                        {formatTaskTimer(tasks.find(t => t.id === activeTaskId).time_spent_seconds || 0)}
+                      </span>
                     </div>
-                  ))
-                ) : (
-                  <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.85rem', textAlign: 'center', fontStyle: 'italic' }}>
-                    No active tasks! You are all caught up.
-                  </p>
+                  </div>
                 )}
-              </div>
+
+                {/* 2. Minimalist Task List (Bottom Left) */}
+                <div className="zen-minimal-task-list">
+                  {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed && t.id !== activeTaskId).length > 0 && (
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(248, 250, 252, 0.3)', marginBottom: '4px' }}>Up Next</div>
+                  )}
+                  {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed && t.id !== activeTaskId).map((task) => (
+                    <div key={task.id} className="zen-minimal-task" onClick={() => setActiveTaskId(task.id)}>
+                      <div className="zen-minimal-checkbox"></div>
+                      <span>{task.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
 
             {/* Top Row: Video Gallery */}
