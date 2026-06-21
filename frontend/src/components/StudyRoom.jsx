@@ -820,6 +820,42 @@ function StudyRoom({ currentUser }) {
               )}
             </div>
 
+            {/* Zen Mode Tasks Overlay */}
+            {isZenMode && (
+              <div className="zen-tasks-overlay" style={{ position: 'absolute', top: '150px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).length > 0 ? (
+                  tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).map((task) => (
+                    <div key={task.id} className={`objective-card ${activeTaskId === task.id ? 'active-focus' : ''}`} style={{ background: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', color: '#fff' }}>
+                      <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
+                        <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="task-title" style={{ fontSize: '0.9rem', color: '#fff' }}>{task.title}</span>
+                      </div>
+                      {activeTaskId !== task.id ? (
+                        <button
+                          onClick={() => setActiveTaskId(task.id)}
+                          className="btn btn-secondary"
+                          style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: '4px', color: '#fff', borderColor: 'rgba(255, 255, 255, 0.2)' }}
+                        >
+                          Focus
+                        </button>
+                      ) : (
+                        <span className="task-meta timer-pulse" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: '700', marginLeft: 'auto' }}>
+                          <Clock size={12} />
+                          {formatTaskTimer(task.time_spent_seconds || 0)}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.85rem', textAlign: 'center', fontStyle: 'italic' }}>
+                    No active tasks! You are all caught up.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Top Row: Video Gallery */}
             <div className="video-gallery">
               {isSolo ? (
@@ -960,6 +996,23 @@ function StudyRoom({ currentUser }) {
                                 {activeTaskId === task.id ? 'Focusing' : 'Focus'}
                               </button>
                             )}
+
+                            {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
+                              <span 
+                                className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
+                                style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '6px',
+                                  color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                  fontWeight: activeTaskId === task.id ? '700' : '600',
+                                  marginLeft: 'auto'
+                                }}
+                              >
+                                <Clock size={12} />
+                                {formatTaskTimer(task.time_spent_seconds || 0)}
+                              </span>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -984,6 +1037,12 @@ function StudyRoom({ currentUser }) {
                                   <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                                     <span className="task-title" style={{ fontSize: '0.8rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
                                   </div>
+                                  {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
+                                    <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)', marginLeft: 'auto' }}>
+                                      <Clock size={10} />
+                                      {formatTaskTimer(task.time_spent_seconds || 0)}
+                                    </span>
+                                  )}
                                 </div>
                               );
                             })}
