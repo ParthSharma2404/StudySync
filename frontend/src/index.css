@@ -1800,7 +1800,7 @@ button, input, textarea, select {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(248, 250, 252, 0.4);
+  color: rgba(248, 250, 252, 0.7);
   font-size: 0.8rem;
   transition: color 0.3s ease;
   pointer-events: auto;
@@ -1808,7 +1808,7 @@ button, input, textarea, select {
 }
 
 .zen-minimal-task:hover {
-  color: rgba(248, 250, 252, 0.8);
+  color: rgba(248, 250, 252, 1);
 }
 
 .zen-minimal-checkbox {

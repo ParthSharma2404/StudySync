@@ -825,7 +825,7 @@ function StudyRoom({ currentUser }) {
               <>
                 {/* 1. Active Focus Pill (Centered under timer) */}
                 {tasks.find(t => t.id === activeTaskId) && (
-                  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
+                  <div style={{ position: 'absolute', top: '160px', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
                     <div className="zen-focus-pill">
                       <Target size={16} className="zen-pill-icon" />
                       <span style={{ fontWeight: 600 }}>{tasks.find(t => t.id === activeTaskId).title}</span>
@@ -839,7 +839,7 @@ function StudyRoom({ currentUser }) {
                 {/* 2. Minimalist Task List (Bottom Left) */}
                 <div className="zen-minimal-task-list">
                   {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed && t.id !== activeTaskId).length > 0 && (
-                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(248, 250, 252, 0.3)', marginBottom: '4px' }}>Up Next</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(248, 250, 252, 0.8)', marginBottom: '6px' }}>Up Next</div>
                   )}
                   {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed && t.id !== activeTaskId).map((task) => (
                     <div key={task.id} className="zen-minimal-task" onClick={() => setActiveTaskId(task.id)}>
