@@ -47,14 +47,6 @@ const LiveKitMicSync = ({ isMicMuted }) => {
   const { localParticipant } = useLocalParticipant();
   
   useEffect(() => {
-    if (!roomId) return;
-    const storedPersonalTime = localStorage.getItem(study_timer_);
-    if (storedPersonalTime) {
-      setSeconds(parseInt(storedPersonalTime, 10));
-    }
-  }, [roomId]);
-
-  useEffect(() => {
     if (localParticipant) {
       localParticipant.setMicrophoneEnabled(!isMicMuted);
     }
@@ -95,6 +87,14 @@ function StudyRoom({ currentUser }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const isSolo = roomId === 'solo-focus';
+
+  useEffect(() => {
+    if (!roomId) return;
+    const storedPersonalTime = localStorage.getItem(`study_timer_${roomId}`);
+    if (storedPersonalTime) {
+      setSeconds(parseInt(storedPersonalTime, 10));
+    }
+  }, [roomId]);
 
   // --- STATE VARIABLES ---
   const [roomName, setRoomName] = useState(isSolo ? 'Private Workspace' : 'Loading Room...');
@@ -361,7 +361,7 @@ function StudyRoom({ currentUser }) {
     timerIntervalRef.current = setInterval(() => {
       setSeconds((prev) => {
         const newSeconds = prev + 1;
-        if (roomId) localStorage.setItem(study_timer_, newSeconds);
+        if (roomId) localStorage.setItem(`study_timer_${roomId}`, newSeconds);
         return newSeconds;
       });
       
