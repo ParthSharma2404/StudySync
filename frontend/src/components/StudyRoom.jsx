@@ -825,9 +825,9 @@ function StudyRoom({ currentUser }) {
               <>
                 {/* 1. Active Focus Pill (Centered under timer) */}
                 {tasks.find(t => t.id === activeTaskId) && (
-                  <div style={{ position: 'absolute', top: '160px', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+                  <div style={{ position: 'absolute', top: '210px', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
                     <div className="zen-focus-pill">
-                      <Target size={16} className="zen-pill-icon" />
+                      <Target size={18} className="zen-pill-icon" />
                       <span style={{ fontWeight: 600 }}>{tasks.find(t => t.id === activeTaskId).title}</span>
                       <span className="zen-pill-timer">
                         {formatTaskTimer(tasks.find(t => t.id === activeTaskId).time_spent_seconds || 0)}

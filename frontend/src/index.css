@@ -179,7 +179,7 @@ button, input, textarea, select {
 
 .form-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 500;
   color: var(--color-text-title);
   margin-bottom: 8px;
@@ -298,7 +298,7 @@ button, input, textarea, select {
 .nav-link {
   color: var(--color-text-muted);
   font-family: var(--font-sans);
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-weight: 600;
   text-decoration: none;
   transition: var(--transition-fast);
@@ -381,7 +381,7 @@ button, input, textarea, select {
   align-items: center;
   gap: 8px;
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 500;
 }
 .stat-num {
@@ -555,7 +555,7 @@ button, input, textarea, select {
   justify-content: space-between;
 }
 .participant-label {
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 500;
   color: #fff;
 }
@@ -939,7 +939,7 @@ button, input, textarea, select {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
 }
 
 .pro-btn-primary {
@@ -1098,7 +1098,7 @@ button, input, textarea, select {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   color: var(--color-text-title);
   padding: 8px 0;
   outline: none;
@@ -1107,7 +1107,7 @@ button, input, textarea, select {
   color: var(--color-text-muted);
 }
 .objective-input-group button {
-  padding: 8px 20px;
+  padding: 12px 28px;
   border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
   font-size: 0.9rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -1195,7 +1195,7 @@ button, input, textarea, select {
 
 /* Task Typography */
 .task-title {
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-weight: 500;
   color: var(--color-text-title);
   font-family: var(--font-sans);
@@ -1458,7 +1458,7 @@ button, input, textarea, select {
   background: rgba(255, 255, 255, 0.9);
   padding: 4px 10px;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 600;
   border: 1px solid #2b2b2b;
   display: flex;
@@ -1760,13 +1760,13 @@ button, input, textarea, select {
   gap: 12px;
   background: rgba(15, 23, 42, 0.4);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(16, 185, 129, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 8px 20px;
+  padding: 12px 28px;
   border-radius: 50px;
   color: #f8fafc;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   margin-top: 16px;
   transition: all 0.3s ease;
 }
@@ -1780,7 +1780,7 @@ button, input, textarea, select {
   color: #10b981;
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
 }
 
 /* Zen Minimal Task List */
