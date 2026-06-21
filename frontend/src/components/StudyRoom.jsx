@@ -45,6 +45,15 @@ const LiveKitVideoSidebar = () => {
 
 const LiveKitMicSync = ({ isMicMuted }) => {
   const { localParticipant } = useLocalParticipant();
+  
+  useEffect(() => {
+    if (!roomId) return;
+    const storedPersonalTime = localStorage.getItem(study_timer_);
+    if (storedPersonalTime) {
+      setSeconds(parseInt(storedPersonalTime, 10));
+    }
+  }, [roomId]);
+
   useEffect(() => {
     if (localParticipant) {
       localParticipant.setMicrophoneEnabled(!isMicMuted);
@@ -103,7 +112,7 @@ function StudyRoom({ currentUser }) {
   const [seconds, setSeconds] = useState(0); // Personal study timer
   const [roomUptimeSeconds, setRoomUptimeSeconds] = useState(0); // Global room uptime
   const [timerRunning, setTimerRunning] = useState(false);
-  const [timerStarted, setTimerStarted] = useState(false);
+  const [isPersonalTimerRunning, setIsPersonalTimerRunning] = useState(false);
   
   // Ambient Audio
   const [ambientAudio, setAmbientAudio] = useState('none');
@@ -213,26 +222,17 @@ function StudyRoom({ currentUser }) {
     }
 
     const handleOnlineUsersUpdated = (users) => setOnlineUsersList(users);
-    const handleRoomStateUpdated = ({ moderatorId, timerStarted: isTimerStarted, roomStartTime, participants, ambientAudio: serverAudio }) => {
+    const handleRoomStateUpdated = ({ moderatorId, roomStartTime, participants, ambientAudio: serverAudio }) => {
       setModeratorId(moderatorId);
       setParticipants(participants);
       if (serverAudio) setAmbientAudio(serverAudio);
       
-      const me = participants.find(p => p.userId === user?.id);
-      if (me && !timerStarted && seconds === 0) {
-          setSeconds(me.studySeconds || 0);
-      }
-
-      if (isTimerStarted) {
-        setTimerStarted(true);
-        if (roomStartTime) {
-           startStopwatch(roomStartTime);
-        }
+      if (roomStartTime) {
+        setRoomUptimeSeconds(Math.floor((Date.now() - roomStartTime) / 1000));
       }
     };
-    const handleRoomTimerStarted = ({ roomStartTime }) => {
-      setTimerStarted(true);
-      startStopwatch(roomStartTime);
+    const handleRoomTimerStarted = () => {
+      // Ignored: Timer is now personal
     };
     const handleTasksUpdated = (updatedTasks) => setTasks(updatedTasks);
     const handleAmbientAudioUpdated = ({ trackId }) => setAmbientAudio(trackId);
@@ -353,38 +353,34 @@ function StudyRoom({ currentUser }) {
     }
   };
 
-  // --- STOPWATCH ENGINE ---
-  const startStopwatch = (roomStartTime = null) => {
-    if (timerIntervalRef.current) return;
-    setTimerRunning(true);
-
-    if (roomStartTime) {
-      setRoomUptimeSeconds(Math.floor((Date.now() - roomStartTime) / 1000));
-    }
-
+  // --- PERSONAL STOPWATCH ENGINE ---
+  useEffect(() => {
+    if (!isPersonalTimerRunning) return;
+    
     // Increment timer display locally every 1 second
     timerIntervalRef.current = setInterval(() => {
-      setSeconds((prev) => prev + 1);
+      setSeconds((prev) => {
+        const newSeconds = prev + 1;
+        if (roomId) localStorage.setItem(study_timer_, newSeconds);
+        return newSeconds;
+      });
       
-      if (roomStartTime) {
-        setRoomUptimeSeconds(Math.floor((Date.now() - roomStartTime) / 1000));
-      } else {
-        setRoomUptimeSeconds((prev) => prev + 1); // For solo mode
-      }
-
       // Increment the active task's time spent locally!
       const currentActiveId = activeTaskIdRef.current;
       if (currentActiveId) {
         setTasks((prevTasks) => {
-          const updated = prevTasks.map((t) => 
-            t.id === currentActiveId 
-              ? { ...t, time_spent_seconds: (t.time_spent_seconds || 0) + 1 }
-              : t
-          );
-          if (isSolo) {
-            localStorage.setItem('solo_tasks', JSON.stringify(updated));
+          let updated = false;
+          const newTasks = prevTasks.map((t) => {
+            if (t.id === currentActiveId) {
+              updated = true;
+              return { ...t, time_spent_seconds: (t.time_spent_seconds || 0) + 1 };
+            }
+            return t;
+          });
+          if (updated && isSoloRef.current) {
+            localStorage.setItem('solo_tasks', JSON.stringify(newTasks));
           }
-          return updated;
+          return updated ? newTasks : prevTasks;
         });
       }
       
@@ -393,30 +389,25 @@ function StudyRoom({ currentUser }) {
 
     // Sync progress to DB via heartbeat every 15 seconds
     heartbeatIntervalRef.current = setInterval(() => {
-      if (socketRef.current && !isSolo) {
+      if (socketRef.current && !isSoloRef.current) {
         socketRef.current.emit('timer-heartbeat', {
           incrementSeconds: 15,
           activeTaskId: activeTaskIdRef.current
         });
       }
     }, 15000);
-  };
 
-  const pauseStopwatch = (statusText = 'Paused') => {
-    setTimerRunning(false);
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-    if (heartbeatIntervalRef.current) {
-      clearInterval(heartbeatIntervalRef.current);
-      heartbeatIntervalRef.current = null;
-    }
-
-    if (socketRef.current && !isSolo) {
-      socketRef.current.emit('status-update', { status: statusText });
-    }
-  };
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+    };
+  }, [isPersonalTimerRunning, roomId]);
 
   const stopStreams = () => {
     if (localCameraStreamRef.current) {
@@ -546,22 +537,14 @@ function StudyRoom({ currentUser }) {
   };
 
   // --- TIMER STARTER TRIGGER ---
-  const handleStartTimer = () => {
+  const handleTogglePersonalTimer = () => {
     if (tasks.length === 0) {
       alert('Please add at least one objective before starting the session!');
       return;
     }
-
-    if (isSolo) {
-      setTimerStarted(true);
-      startStopwatch();
-    } else {
-      // Broadcast synchronized room timer start
-      socketRef.current.emit('start-room-timer');
-    }
+    setIsPersonalTimerRunning(prev => !prev);
   };
 
-  // --- TASK ACTIONS ---
   const handleAddTask = (e) => {
     e.preventDefault();
     if (!newTaskTitle) return;
@@ -807,7 +790,7 @@ function StudyRoom({ currentUser }) {
             
             {/* Floating Timer */}
             <div className={`floating-timer ${isZenMode ? 'zen-active-timer' : ''}`}>
-              {!timerStarted ? (
+              {!isPersonalTimerRunning ? (
                 <p style={{ color: '#f59e0b', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                   <ClipboardList size={14} /> Planning
                 </p>
@@ -817,13 +800,20 @@ function StudyRoom({ currentUser }) {
                 </p>
               )}
               <div className="timer-digits">
-                {formatTime(roomUptimeSeconds)}
+                {formatTime(seconds)}
               </div>
-              {!timerStarted && (
-                <button onClick={handleStartTimer} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.8rem', marginTop: '4px' }}>
-                  <Play size={14} /> Start Session
-                </button>
-              )}
+              
+              <button 
+                onClick={handleTogglePersonalTimer} 
+                className={`btn ${!isPersonalTimerRunning ? 'btn-primary' : 'btn-secondary'}`} 
+                style={{ padding: '6px 16px', fontSize: '0.8rem', marginTop: '4px' }}
+              >
+                {!isPersonalTimerRunning ? (
+                  <><Play size={14} /> Start Focus</>
+                ) : (
+                  <><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> Pause Focus</>
+                )}
+              </button>
             </div>
 
             {/* Zen Mode Tasks Overlay */}
@@ -871,8 +861,8 @@ function StudyRoom({ currentUser }) {
                       </span>
                     </div>
                     <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {!timerStarted ? 'Planning' : 'Focusing'}
-                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
+                      {!isPersonalTimerRunning ? 'Planning' : 'Focusing'}
+                      {isPersonalTimerRunning && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
                     </span>
                   </div>
                 </div>
