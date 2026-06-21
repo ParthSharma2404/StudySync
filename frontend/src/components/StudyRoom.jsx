@@ -789,435 +789,305 @@ function StudyRoom({ currentUser }) {
         </div>
       ) : (
         /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
+        /* 2. ACTIVE STUDY WORKSPACE (LOBBY IS PASSED) */
         <>
         <div className={`zen-backdrop ${isZenMode ? 'zen-active' : ''}`}>
           <EnsoCircle />
         </div>
-        <div className={`study-room-container ${isZenMode ? 'zen-aizome' : ''}`}>
-          {/* Header */}
-          <div style={{ display: isZenMode ? 'none' : 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', position: 'relative', zIndex: 1 }}>
-            <div>
-              <h1 style={{ fontSize: '1.8rem' }}>{roomName}</h1>
-              <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
-                {isSolo ? 'Private Workspace' : `Room ID: ${roomId} • Moderator: ${participants.find(p => p.userId === moderatorId)?.username || 'System'}`}
-              </p>
-            </div>
+        <div className={`room-v2-container ${isZenMode ? 'zen-aizome' : ''}`}>
+          
+          {/* Main Stage (Left/Center) */}
+          <div className="room-main-stage">
             
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={toggleMic} className={`btn ${isMicMuted ? 'btn-danger' : 'btn-secondary'}`} style={{ padding: '8px 16px', fontSize: '0.85rem' }} title={isMicMuted ? "Unmute Microphone" : "Mute Microphone"}>
-                {isMicMuted ? <MicOff size={14} /> : <Mic size={14} />} {isMicMuted ? 'Muted' : 'Mic On'}
-              </button>
-              {(isSolo || moderatorId === user?.id) && (
-                <button onClick={handleEndRoomSession} className="btn btn-danger" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                  <Trash2 size={14} /> {isSolo ? 'Clear Workspace' : 'End Room Session'}
+            {/* Floating Timer */}
+            <div className={`floating-timer ${isZenMode ? 'zen-active-timer' : ''}`}>
+              {!timerStarted ? (
+                <p style={{ color: '#f59e0b', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <ClipboardList size={14} /> Planning
+                </p>
+              ) : (
+                <p style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <Play size={14} /> Focusing
+                </p>
+              )}
+              <div className="timer-digits">
+                {formatTime(roomUptimeSeconds)}
+              </div>
+              {!timerStarted && (
+                <button onClick={handleStartTimer} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.8rem', marginTop: '4px' }}>
+                  <Play size={14} /> Start Session
                 </button>
               )}
-              <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                <LogOut size={14} /> Exit Room
-              </Link>
             </div>
-          </div>
 
-          {/* Top Row: Video Gallery */}
-          <div className={`video-gallery ${isZenMode ? 'zen-hidden' : ''}`} style={{ marginBottom: '16px' }}>
-            {isSolo ? (
-              <div className="video-wrapper">
-                <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
-                
-                <div className="video-overlay-info">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="participant-label">{user?.username} (You)</span>
-                    <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                      Lv {getLevelInfo(user?.xp || 0).level}
+            {/* Top Row: Video Gallery */}
+            <div className="video-gallery">
+              {isSolo ? (
+                <div className="video-wrapper">
+                  <video id="local-webcam-feed" ref={(el) => { if(el && el.srcObject !== localCameraStreamRef.current) el.srcObject = localCameraStreamRef.current; }} autoPlay muted playsInline />
+                  
+                  <div className="video-overlay-info">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="participant-label">{user?.username} (You)</span>
+                      <span style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '50px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                        Lv {getLevelInfo(user?.xp || 0).level}
+                      </span>
+                    </div>
+                    <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      {!timerStarted ? 'Planning' : 'Focusing'}
+                      {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
                     </span>
                   </div>
-                  <span className="participant-status-badge" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    {!timerStarted ? 'Planning' : 'Focusing'}
-                    {timerStarted && <span style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {formatTime(seconds)}</span>}
-                  </span>
                 </div>
+              ) : liveKitError ? (
+                <div style={{ padding: '20px', color: '#ef4444', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', width: '100%', alignSelf: 'center' }}>
+                  <ShieldAlert size={24} style={{ marginBottom: '8px' }} />
+                  <br />
+                  <strong>LiveKit Server Error:</strong> {liveKitError}
+                  <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                    Check your Render environment variables (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET) to make sure they are correct.
+                  </p>
+                </div>
+              ) : liveKitToken && liveKitUrl ? (
+                <LiveKitRoom
+                  video={true}
+                  audio={!isMicMuted}
+                  token={liveKitToken}
+                  serverUrl={liveKitUrl}
+                  connect={true}
+                  options={{
+                    videoCaptureDefaults: selectedVideoId ? { deviceId: selectedVideoId } : undefined,
+                    audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
+                  }}
+                >
+                  <LiveKitMicSync isMicMuted={isMicMuted} />
+                  <LiveKitVideoSidebar />
+                  <RoomAudioRenderer />
+                </LiveKitRoom>
+              ) : (
+                <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', fontSize: '0.9rem', width: '100%', alignSelf: 'center' }}>Connecting to Video Server...</div>
+              )}
+            </div>
+
+            {/* Bottom Control Dock */}
+            <div className="bottom-dock">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '16px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{roomName}</span>
+                {!isSolo && <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>| {participants.length} in room</span>}
               </div>
-            ) : liveKitError ? (
-              <div style={{ padding: '20px', color: '#ef4444', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', width: '100%' }}>
-                <ShieldAlert size={24} style={{ marginBottom: '8px' }} />
-                <br />
-                <strong>LiveKit Server Error:</strong> {liveKitError}
-                <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                  Check your Render environment variables (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET) to make sure they are correct.
-                </p>
-              </div>
-            ) : liveKitToken && liveKitUrl ? (
-              <LiveKitRoom
-                video={true}
-                audio={!isMicMuted}
-                token={liveKitToken}
-                serverUrl={liveKitUrl}
-                connect={true}
-                options={{
-                  videoCaptureDefaults: selectedVideoId ? { deviceId: selectedVideoId } : undefined,
-                  audioCaptureDefaults: selectedAudioId ? { deviceId: selectedAudioId } : undefined,
-                }}
-              >
-                <LiveKitMicSync isMicMuted={isMicMuted} />
-                <LiveKitVideoSidebar />
-                <RoomAudioRenderer />
-              </LiveKitRoom>
-            ) : (
-              <div style={{ padding: '20px', color: '#64748b', textAlign: 'center', fontSize: '0.9rem', width: '100%' }}>Connecting to Video Server...</div>
-            )}
+
+              <button onClick={toggleMic} className={`btn ${isMicMuted ? 'btn-danger' : 'btn-secondary'}`} style={{ padding: '10px' }} title={isMicMuted ? "Unmute Microphone" : "Mute Microphone"}>
+                {isMicMuted ? <MicOff size={20} /> : <Mic size={20} />}
+              </button>
+              
+              <button onClick={() => setIsZenMode(!isZenMode)} className={`btn ${isZenMode ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '10px' }} title={isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}>
+                <Sparkles size={20} />
+              </button>
+
+              {(isSolo || moderatorId === user?.id) && (
+                <button onClick={handleEndRoomSession} className="btn btn-danger" style={{ padding: '10px' }} title={isSolo ? 'Clear Workspace' : 'End Room Session'}>
+                  <Trash2 size={20} />
+                </button>
+              )}
+
+              <Link to="/dashboard" className="btn btn-danger" style={{ padding: '10px' }} title="Exit Room">
+                <LogOut size={20} />
+              </Link>
+            </div>
+
           </div>
 
-          <div className={`study-room-layout ${isZenMode ? 'zen-active' : ''}`}>
-            {/* Left Workspace Panel (Focus Zone) */}
-            <div className="workspace-left">
-              {/* Stopwatch panel */}
-              <div className="glass-panel timer-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
-                {/* Prominent Zen Mode Toggle */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-                  <button 
-                    onClick={() => setIsZenMode(!isZenMode)}
-                    className="btn"
-                    style={{ 
-                      padding: '8px 20px', borderRadius: '30px', zIndex: 10,
-                      display: 'flex', alignItems: 'center', gap: '8px',
-                      fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
-                      background: isZenMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                      border: `1px solid ${isZenMode ? 'rgba(245, 158, 11, 0.5)' : 'var(--color-border-glass)'}`,
-                      color: isZenMode ? '#f59e0b' : 'var(--color-text-main)',
-                      transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                      boxShadow: isZenMode ? '0 0 20px rgba(245, 158, 11, 0.2)' : 'none'
-                    }}
-                  >
-                    <Sparkles size={16} color={isZenMode ? "#f59e0b" : "var(--color-text-main)"} />
-                    {isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}
-                  </button>
-                </div>
-                
-                {!timerStarted ? (
-                  <p style={{ color: '#f59e0b', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <ClipboardList size={16} /> Planning Phase
-                  </p>
-                ) : (
-                  <p style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <Play size={16} /> Room Uptime
-                  </p>
-                )}
-                
-                <div className="timer-digits" style={{ fontSize: '3.5rem', margin: '8px 0' }}>
-                  {formatTime(roomUptimeSeconds)}
-                </div>
-
-                {!timerStarted && (
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
-                    <button 
-                      onClick={handleStartTimer} 
-                      className="btn btn-primary" 
-                      style={{ padding: '10px 24px', fontSize: '0.9rem' }}
-                    >
-                      <Play size={16} /> Start Study Session
-                    </button>
-                  </div>
-                )}
+          {/* Right Sidebar */}
+          <div className={`room-sidebar ${isZenMode ? 'zen-hidden' : ''}`}>
+            
+            {/* Objectives */}
+            <div className="glass-panel tasks-panel" style={{ padding: '20px' }}>
+              <h3 style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <Target size={18} /> Objectives
+                <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
+                  {tasks.filter(t => t.is_completed).length} / {tasks.length}
+                </span>
+              </h3>
+              
+              <div className="objective-progress-container" style={{ marginBottom: '16px' }}>
+                <div 
+                  className="objective-progress-bar" 
+                  style={{ width: `${tasks.length > 0 ? (tasks.filter(t => t.is_completed).length / tasks.length) * 100 : 0}%` }}
+                />
               </div>
 
-              {/* Quest Board Tasks list */}
-              <div className="glass-panel tasks-panel">
-                <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <Target size={18} /> Objectives
-                  <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
-                    {tasks.filter(t => t.is_completed).length} / {tasks.length} Completed
-                  </span>
-                  {!isZenMode && (
-                    <button 
-                      onClick={() => setIsObjectivesCollapsed(!isObjectivesCollapsed)} 
-                      className="btn btn-secondary" 
-                      style={{ padding: '2px 8px', marginLeft: '8px', fontSize: '0.8rem', borderRadius: '6px' }}
-                    >
-                      {isObjectivesCollapsed ? '+' : '-'}
-                    </button>
-                  )}
-                </h3>
-                
-                <div className="objective-progress-container" style={{ marginBottom: (isObjectivesCollapsed && !isZenMode) ? '0' : '16px' }}>
-                  <div 
-                    className="objective-progress-bar" 
-                    style={{ width: `${tasks.length > 0 ? (tasks.filter(t => t.is_completed).length / tasks.length) * 100 : 0}%` }}
-                  />
-                </div>
+              <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
+                <input
+                  type="text"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  placeholder="Add an objective..."
+                />
+                <button type="submit" className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
+                  Add
+                </button>
+              </form>
 
-                {isZenMode ? (
-                  // ZEN MODE: Show all uncompleted tasks
-                  tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).length > 0 ? (
-                    <div className="task-list" style={{ position: 'relative', zIndex: 1 }}>
-                      {tasks.filter(t => (t.owner_id === user?.id || (!t.owner_id && isSolo)) && !t.is_completed).map((task) => (
-                        <div key={task.id} className={`objective-card ${activeTaskId === task.id ? 'active-focus' : ''}`}>
-                          <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
-                            <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                          </div>
-                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="task-title" style={{ fontSize: '1.05rem' }}>{task.title}</span>
-                          </div>
-                          
-                          {activeTaskId !== task.id ? (
-                            <button
-                              onClick={() => setActiveTaskId(task.id)}
-                              className="btn btn-secondary"
-                              style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: '4px' }}
-                            >
-                              Focus
-                            </button>
-                          ) : (
-                            <span className="task-meta timer-pulse" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent)', fontWeight: '700' }}>
-                              <Clock size={12} />
-                              {formatTaskTimer(task.time_spent_seconds || 0)}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '10px 0', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>
-                      No active tasks! You are all caught up.
-                    </p>
-                  )
-                ) : !isObjectivesCollapsed && (
+              <div className="task-list">
+                {tasks.length === 0 ? (
+                  <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', padding: '10px 0' }}>No tasks assigned.</p>
+                ) : (
                   <>
-                    <form onSubmit={handleAddTask} className="objective-input-group" style={{ marginBottom: '12px' }}>
-                      <input
-                        type="text"
-                        value={newTaskTitle}
-                        onChange={(e) => setNewTaskTitle(e.target.value)}
-                        placeholder="Add a new objective..."
-                      />
-                      <button type="submit" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
-                        Add Task
-                      </button>
-                    </form>
-
-                    <div className="task-list">
-                      {tasks.length === 0 ? (
-                        <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>No tasks assigned. Write one above to start the quest!</p>
-                      ) : (
-                        <>
-                          {/* My Objectives */}
-                          <div>
-                            <h4 style={{ fontSize: '0.9rem', color: '#818cf8', marginBottom: '8px', borderBottom: '1px solid rgba(129, 140, 248, 0.2)', paddingBottom: '4px' }}>My Objectives</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                              {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).length === 0 ? (
-                                <p style={{ color: '#64748b', fontSize: '0.8rem', fontStyle: 'italic' }}>You have no tasks yet.</p>
-                              ) : (
-                                tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
-                                  <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
-                                    <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
-                                      <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                                    </div>
-                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <span className="task-title">{task.title}</span>
-                                    </div>
-
-                                    {!task.is_completed && (
-                                      <button
-                                        onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
-                                        className="btn"
-                                        style={{
-                                          background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
-                                          border: '1px solid var(--color-border-glass)',
-                                          padding: '4px 10px',
-                                          fontSize: '0.75rem',
-                                          color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)'
-                                        }}
-                                      >
-                                        {activeTaskId === task.id ? 'Focusing' : 'Focus'}
-                                      </button>
-                                    )}
-
-                                    {(task.is_completed || task.time_spent_seconds > 0 || activeTaskId === task.id) && (
-                                      <span 
-                                        className={`task-meta ${activeTaskId === task.id ? 'timer-pulse' : ''}`} 
-                                        style={{ 
-                                          display: 'flex', 
-                                          alignItems: 'center', 
-                                          gap: '6px',
-                                          color: activeTaskId === task.id ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                                          fontWeight: activeTaskId === task.id ? '700' : '600'
-                                        }}
-                                      >
-                                        <Clock size={12} />
-                                        {formatTaskTimer(task.time_spent_seconds || 0)}
-                                      </span>
-                                    )}
-                                  </div>
-                                ))
-                              )}
+                    <div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {tasks.filter(t => t.owner_id === user?.id || (!t.owner_id && isSolo)).map((task) => (
+                          <div key={task.id} className={`objective-card ${task.is_completed ? 'completed' : ''} ${activeTaskId === task.id ? 'active-focus' : ''}`}>
+                            <div onClick={() => handleToggleTask(task.id)} className="objective-checkbox">
+                              <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
                             </div>
-                          </div>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span className="task-title" style={{ fontSize: '0.85rem' }}>{task.title}</span>
+                            </div>
 
-                          {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
-                            const peerTasks = tasks.filter(t => t.owner_id === peerId);
-                            const peerName = peerTasks[0]?.owner_name || 'Classmate';
-                            const peerParticipant = participants.find(p => p.userId === peerId);
-                            const peerActiveTaskId = peerParticipant?.activeTaskId;
-                            return (
-                              <div key={peerId} style={{ marginTop: '16px' }}>
-                                <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '4px' }}>{peerName}'s Objectives</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                  {peerTasks.map((task) => {
-                                    const isPeerFocusing = peerActiveTaskId === task.id;
-                                    return (
-                                      <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
-                                        <div className="peer-task-checkbox">
-                                          {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
-                                        </div>
-                                        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                                          <span className="task-title" style={{ fontSize: '0.85rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
-                                          {isPeerFocusing && <span style={{ fontSize: '0.7rem', color: 'var(--color-success)', marginLeft: '8px', fontWeight: 'bold' }}>• Focusing</span>}
-                                        </div>
-                                        {(task.is_completed || task.time_spent_seconds > 0 || isPeerFocusing) && (
-                                          <span className={`task-meta ${isPeerFocusing ? 'timer-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: isPeerFocusing ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
-                                            <Clock size={10} />
-                                            {formatTaskTimer(task.time_spent_seconds || 0)}
-                                          </span>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </>
-                      )}
+                            {!task.is_completed && (
+                              <button
+                                onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
+                                className="btn"
+                                style={{
+                                  background: activeTaskId === task.id ? 'var(--color-primary)' : 'transparent',
+                                  border: '1px solid var(--color-border-glass)',
+                                  padding: '2px 8px',
+                                  fontSize: '0.7rem',
+                                  color: activeTaskId === task.id ? '#fff' : 'var(--color-text-main)',
+                                  borderRadius: '4px'
+                                }}
+                              >
+                                {activeTaskId === task.id ? 'Focusing' : 'Focus'}
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
+
+                    {!isSolo && Array.from(new Set(tasks.filter(t => t.owner_id !== user?.id && t.owner_id).map(t => t.owner_id))).map(peerId => {
+                      const peerTasks = tasks.filter(t => t.owner_id === peerId);
+                      const peerName = peerTasks[0]?.owner_name || 'Classmate';
+                      const peerParticipant = participants.find(p => p.userId === peerId);
+                      const peerActiveTaskId = peerParticipant?.activeTaskId;
+                      return (
+                        <div key={peerId} style={{ marginTop: '12px' }}>
+                          <h4 style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '6px' }}>{peerName}'s Tasks</h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {peerTasks.map((task) => {
+                              const isPeerFocusing = peerActiveTaskId === task.id;
+                              return (
+                                <div key={task.id} className={`peer-task-card ${task.is_completed ? 'completed' : ''} ${isPeerFocusing ? 'is-focusing' : ''}`}>
+                                  <div className="peer-task-checkbox">
+                                    {!!task.is_completed && <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>}
+                                  </div>
+                                  <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                                    <span className="task-title" style={{ fontSize: '0.8rem', color: isPeerFocusing ? 'var(--color-success)' : 'inherit' }}>{task.title}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </>
                 )}
               </div>
             </div>
 
-            {/* Right Sidebar Panel */}
-            <div className={`workspace-right ${isZenMode ? 'zen-hidden' : ''}`}>
-              {/* Ambient Audio panel */}
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <Headphones size={18} /> Ambient Audio {isSolo ? '' : 'Sync'}
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <select 
-                    value={ambientAudio.startsWith('youtube:') ? 'custom_youtube' : ambientAudio} 
-                    onChange={handleChangeAmbientAudio}
-                    disabled={!isSolo && moderatorId !== user?.id}
-                    className="form-input"
-                    style={{ width: '100%' }}
-                  >
-                    {Object.entries(AUDIO_TRACKS).map(([key, track]) => (
-                      <option key={key} value={key}>{track.name}</option>
-                    ))}
-                  </select>
+            {/* Ambient Audio panel */}
+            <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <h3 style={{ fontSize: '1.05rem', color: 'var(--color-text-title)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <Headphones size={18} /> Ambient Audio
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <select 
+                  value={ambientAudio.startsWith('youtube:') ? 'custom_youtube' : ambientAudio} 
+                  onChange={handleChangeAmbientAudio}
+                  disabled={!isSolo && moderatorId !== user?.id}
+                  className="form-input"
+                  style={{ width: '100%', fontSize: '0.85rem' }}
+                >
+                  {Object.entries(AUDIO_TRACKS).map(([key, track]) => (
+                    <option key={key} value={key}>{track.name}</option>
+                  ))}
+                </select>
 
-                  {/* YouTube URL Input (only shown to host when custom_youtube is selected) */}
-                  {(ambientAudio === 'custom_youtube' || ambientAudio.startsWith('youtube:')) && (isSolo || moderatorId === user?.id) && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input 
-                        type="text" 
-                        placeholder="Paste YouTube URL..." 
-                        className="form-input" 
-                        value={youtubeUrlInput}
-                        onChange={(e) => setYoutubeUrlInput(e.target.value)}
-                        style={{ flex: 1 }}
-                      />
-                      <button onClick={handleSetYoutubeUrl} className="btn btn-primary" style={{ padding: '8px 16px' }}>Set</button>
-                    </div>
-                  )}
-
-                  {/* Hidden YouTube Player using react-youtube */}
-                  <YouTubePlayer 
-                    videoUrl={ambientAudio.startsWith('youtube:') ? ambientAudio.replace('youtube:', '') : ''} 
-                    volume={audioVolume} 
-                  />
-                  
-                  {/* Visualizer if playing YouTube */}
-                  {ambientAudio.startsWith('youtube:') && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', background: 'rgba(16, 185, 129, 0.1)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600' }}>
-                      <Headphones className="animate-pulse" size={18} /> 
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                         Playing YouTube Audio
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Volume</span>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="1" 
-                      step="0.05" 
-                      value={audioVolume} 
-                      onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
-                      style={{ flex: 1, cursor: 'pointer', height: '4px', accentColor: 'var(--color-primary)' }}
-                    />
-                  </div>
-                </div>
-                {!isSolo && moderatorId !== user?.id && (
-                  <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '16px', fontStyle: 'italic', lineHeight: 1.4 }}>
-                    * The room's ambient audio is controlled by the host. You can adjust your personal volume.
-                  </p>
-                )}
-              </div>
-
-              {/* Invite link widget */}
-              {!isSolo && (
-                <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
-                  
-                  {/* URL Copy */}
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                {(ambientAudio === 'custom_youtube' || ambientAudio.startsWith('youtube:')) && (isSolo || moderatorId === user?.id) && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     <input 
                       type="text" 
+                      placeholder="YouTube URL..." 
                       className="form-input" 
-                      value={window.location.href} 
-                      readOnly 
-                      style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
+                      value={youtubeUrlInput}
+                      onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                      style={{ flex: 1, fontSize: '0.8rem' }}
                     />
-                    <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                      {copiedLink ? 'Copied!' : 'Copy'}
-                    </button>
+                    <button onClick={handleSetYoutubeUrl} className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Set</button>
                   </div>
+                )}
 
-                  {/* Invite by Username */}
-                  <p style={{ color: '#64748b', fontSize: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
-                    Invite by Username:
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      type="text"
-                      className="form-input"
-                      id="inviteUsernameInput"
-                      placeholder="Enter friend's username"
-                      style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
-                    />
-                    <button
-                      onClick={() => {
-                        const username = document.getElementById('inviteUsernameInput').value.trim();
-                        if (!username) return;
-                        if (!socketRef.current) return;
-                        socketRef.current.emit('send-invite-username', {
-                          targetUsername: username,
-                          roomId,
-                          roomName,
-                          hostName: user.username
-                        });
-                        document.getElementById('inviteUsernameInput').value = '';
-                      }}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                    >
-                      Send
-                    </button>
+                <YouTubePlayer videoUrl={ambientAudio.startsWith('youtube:') ? ambientAudio.replace('youtube:', '') : ''} volume={audioVolume} />
+                
+                {ambientAudio.startsWith('youtube:') && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', background: 'rgba(16, 185, 129, 0.1)', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
+                    <Headphones className="animate-pulse" size={16} /> 
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                       Playing Audio
+                    </span>
                   </div>
+                )}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Volume</span>
+                  <input 
+                    type="range" min="0" max="1" step="0.05" 
+                    value={audioVolume} 
+                    onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
+                    style={{ flex: 1, cursor: 'pointer', height: '4px', accentColor: 'var(--color-primary)' }}
+                  />
                 </div>
-              )}
+              </div>
             </div>
+
+            {/* Invite link widget */}
+            {!isSolo && (
+              <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-title)' }}>Invite Classmates</h4>
+                
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+                  <input 
+                    type="text" className="form-input" value={window.location.href} readOnly 
+                    style={{ fontSize: '0.75rem', padding: '6px 10px', background: 'rgba(0,0,0,0.4)', flex: 1 }}
+                  />
+                  <button onClick={handleCopyLink} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                    {copiedLink ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <input
+                    type="text" className="form-input" id="inviteUsernameInput" placeholder="Friend's username"
+                    style={{ fontSize: '0.75rem', padding: '6px 10px', flex: 1 }}
+                  />
+                  <button
+                    onClick={() => {
+                      const username = document.getElementById('inviteUsernameInput').value.trim();
+                      if (!username) return;
+                      if (!socketRef.current) return;
+                      socketRef.current.emit('send-invite-username', { targetUsername: username, roomId, roomName, hostName: user.username });
+                      document.getElementById('inviteUsernameInput').value = '';
+                    }}
+                    className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
         </div>
         </>
       )}
