@@ -377,7 +377,7 @@ function StudyRoom({ currentUser }) {
             }
             return t;
           });
-          if (updated && isSoloRef.current) {
+          if (updated && isSolo) {
             localStorage.setItem('solo_tasks', JSON.stringify(newTasks));
           }
           return updated ? newTasks : prevTasks;
@@ -389,7 +389,7 @@ function StudyRoom({ currentUser }) {
 
     // Sync progress to DB via heartbeat every 15 seconds
     heartbeatIntervalRef.current = setInterval(() => {
-      if (socketRef.current && !isSoloRef.current) {
+      if (socketRef.current && !isSolo) {
         socketRef.current.emit('timer-heartbeat', {
           incrementSeconds: 15,
           activeTaskId: activeTaskIdRef.current
