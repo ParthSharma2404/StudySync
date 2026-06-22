@@ -1101,7 +1101,7 @@ io.on('connection', (socket) => {
 
     try {
       await dbRun(
-        'UPDATE study_sessions SET duration_seconds = duration_seconds + ? WHERE id = ?',
+        'UPDATE study_sessions SET duration_seconds = COALESCE(duration_seconds, 0) + ? WHERE id = ?',
         [incrementSeconds, sessionId]
       );
 
@@ -1109,7 +1109,7 @@ io.on('connection', (socket) => {
       const oldMinutes = Math.floor((userOld?.total_study_seconds || 0) / 60);
 
       await dbRun(
-        'UPDATE users SET total_study_seconds = total_study_seconds + ? WHERE id = ?',
+        'UPDATE users SET total_study_seconds = COALESCE(total_study_seconds, 0) + ? WHERE id = ?',
         [incrementSeconds, userId]
       );
 
@@ -1197,7 +1197,7 @@ io.on('connection', (socket) => {
       participant.lastHeartbeat = Date.now();
 
       await dbRun(
-        'UPDATE study_sessions SET duration_seconds = duration_seconds + ? WHERE id = ?',
+        'UPDATE study_sessions SET duration_seconds = COALESCE(duration_seconds, 0) + ? WHERE id = ?',
         [incrementSeconds, sessionId]
       );
 
@@ -1205,7 +1205,7 @@ io.on('connection', (socket) => {
       const oldMinutes = Math.floor((userOld?.total_study_seconds || 0) / 60);
 
       await dbRun(
-        'UPDATE users SET total_study_seconds = total_study_seconds + ? WHERE id = ?',
+        'UPDATE users SET total_study_seconds = COALESCE(total_study_seconds, 0) + ? WHERE id = ?',
         [incrementSeconds, userId]
       );
 
@@ -1279,7 +1279,7 @@ io.on('connection', (socket) => {
 
       if (activeTaskId) {
         await dbRun(
-          'UPDATE tasks SET time_spent_seconds = time_spent_seconds + ? WHERE id = ?',
+          'UPDATE tasks SET time_spent_seconds = COALESCE(time_spent_seconds, 0) + ? WHERE id = ?',
           [incrementSeconds, activeTaskId]
         );
         const tasks = await dbAll('SELECT t.id, t.title, t.is_completed, t.time_spent_seconds, t.owner_id, u_owner.username as owner_name, u.username as completed_by_name FROM tasks t LEFT JOIN users u ON t.completed_by = u.id LEFT JOIN users u_owner ON t.owner_id = u_owner.id WHERE t.room_id = ?', [roomId]);
