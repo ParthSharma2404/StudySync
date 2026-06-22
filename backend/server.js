@@ -1093,6 +1093,98 @@ io.on('connection', (socket) => {
     }
   });
 
+
+  // Heartbeat for Solo Mode - records active progress without broadcasting
+  socket.on('solo-heartbeat', async ({ incrementSeconds }) => {
+    const { userId, sessionId } = socket;
+    if (!userId || !sessionId) return;
+
+    try {
+      await dbRun(
+        'UPDATE study_sessions SET duration_seconds = duration_seconds + ? WHERE id = ?',
+        [incrementSeconds, sessionId]
+      );
+
+      const userOld = await dbGet('SELECT total_study_seconds FROM users WHERE id = ?', [userId]);
+      const oldMinutes = Math.floor((userOld?.total_study_seconds || 0) / 60);
+
+      await dbRun(
+        'UPDATE users SET total_study_seconds = total_study_seconds + ? WHERE id = ?',
+        [incrementSeconds, userId]
+      );
+
+      const userNew = await dbGet('SELECT total_study_seconds, current_streak, longest_streak, last_active_date FROM users WHERE id = ?', [userId]);
+      const newMinutes = Math.floor((userNew?.total_study_seconds || 0) / 60);
+
+      if (newMinutes > oldMinutes) {
+        const xpEarned = newMinutes - oldMinutes;
+        let totalXpEarned = xpEarned;
+        
+        // --- Study Streak Logic ---
+        const todayStr = new Date().toISOString().split('T')[0];
+        let newStreak = userNew.current_streak || 0;
+        let longestStreak = userNew.longest_streak || 0;
+        let streakBonusXp = 0;
+
+        if (userNew.last_active_date !== todayStr) {
+          if (userNew.last_active_date) {
+            const lastActive = new Date(userNew.last_active_date);
+            const today = new Date(todayStr);
+            const diffTime = Math.abs(today - lastActive);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+              newStreak += 1;
+              streakBonusXp = 20; // Streak maintained
+            } else {
+              newStreak = 1;
+              streakBonusXp = 10; // Streak broken, start new
+            }
+          } else {
+            newStreak = 1;
+            streakBonusXp = 10; // First time ever studying
+          }
+
+          if (newStreak > longestStreak) {
+            longestStreak = newStreak;
+          }
+
+          await dbRun(
+            'UPDATE users SET current_streak = ?, longest_streak = ?, last_active_date = ? WHERE id = ?',
+            [newStreak, longestStreak, todayStr, userId]
+          );
+          
+          totalXpEarned += streakBonusXp;
+        }
+
+        await dbRun('UPDATE users SET xp = xp + ? WHERE id = ?', [totalXpEarned, userId]);
+        socket.emit('xp-earned', { amount: xpEarned, reason: 'Solo Focus Session' });
+        
+        if (streakBonusXp === 20) {
+          socket.emit('xp-earned', { amount: 20, reason: 'Streak Bonus!' });
+          socket.emit('streak-updated', { streak: newStreak });
+        } else if (streakBonusXp === 10) {
+          socket.emit('xp-earned', { amount: 10, reason: 'Daily Study Bonus' });
+          socket.emit('streak-updated', { streak: newStreak });
+        }
+      }
+
+      if (userNew && userNew.total_study_seconds >= 18000) {
+        const badgeEarned = await dbGet('SELECT 1 FROM user_badges WHERE user_id = ? AND badge_id = ?', [userId, 'badge_focus_champion']);
+        if (!badgeEarned) {
+          await dbRun('INSERT INTO user_badges (user_id, badge_id) VALUES (?, ?)', [userId, 'badge_focus_champion']);
+          socket.emit('badge-earned', {
+            name: 'Focus Champion',
+            description: 'Accumulated 5 hours of total active study time.',
+            icon_name: '👑'
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error processing solo-heartbeat:', err);
+    }
+  });
+
   // Heartbeat - records active progress
   socket.on('timer-heartbeat', async ({ incrementSeconds, activeTaskId }) => {
     const { roomId, userId, sessionId } = socket;

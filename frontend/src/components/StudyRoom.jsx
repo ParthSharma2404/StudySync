@@ -389,11 +389,15 @@ function StudyRoom({ currentUser }) {
 
     // Sync progress to DB via heartbeat every 15 seconds
     heartbeatIntervalRef.current = setInterval(() => {
-      if (socketRef.current && !isSolo) {
-        socketRef.current.emit('timer-heartbeat', {
-          incrementSeconds: 15,
-          activeTaskId: activeTaskIdRef.current
-        });
+      if (socketRef.current) {
+        if (isSolo) {
+          socketRef.current.emit('solo-heartbeat', { incrementSeconds: 15 });
+        } else {
+          socketRef.current.emit('timer-heartbeat', {
+            incrementSeconds: 15,
+            activeTaskId: activeTaskIdRef.current
+          });
+        }
       }
     }, 15000);
 
