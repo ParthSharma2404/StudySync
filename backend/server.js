@@ -1047,9 +1047,10 @@ io.on('connection', (socket) => {
     socket.username = username;
 
     try {
+      const validRoomId = roomId === 'solo-focus' ? null : roomId;
       await dbRun(
         'INSERT INTO study_sessions (id, user_id, room_id, start_time, duration_seconds) VALUES (?, ?, ?, CURRENT_TIMESTAMP, 0)',
-        [sessionId, userId, roomId]
+        [sessionId, userId, validRoomId]
       );
     } catch (err) {
       console.error('Error inserting study_session on join-room:', err);
