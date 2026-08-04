@@ -129,13 +129,60 @@ const roomsState = {};
 const onlineUsers = {}; // maps userId -> { socketId, username }
 
 // --- AUTH ROUTES ---
+// Register Rate Limiter (5 attempts per hour)
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many registrations from this IP, please try again after an hour.' }
+});
+
+// Helper to normalize Gmail addresses
+const normalizeEmail = (email) => {
+  let [localPart, domain] = email.toLowerCase().split('@');
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    localPart = localPart.replace(/\./g, ''); // Remove dots
+    localPart = localPart.split('+')[0]; // Remove everything after +
+    domain = 'gmail.com'; // Standardize domain
+  }
+  return `${localPart}@${domain}`;
+};
+
+// --- VALIDATION HELPERS ---
+const isValidUsername = (username) => {
+  // Alphanumeric, underscores, dashes, 3-20 characters
+  return /^[a-zA-Z0-9_-]{3,20}$/.test(username);
+};
+
+const isValidEmail = (email) => {
+  // Standard basic email regex
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const isValidPassword = (password) => {
+  // At least 8 chars, 1 uppercase, 1 number, 1 special char
+  return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;<>,.?/~`"-]).{8,}$/.test(password);
+};
+
 // --- AUTH ROUTES ---
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', registerLimiter, async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    let { username, email, password } = req.body;
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
+
+    // Strict Input Validation
+    if (!isValidUsername(username)) {
+      return res.status(400).json({ error: 'Username must be 3-20 characters and contain only letters, numbers, underscores, or dashes.' });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address.' });
+    }
+    if (!isValidPassword(password)) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long, contain at least one uppercase letter, one number, and one special character.' });
+    }
+
+    email = normalizeEmail(email);
 
     // Bcrypt 12 rounds
     const password_hash = await bcrypt.hash(password, 12);
@@ -498,6 +545,7 @@ app.get('/api/users/leaderboard', authenticateToken, async (req, res) => {
     const topUsers = await dbAll(
       `SELECT id, username, total_study_seconds, xp 
        FROM users 
+       WHERE is_verified = 1 AND total_study_seconds > 0
        ORDER BY total_study_seconds DESC 
        LIMIT 10`
     );
@@ -505,7 +553,7 @@ app.get('/api/users/leaderboard', authenticateToken, async (req, res) => {
     const userRankData = await dbGet(
       `SELECT COUNT(*) as higher_users 
        FROM users 
-       WHERE total_study_seconds > (SELECT total_study_seconds FROM users WHERE id = ?)`
+       WHERE is_verified = 1 AND total_study_seconds > 0 AND total_study_seconds > (SELECT total_study_seconds FROM users WHERE id = ?)`
       , [req.user.id]
     );
     
