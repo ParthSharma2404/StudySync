@@ -690,68 +690,92 @@ function Dashboard({ currentUser }) {
                 })}
               </div>
             ) : (
-              <div className="heatmap-container animate-fade-in" style={{ overflowX: 'auto', paddingBottom: '8px' }}>
-                <div style={{ minWidth: '760px' }}>
-                  {/* Month Headers */}
-                  <div style={{ display: 'flex', height: '16px', alignItems: 'flex-end', marginBottom: '8px' }}>
-                    <div style={{ width: '24px', flexShrink: 0, paddingRight: '8px' }}></div>
-                    <div style={{ display: 'flex', gap: '4px', height: '100%', alignItems: 'flex-end' }}>
-                      {weeks.map((week, index) => {
-                        const labelItem = monthLabels.find(l => l.weekIndex === index);
-                        return (
-                          <div key={index} style={{ width: '12px', flexShrink: 0, position: 'relative' }}>
-                            {labelItem && (
-                              <span style={{ position: 'absolute', left: 0, bottom: 0, fontSize: '0.6rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                                {labelItem.label}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
+              <div className="heatmap-container animate-fade-in" style={{ paddingBottom: '8px' }}>
+                <style>{`
+                  .heatmap-scroll-area::-webkit-scrollbar { display: none; }
+                  .heatmap-scroll-area { -ms-overflow-style: none; scrollbar-width: none; overflow-x: auto; }
+                  .heatmap-cell {
+                    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+                  }
+                  .heatmap-cell:hover {
+                    transform: scale(1.3);
+                    z-index: 5;
+                    box-shadow: 0 0 12px currentColor, inset 0 0 0 1px rgba(255,255,255,0.4);
+                  }
+                  .heatmap-empty {
+                    background: rgba(0,0,0,0.03);
+                    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+                  }
+                `}</style>
+                <div className="heatmap-scroll-area">
+                  <div style={{ minWidth: '760px', padding: '4px' }}>
+                    {/* Month Headers */}
+                    <div style={{ display: 'flex', height: '16px', alignItems: 'flex-end', marginBottom: '8px' }}>
+                      <div style={{ width: '24px', flexShrink: 0, paddingRight: '8px' }}></div>
+                      <div style={{ display: 'flex', gap: '4px', height: '100%', alignItems: 'flex-end' }}>
+                        {weeks.map((week, index) => {
+                          const labelItem = monthLabels.find(l => l.weekIndex === index);
+                          return (
+                            <div key={index} style={{ width: '13px', flexShrink: 0, position: 'relative' }}>
+                              {labelItem && (
+                                <span style={{ position: 'absolute', left: 0, bottom: 0, fontSize: '0.6rem', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                  {labelItem.label}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Grid */}
-                  <div style={{ display: 'flex' }}>
-                    {/* Day Labels */}
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '0.6rem', fontWeight: 700, color: 'var(--color-text-muted)', width: '24px', paddingRight: '8px', height: '112px', padding: '4px 0' }}>
-                      <span>Sun</span>
-                      <span>Tue</span>
-                      <span>Thu</span>
-                      <span>Sat</span>
-                    </div>
+                    {/* Grid */}
+                    <div style={{ display: 'flex' }}>
+                      {/* Day Labels */}
+                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '0.6rem', fontWeight: 800, color: 'var(--color-text-muted)', width: '24px', paddingRight: '8px', height: '115px', padding: '4px 0', letterSpacing: '0.5px' }}>
+                        <span>Sun</span>
+                        <span>Tue</span>
+                        <span>Thu</span>
+                        <span>Sat</span>
+                      </div>
 
-                    {/* Heatmap Blocks */}
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {weeks.map((week, weekIdx) => (
-                        <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {week.map((date, dayIdx) => {
-                            const dateStr = date.toISOString().split('T')[0];
-                            const hours = data?.heatmapData?.[dateStr] || 0;
-                            const color = getHeatmapColor(hours);
-                            return (
-                              <div key={dayIdx} className="chart-bar-container" style={{ width: '12px', height: '12px', borderRadius: '3px', background: color, cursor: 'default', position: 'relative' }}>
-                                <div className="tooltip" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px', opacity: 0, transition: 'all 0.2s', background: '#2b2b2b', color: '#fff', padding: '6px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 'bold', zIndex: 10, pointerEvents: 'none', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                  <span>{hours} hours</span>
-                                  <span style={{ color: '#a1a1aa', fontSize: '0.6rem' }}>{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      {/* Heatmap Blocks */}
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {weeks.map((week, weekIdx) => (
+                          <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {week.map((date, dayIdx) => {
+                              const dateStr = date.toISOString().split('T')[0];
+                              const hours = data?.heatmapData?.[dateStr] || 0;
+                              const color = getHeatmapColor(hours);
+                              const isEmpty = !hours || hours === 0;
+                              
+                              return (
+                                <div key={dayIdx} className={`chart-bar-container heatmap-cell ${isEmpty ? 'heatmap-empty' : ''}`} style={{ width: '13px', height: '13px', borderRadius: '4px', background: isEmpty ? 'transparent' : color, color: color, cursor: 'pointer', position: 'relative' }}>
+                                  <div className="tooltip" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px', opacity: 0, transition: 'all 0.2s', background: '#2b2b2b', color: '#fff', padding: '6px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', zIndex: 10, pointerEvents: 'none', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: isEmpty ? '#a1a1aa' : color }}></div>
+                                      {hours} hours
+                                    </span>
+                                    <span style={{ color: '#a1a1aa', fontSize: '0.6rem', marginTop: '2px' }}>{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ))}
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* Legend */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '16px', gap: '6px', fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                    <span>Less</span>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(0) }}></div>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(1) }}></div>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(2) }}></div>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(4) }}></div>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(6) }}></div>
-                    <span>More</span>
+                    
+                    {/* Legend */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '20px', gap: '8px', fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 700 }}>
+                      <span style={{ marginRight: '4px' }}>Less</span>
+                      <div className="heatmap-empty" style={{ width: '13px', height: '13px', borderRadius: '4px' }}></div>
+                      <div style={{ width: '13px', height: '13px', borderRadius: '4px', background: getHeatmapColor(1) }}></div>
+                      <div style={{ width: '13px', height: '13px', borderRadius: '4px', background: getHeatmapColor(2) }}></div>
+                      <div style={{ width: '13px', height: '13px', borderRadius: '4px', background: getHeatmapColor(4) }}></div>
+                      <div style={{ width: '13px', height: '13px', borderRadius: '4px', background: getHeatmapColor(6), boxShadow: `0 0 8px ${getHeatmapColor(6)}` }}></div>
+                      <span style={{ marginLeft: '4px' }}>More</span>
+                    </div>
                   </div>
                 </div>
               </div>
