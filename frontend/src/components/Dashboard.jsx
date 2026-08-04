@@ -693,7 +693,13 @@ function Dashboard({ currentUser }) {
               <div className="heatmap-container animate-fade-in" style={{ paddingBottom: '8px' }}>
                 <style>{`
                   .heatmap-scroll-area::-webkit-scrollbar { display: none; }
-                  .heatmap-scroll-area { -ms-overflow-style: none; scrollbar-width: none; overflow-x: auto; }
+                  .heatmap-scroll-area { 
+                    -ms-overflow-style: none; 
+                    scrollbar-width: none; 
+                    overflow-x: auto; 
+                    padding-top: 50px; 
+                    margin-top: -50px; 
+                  }
                   .heatmap-cell {
                     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
@@ -704,8 +710,8 @@ function Dashboard({ currentUser }) {
                     box-shadow: 0 0 12px currentColor, inset 0 0 0 1px rgba(255,255,255,0.4);
                   }
                   .heatmap-empty {
-                    background: rgba(0,0,0,0.03);
-                    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+                    background: rgba(0,0,0,0.06);
+                    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
                   }
                 `}</style>
                 <div className="heatmap-scroll-area">
