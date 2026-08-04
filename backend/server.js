@@ -1539,24 +1539,38 @@ io.on('connection', (socket) => {
 const seedGhostAccounts = async () => {
   try {
     const ghostProfiles = [
-      { id: 'ghost_1', username: 'Alex_Chen', email: 'alex.chen.bot@studysync.local' },
-      { id: 'ghost_2', username: 'Sarah_Codes', email: 'sarah.codes.bot@studysync.local' },
-      { id: 'ghost_3', username: 'Marcus_Dev', email: 'marcus.dev.bot@studysync.local' },
-      { id: 'ghost_4', username: 'Elena_Study', email: 'elena.study.bot@studysync.local' }
+      { id: 'ghost_1', username: 'RohanSharma', email: 'rohan.bot@studysync.local' },
+      { id: 'ghost_2', username: 'PriyaSingh', email: 'priya.bot@studysync.local' },
+      { id: 'ghost_3', username: 'AmitKumar', email: 'amit.bot@studysync.local' },
+      { id: 'ghost_4', username: 'NehaDev', email: 'neha.bot@studysync.local' }
     ];
 
     for (const ghost of ghostProfiles) {
       const exists = await dbGet('SELECT id FROM users WHERE id = ?', [ghost.id]);
+      
+      // Give them a random initial study time between 90 and 140 hours (324,000 to 504,000 seconds)
+      const initialSeconds = Math.floor(Math.random() * (504000 - 324000 + 1)) + 324000;
+      const initialXp = Math.floor(initialSeconds / 60) * 10;
+
       if (!exists) {
-        // Give them a random initial study time between 2 and 10 hours
-        const initialSeconds = Math.floor(Math.random() * (36000 - 7200 + 1)) + 7200;
-        const initialXp = Math.floor(initialSeconds / 60) * 10;
-        
         await dbRun(
           'INSERT INTO users (id, username, email, password_hash, is_verified, is_bot, total_study_seconds, xp, current_streak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [ghost.id, ghost.username, ghost.email, 'NO_LOGIN_ALLOWED', 1, 1, initialSeconds, initialXp, 3]
         );
         console.log(`[Ghost Simulator] Seeded dummy account: ${ghost.username}`);
+      } else {
+        // Update names in case they still have old underscore names
+        await dbRun('UPDATE users SET username = ? WHERE id = ?', [ghost.username, ghost.id]);
+        
+        // If they are not competitive enough, boost them!
+        const currentStats = await dbGet('SELECT total_study_seconds FROM users WHERE id = ?', [ghost.id]);
+        if (currentStats && currentStats.total_study_seconds < 324000) {
+          await dbRun(
+            'UPDATE users SET total_study_seconds = ?, xp = ? WHERE id = ?',
+            [initialSeconds, initialXp, ghost.id]
+          );
+          console.log(`[Ghost Simulator] Boosted dummy account: ${ghost.username} to be competitive!`);
+        }
       }
     }
   } catch (err) {
