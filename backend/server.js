@@ -1535,6 +1535,62 @@ io.on('connection', (socket) => {
     }
   });
 });
+// --- GHOST ACCOUNTS SIMULATOR ---
+const seedGhostAccounts = async () => {
+  try {
+    const ghostProfiles = [
+      { id: 'ghost_1', username: 'Alex_Chen', email: 'alex.chen.bot@studysync.local' },
+      { id: 'ghost_2', username: 'Sarah_Codes', email: 'sarah.codes.bot@studysync.local' },
+      { id: 'ghost_3', username: 'Marcus_Dev', email: 'marcus.dev.bot@studysync.local' },
+      { id: 'ghost_4', username: 'Elena_Study', email: 'elena.study.bot@studysync.local' }
+    ];
+
+    for (const ghost of ghostProfiles) {
+      const exists = await dbGet('SELECT id FROM users WHERE id = ?', [ghost.id]);
+      if (!exists) {
+        // Give them a random initial study time between 2 and 10 hours
+        const initialSeconds = Math.floor(Math.random() * (36000 - 7200 + 1)) + 7200;
+        const initialXp = Math.floor(initialSeconds / 60) * 10;
+        
+        await dbRun(
+          'INSERT INTO users (id, username, email, password_hash, is_verified, is_bot, total_study_seconds, xp, current_streak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [ghost.id, ghost.username, ghost.email, 'NO_LOGIN_ALLOWED', 1, 1, initialSeconds, initialXp, 3]
+        );
+        console.log(`[Ghost Simulator] Seeded dummy account: ${ghost.username}`);
+      }
+    }
+  } catch (err) {
+    console.error('[Ghost Simulator] Failed to seed accounts:', err);
+  }
+};
+
+const startGhostSimulator = () => {
+  // Run every 15 minutes (900000 ms)
+  setInterval(async () => {
+    try {
+      const bots = await dbAll('SELECT id, username, total_study_seconds FROM users WHERE is_bot = 1');
+      for (const bot of bots) {
+        // Randomly decide if this bot "studied" in this 15-minute window (60% chance)
+        if (Math.random() > 0.4) {
+          // Add between 5 to 15 minutes (300 to 900 seconds)
+          const addedSeconds = Math.floor(Math.random() * (900 - 300 + 1)) + 300;
+          const addedXp = Math.floor(addedSeconds / 60) * 10;
+
+          await dbRun(
+            'UPDATE users SET total_study_seconds = total_study_seconds + ?, xp = xp + ? WHERE id = ?',
+            [addedSeconds, addedXp, bot.id]
+          );
+          console.log(`[Ghost Simulator] ${bot.username} studied for ${Math.floor(addedSeconds / 60)} minutes.`);
+        }
+      }
+    } catch (err) {
+      console.error('[Ghost Simulator] Error updating bots:', err);
+    }
+  }, 15 * 60 * 1000);
+};
+
+// Initialize ghost accounts and start the loop
+seedGhostAccounts().then(startGhostSimulator);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
