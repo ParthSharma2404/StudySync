@@ -410,16 +410,44 @@ function Dashboard({ currentUser }) {
   };
   const currentRank = getRankInfo(currentLevel);
 
-  return (
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return { text: 'Good morning', icon: '🌅', subtitle: 'Ready to crush the day?' };
+    if (hour >= 12 && hour < 17) return { text: 'Good afternoon', icon: '☀️', subtitle: 'Keep the momentum going.' };
+    if (hour >= 17 && hour < 22) return { text: 'Good evening', icon: '🌇', subtitle: 'Unwind and review your progress.' };
+    return { text: 'Late night grind', icon: '🌙', subtitle: 'Burning the midnight oil?' };
+  };
+  const greetingInfo = getGreeting();
+
     <>
-      <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+      {/* Ambient Animated Background */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', zIndex: -1, pointerEvents: 'none', background: 'var(--color-bg-deep)' }}>
+        <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%)', animation: 'floatOrb 15s infinite alternate ease-in-out' }}></div>
+        <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%)', animation: 'floatOrb 20s infinite alternate-reverse ease-in-out' }}></div>
+      </div>
+      
+      <style>{`
+        @keyframes floatOrb {
+          0% { transform: translate(0, 0) scale(1); }
+          100% { transform: translate(5%, 5%) scale(1.1); }
+        }
+        .pro-panel {
+          background: rgba(253, 251, 247, 0.6) !important;
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.8) !important;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+        }
+      `}</style>
+
+      <div className="container dashboard-container pro-font" style={{ paddingTop: '40px', paddingBottom: '40px', position: 'relative', zIndex: 1 }}>
         {/* Top Welcome Bar */}
-      <div className="welcome-header" style={{ marginBottom: '40px' }}>
+      <div className="welcome-header" style={{ marginBottom: '40px', position: 'relative', zIndex: 10 }}>
         <h1 style={{ fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-title)', lineHeight: '1.2' }}>
-          Welcome back,<br className="mobile-break" /> {user?.username || 'Learner'}.
+          {greetingInfo.icon} {greetingInfo.text},<br className="mobile-break" /> {user?.username || 'Learner'}.
         </h1>
-        <p style={{ color: 'var(--color-text-muted)', marginTop: '8px' }}>
-          Ready to resume your objectives and crush your goals?
+        <p style={{ color: 'var(--color-text-muted)', marginTop: '8px', fontSize: '1.1rem' }}>
+          {greetingInfo.subtitle}
         </p>
       </div>
 
@@ -446,8 +474,34 @@ function Dashboard({ currentUser }) {
             <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text-title)' }}>{user?.username}</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>{user?.email}</p>
 
-            <div className="streak-badge" style={{ color: '#fbbf24', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '6px 16px', borderRadius: '50px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 600, margin: '20px 0' }}>
-              <Flame size={16} /> {user?.current_streak} Day Streak
+            <style>{`
+              @keyframes flamePulse {
+                0% { filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4)); transform: scale(1); }
+                50% { filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8)); transform: scale(1.15); color: #ef4444; }
+                100% { filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4)); transform: scale(1); }
+              }
+              .flame-active {
+                animation: flamePulse 2s infinite ease-in-out;
+                color: #f59e0b;
+              }
+              .streak-active-bg {
+                background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+                border: 1px solid rgba(245, 158, 11, 0.3);
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+              }
+              .streak-inactive-bg {
+                background: rgba(0,0,0,0.03);
+                border: 1px dashed var(--color-border);
+                color: var(--color-text-muted);
+              }
+            `}</style>
+            <div className={`streak-badge ${user?.current_streak > 0 ? 'streak-active-bg' : 'streak-inactive-bg'}`} style={{ padding: '6px 16px', borderRadius: '50px', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', fontWeight: 700, margin: '20px 0', transition: 'all 0.3s' }}>
+              <Flame size={18} className={user?.current_streak > 0 ? 'flame-active' : ''} />
+              {user?.current_streak > 0 ? (
+                <span style={{ color: '#d97706' }}>{user?.current_streak} Day Streak!</span>
+              ) : (
+                <span>0 Day Streak</span>
+              )}
             </div>
 
             <div className="responsive-grid-2" style={{ borderTop: '1px solid var(--color-border-glass)', width: '100%', marginTop: '8px', paddingTop: '24px', gap: '16px' }}>
