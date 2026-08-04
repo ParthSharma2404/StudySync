@@ -1550,7 +1550,8 @@ const seedGhostAccounts = async () => {
       
       // Give them a random initial study time between 90 and 140 hours (324,000 to 504,000 seconds)
       const initialSeconds = Math.floor(Math.random() * (504000 - 324000 + 1)) + 324000;
-      const initialXp = Math.floor(initialSeconds / 60) * 10;
+      // Normal XP rate is 1 XP per minute. Adding 1.2x multiplier to account for fake streak bonuses.
+      const initialXp = Math.floor((initialSeconds / 60) * 1.2);
 
       if (!exists) {
         await dbRun(
@@ -1573,6 +1574,10 @@ const seedGhostAccounts = async () => {
         }
       }
     }
+    
+    // Fix: Recalculate XP for any existing bots that got the 10x bug
+    await dbRun('UPDATE users SET xp = (total_study_seconds / 60) * 1.2 WHERE is_bot = 1 AND xp > (total_study_seconds / 60) * 2');
+
   } catch (err) {
     console.error('[Ghost Simulator] Failed to seed accounts:', err);
   }
@@ -1588,7 +1593,8 @@ const startGhostSimulator = () => {
         if (Math.random() > 0.4) {
           // Add between 5 to 15 minutes (300 to 900 seconds)
           const addedSeconds = Math.floor(Math.random() * (900 - 300 + 1)) + 300;
-          const addedXp = Math.floor(addedSeconds / 60) * 10;
+          // Normal XP rate is 1 XP per minute, plus occasional 10-20 XP for "streaks"
+          const addedXp = Math.floor(addedSeconds / 60) + (Math.random() > 0.8 ? 20 : 0);
 
           await dbRun(
             'UPDATE users SET total_study_seconds = total_study_seconds + ?, xp = xp + ? WHERE id = ?',
