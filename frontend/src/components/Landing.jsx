@@ -78,9 +78,7 @@ function Landing({ currentUser }) {
       {/* Hero Section */}
       <section className="hero-section container" style={{ position: 'relative', zIndex: 1, textAlign: 'center', minHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '40px', paddingBottom: '20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div className="hero-badge animate-fade-up delay-1" style={{ display: 'inline-block', marginBottom: '16px', padding: '6px 12px', borderRadius: '50px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-            <span className="hero-tagline" style={{ margin: 0, color: '#a5b4fc', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>StudySync 2.0 is Live</span>
-          </div>
+
           <h1 className="hero-title animate-fade-up delay-2" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: '1', marginBottom: '16px' }}>
             <span style={{ color: '#2b2b2b' }}>The Professional</span><br />
             <span style={{ display: 'inline-block', background: '#fef08a', color: '#2b2b2b', padding: '4px 16px', transform: 'rotate(-1deg)', border: '2px solid #2b2b2b', borderRadius: '4px 8px 3px 6px / 6px 3px 8px 4px', boxShadow: '4px 4px 0 rgba(0,0,0,0.1)' }}>Co-working Space.</span>
