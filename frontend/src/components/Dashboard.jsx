@@ -35,7 +35,7 @@ function Dashboard({ currentUser }) {
   const navigate = useNavigate();
   const [showLevelUpPopup, setShowLevelUpPopup] = useState(false);
   const [levelUpData, setLevelUpData] = useState(null);
-
+  const [chartView, setChartView] = useState('weekly'); // 'weekly' or 'yearly'
   useEffect(() => {
     if (data?.user) {
       const { level } = getLevelInfo(data.user.xp);
@@ -248,7 +248,57 @@ function Dashboard({ currentUser }) {
     }
   };
 
+  // --- HEATMAP LOGIC ---
+  const getCalendarGrid = () => {
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 364);
+    
+    // Align start date to Sunday
+    const dayOfWeek = startDate.getDay();
+    startDate.setDate(startDate.getDate() - dayOfWeek);
+    
+    const dates = [];
+    const temp = new Date(startDate);
+    while (temp <= today) {
+      dates.push(new Date(temp));
+      temp.setDate(temp.getDate() + 1);
+    }
+    return dates;
+  };
+  
+  const datesList = getCalendarGrid();
+  const weeks = [];
+  let currentWeek = [];
+  datesList.forEach((date, i) => {
+    currentWeek.push(date);
+    if (currentWeek.length === 7 || i === datesList.length - 1) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  });
 
+  const monthLabels = [];
+  let lastMonth = -1;
+  weeks.forEach((week, index) => {
+    const month = week[0].getMonth();
+    if (month !== lastMonth) {
+      const prev = monthLabels[monthLabels.length - 1];
+      if (!prev || index - prev.weekIndex >= 3) {
+        monthLabels.push({ label: week[0].toLocaleString('en-US', { month: 'short' }), weekIndex: index });
+        lastMonth = month;
+      }
+    }
+  });
+  
+  const getHeatmapColor = (hours) => {
+    if (!hours || hours === 0) return 'rgba(0,0,0,0.03)';
+    if (hours <= 1) return 'rgba(99, 102, 241, 0.2)';
+    if (hours <= 2) return 'rgba(99, 102, 241, 0.5)';
+    if (hours <= 4) return 'rgba(99, 102, 241, 0.8)';
+    return '#6366f1';
+  };
+  // --- END HEATMAP LOGIC ---
 
   if (loading) {
     return (
@@ -604,24 +654,108 @@ function Dashboard({ currentUser }) {
               <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BarChart2 size={20} color="#a1a1aa" /> Study Analytics
               </h3>
-              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', background: 'rgba(0,0,0,0.03)', padding: '4px 12px', borderRadius: '50px', fontWeight: 600 }}>Past 7 Days</div>
+              
+              {/* Toggle Buttons */}
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.03)', padding: '4px', borderRadius: '50px' }}>
+                <button
+                  onClick={() => setChartView('weekly')}
+                  style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: '50px', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: chartView === 'weekly' ? '#fff' : 'transparent', color: chartView === 'weekly' ? 'var(--color-text-title)' : 'var(--color-text-muted)', boxShadow: chartView === 'weekly' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none' }}
+                >
+                  7 Days
+                </button>
+                <button
+                  onClick={() => setChartView('yearly')}
+                  style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: '50px', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: chartView === 'yearly' ? '#fff' : 'transparent', color: chartView === 'yearly' ? 'var(--color-text-title)' : 'var(--color-text-muted)', boxShadow: chartView === 'yearly' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none' }}
+                >
+                  365 Days
+                </button>
+              </div>
             </div>
-            <div className="analytics-bars" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
-              {(data?.studyAnalytics || mockStudyData).map((d, i) => {
-                const currentMaxHours = Math.max(...(data?.studyAnalytics || mockStudyData).map(item => item.hours), 1);
-                return (
-                  <div key={i} className="chart-bar-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1, position: 'relative' }}>
-                    <div className="tooltip" style={{ position: 'absolute', top: '-30px', opacity: 0, transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', background: '#2b2b2b', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10, pointerEvents: 'none' }}>
-                      {d.hours}h
+
+            {chartView === 'weekly' ? (
+              <div className="analytics-bars animate-fade-in" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', gap: '12px' }}>
+                {(data?.studyAnalytics || mockStudyData).map((d, i) => {
+                  const currentMaxHours = Math.max(...(data?.studyAnalytics || mockStudyData).map(item => item.hours), 1);
+                  return (
+                    <div key={i} className="chart-bar-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1, position: 'relative' }}>
+                      <div className="tooltip" style={{ position: 'absolute', top: '-30px', opacity: 0, transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', background: '#2b2b2b', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10, pointerEvents: 'none' }}>
+                        {d.hours}h
+                      </div>
+                      <div style={{ width: '100%', height: '140px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div className="bar-fill" style={{ width: '100%', height: `${(d.hours / currentMaxHours) * 100}%`, background: 'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)', borderRadius: '8px 8px 0 0', transition: 'filter 0.2s' }}></div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>{d.day}</div>
                     </div>
-                    <div style={{ width: '100%', height: '140px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', overflow: 'hidden' }}>
-                      <div className="bar-fill" style={{ width: '100%', height: `${(d.hours / currentMaxHours) * 100}%`, background: 'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)', borderRadius: '8px 8px 0 0', transition: 'filter 0.2s' }}></div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="heatmap-container animate-fade-in" style={{ overflowX: 'auto', paddingBottom: '8px' }}>
+                <div style={{ minWidth: '760px' }}>
+                  {/* Month Headers */}
+                  <div style={{ display: 'flex', height: '16px', alignItems: 'flex-end', marginBottom: '8px' }}>
+                    <div style={{ width: '24px', flexShrink: 0, paddingRight: '8px' }}></div>
+                    <div style={{ display: 'flex', gap: '4px', height: '100%', alignItems: 'flex-end' }}>
+                      {weeks.map((week, index) => {
+                        const labelItem = monthLabels.find(l => l.weekIndex === index);
+                        return (
+                          <div key={index} style={{ width: '12px', flexShrink: 0, position: 'relative' }}>
+                            {labelItem && (
+                              <span style={{ position: 'absolute', left: 0, bottom: 0, fontSize: '0.6rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                                {labelItem.label}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>{d.day}</div>
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Grid */}
+                  <div style={{ display: 'flex' }}>
+                    {/* Day Labels */}
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '0.6rem', fontWeight: 700, color: 'var(--color-text-muted)', width: '24px', paddingRight: '8px', height: '112px', padding: '4px 0' }}>
+                      <span>Sun</span>
+                      <span>Tue</span>
+                      <span>Thu</span>
+                      <span>Sat</span>
+                    </div>
+
+                    {/* Heatmap Blocks */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {weeks.map((week, weekIdx) => (
+                        <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {week.map((date, dayIdx) => {
+                            const dateStr = date.toISOString().split('T')[0];
+                            const hours = data?.heatmapData?.[dateStr] || 0;
+                            const color = getHeatmapColor(hours);
+                            return (
+                              <div key={dayIdx} className="chart-bar-container" style={{ width: '12px', height: '12px', borderRadius: '3px', background: color, cursor: 'default', position: 'relative' }}>
+                                <div className="tooltip" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px', opacity: 0, transition: 'all 0.2s', background: '#2b2b2b', color: '#fff', padding: '6px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 'bold', zIndex: 10, pointerEvents: 'none', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                  <span>{hours} hours</span>
+                                  <span style={{ color: '#a1a1aa', fontSize: '0.6rem' }}>{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Legend */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '16px', gap: '6px', fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                    <span>Less</span>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(0) }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(1) }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(2) }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(4) }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: getHeatmapColor(6) }}></div>
+                    <span>More</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Level Progress Panel */}

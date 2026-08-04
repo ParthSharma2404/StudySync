@@ -688,10 +688,24 @@ app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
       studyAnalytics.push({ day: dayName, hours });
     }
 
+    // Fetch past 365 days for heatmap
+    const heatmapQuery = `
+      SELECT TO_CHAR(start_time, 'YYYY-MM-DD') as day_date, SUM(EXTRACT(EPOCH FROM (end_time - start_time))) as total_seconds 
+      FROM study_sessions 
+      WHERE user_id = ? AND start_time >= CURRENT_DATE - INTERVAL '365 days' AND end_time IS NOT NULL
+      GROUP BY TO_CHAR(start_time, 'YYYY-MM-DD')
+    `;
+    const heatmapRaw = await dbAll(heatmapQuery, [req.user.id]);
+    const heatmapData = {};
+    heatmapRaw.forEach(record => {
+      heatmapData[record.day_date] = Number((record.total_seconds / 3600).toFixed(1));
+    });
+
     res.json({
       user,
       roomsJoined,
       studyAnalytics,
+      heatmapData,
       weeklyStudyHours: Number(weeklyStudyHours.toFixed(1))
     });
   } catch (err) {
