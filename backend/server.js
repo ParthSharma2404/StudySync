@@ -523,8 +523,20 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT id, username, email, current_streak, total_study_seconds, xp FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Calculate dynamic weekly study seconds from study_sessions
+    const weeklyStats = await dbGet(
+      `SELECT SUM(EXTRACT(EPOCH FROM (end_time - start_time))) as weekly_seconds 
+       FROM study_sessions 
+       WHERE user_id = ? AND end_time IS NOT NULL AND start_time >= CURRENT_DATE - INTERVAL '7 days'`,
+      [req.user.id]
+    );
+    
+    user.weekly_study_seconds = weeklyStats?.weekly_seconds ? Math.round(weeklyStats.weekly_seconds) : 0;
+
     res.json({ user });
   } catch (err) {
+    console.error('Error in /api/auth/me:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -652,9 +664,9 @@ app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
 
     // Fetch past 7 days study data
     const analyticsQuery = `
-      SELECT TO_CHAR(start_time, 'YYYY-MM-DD') as day_date, SUM(duration_seconds) as total_seconds 
+      SELECT TO_CHAR(start_time, 'YYYY-MM-DD') as day_date, SUM(EXTRACT(EPOCH FROM (end_time - start_time))) as total_seconds 
       FROM study_sessions 
-      WHERE user_id = ? AND start_time >= CURRENT_DATE - INTERVAL '6 days'
+      WHERE user_id = ? AND start_time >= CURRENT_DATE - INTERVAL '6 days' AND end_time IS NOT NULL
       GROUP BY TO_CHAR(start_time, 'YYYY-MM-DD')
     `;
     const analyticsRaw = await dbAll(analyticsQuery, [req.user.id]);
@@ -662,6 +674,8 @@ app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
     // Process into 7 days array
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const studyAnalytics = [];
+    let weeklyStudyHours = 0;
+    
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -670,13 +684,15 @@ app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
       
       const record = analyticsRaw.find(r => r.day_date === dateString);
       const hours = record ? Number((record.total_seconds / 3600).toFixed(1)) : 0;
+      weeklyStudyHours += hours;
       studyAnalytics.push({ day: dayName, hours });
     }
 
     res.json({
       user,
       roomsJoined,
-      studyAnalytics
+      studyAnalytics,
+      weeklyStudyHours: Number(weeklyStudyHours.toFixed(1))
     });
   } catch (err) {
     console.error(err);

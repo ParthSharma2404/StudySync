@@ -558,7 +558,7 @@ function Dashboard({ currentUser }) {
                   {totalHours} <span style={{fontSize: '1.2rem', color: 'var(--color-text-muted)', fontWeight: 600}}>hrs</span>
                 </h3>
                 <div style={{ marginTop: 'auto', fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-                  <TrendingUp size={16} /> +2.4 hrs this week
+                  <TrendingUp size={16} /> +{data?.weeklyStudyHours || 0} hrs this week
                 </div>
               </div>
             </div>
