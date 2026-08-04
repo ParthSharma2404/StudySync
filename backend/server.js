@@ -1589,8 +1589,10 @@ const startGhostSimulator = () => {
   }, 15 * 60 * 1000);
 };
 
-// Initialize ghost accounts and start the loop
-seedGhostAccounts().then(startGhostSimulator);
+// Initialize ghost accounts and start the loop after 5 seconds to ensure DB migrations finish
+setTimeout(() => {
+  seedGhostAccounts().then(startGhostSimulator);
+}, 5000);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
